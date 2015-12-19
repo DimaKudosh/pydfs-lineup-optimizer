@@ -6,15 +6,13 @@ from player import Player
 class LineupOptimizer:
     def __init__(self, settings):
         '''
-
-        :param players: list[Player]
         :param settings: Settings
-        :return:
         '''
         self._players = []
         self._settings = settings
         self._lineup = []
         self._set_settings()
+        self._removed_players = []
 
     def _set_settings(self):
         self._budget = self._settings.budget
@@ -26,27 +24,21 @@ class LineupOptimizer:
         self._lineup = []
 
     def load_players_from_CSV(self, filename):
-        with open(filename, 'r') as csvfile:
-            csvdata = csv.DictReader(csvfile, skipinitialspace=True)
-            for row in csvdata:
-                player = Player(
-                    row["First Name"],
-                    row["Last Name"],
-                    row["Position"],
-                    row["Team"],
-                    float(row["Salary"]),
-                    float(row["FPPG"]),
-                    True if row["Injury Status"].strip() else False
-                )
-                self._players.append(player)
+        self._players = self._settings.load_players_from_CSV(filename)
 
     def remove_player(self, player):
-        try:
-            self._players.remove(player)
-        except ValueError:
-            print("Player not in players list!")
+        '''
+
+        :param player: Player
+        '''
+        self._removed_players.append(player)
 
     def add_player_to_lineup(self, player):
+        '''
+        Return true if player successfully added to lineup.
+        :param player: Player
+        :return: bool
+        '''
         if player in self._lineup:
             print("This player already in your line up!")
             return False
@@ -78,6 +70,10 @@ class LineupOptimizer:
             return False
 
     def remove_player_from_lineup(self, player):
+        '''
+
+        :param player: Player
+        '''
         try:
             self._lineup.remove(player)
             self._budget += player.salary
@@ -92,28 +88,30 @@ class LineupOptimizer:
             print("Player not in line up!")
 
     def optimize(self):
+        players = [player for player in self._players if player not in self._removed_players]
         prob = LpProblem("Daily Fantasy Sports", LpMaximize)
         x = LpVariable.dicts(
-            'table', self._players,
+            'table', players,
             lowBound = 0,
             upBound = 1,
             cat = LpInteger
         )
-        prob += sum([player.fppg * x[player] for player in self._players])
-        prob += sum([player.salary * x[player] for player in self._players]) <= self._budget
-        prob += sum([x[player] for player in self._players]) == self._total_players
-        prob += sum([x[player] for player in self._players if not player.is_injured]) == self._total_players
+        prob += sum([player.fppg * x[player] for player in players])
+        prob += sum([player.salary * x[player] for player in players]) <= self._budget
+        prob += sum([x[player] for player in players]) == self._total_players
+        prob += sum([x[player] for player in players if not player.is_injured]) == self._total_players
         for position, num in self._positions.items():
-            prob += sum([x[player] for player in self._players if player.position in position]) >= num
+            prob += sum([x[player] for player in players if player.position in position]) >= num
         prob.solve()
-        for player in self._players:
-            if x[player].value() == 1.0:
-                self._total_players -= 1
-                self._budget -= player.salary
-                for key, value in self._positions.items():
-                    if player.position in key and value:
-                        self._positions[key] -= 1
-                self._lineup.append(player)
+        if prob.status == 1:
+            for player in players:
+                if x[player].value() == 1.0:
+                    self._total_players -= 1
+                    self._budget -= player.salary
+                    for key, value in self._positions.items():
+                        if player.position in key and value:
+                            self._positions[key] -= 1
+                    self._lineup.append(player)
 
     def print_lineup(self):
         res = '\n'.join([str(index + 1) + ". " + str(player) for index, player in enumerate(self._lineup)])

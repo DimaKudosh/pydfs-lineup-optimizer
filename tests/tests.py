@@ -1,13 +1,13 @@
 import unittest
-from lineupoptimizer import LineupOptimizer
-from player import Player
-import settings
+from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
+from pydfs_lineup_optimizer.player import Player
+from pydfs_lineup_optimizer import settings
 
 
 class TestLineupOptimizer(unittest.TestCase):
     def setUp(self):
         self.lineup_optimizer = LineupOptimizer(settings.YahooDailyFantasyBasketballSettings)
-        self.lineup_optimizer.load_players_from_CSV("yahoo_dfs_test_sample.csv")
+        self.lineup_optimizer.load_players_from_CSV("tests/yahoo_dfs_test_sample.csv")
         self._player1 = self.lineup_optimizer._players[0]
 
     def test_add_player_to_lineup(self):
@@ -22,7 +22,7 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_adding_player_with_salary_bigger_than_budget(self):
         self.lineup_optimizer.reset_lineup()
-        player = Player('', '', 'PG', 'DEN', 100000, 2)
+        player = Player('', '', 'PG', 'DEN', 'SAC', 100000, 2)
         self.assertFalse(self.lineup_optimizer.add_player_to_lineup(player))
 
     def test_adding_player_to_formed_lineup(self):
@@ -34,16 +34,16 @@ class TestLineupOptimizer(unittest.TestCase):
         self.lineup_optimizer.reset_lineup()
         players = []
         for i in 'abcd':
-            players.append(Player(i, i, 'PG', 'DEN', 10, 2))
+            players.append(Player(i, i, 'PG', 'DEN', 'SAC', 10, 2))
         for i in range(3):
             self.lineup_optimizer.add_player_to_lineup(players[i])
         self.assertFalse(self.lineup_optimizer.add_player_to_lineup(players[3]))
 
     def test_remove_player_from_lineup(self):
         self.lineup_optimizer.reset_lineup()
-        player1 = Player('P', 'P', 'PG', 'DEN', 10, 2)
-        player2 = Player('C', 'C', 'PG', 'DEN', 10, 2)
-        player3 = Player('P', 'P', 'PG', 'DEN', 10, 2)
+        player1 = Player('P', 'P', 'PG', 'DEN', 'SAC', 10, 2)
+        player2 = Player('C', 'C', 'PG', 'DEN', 'SAC', 10, 2)
+        player3 = Player('P', 'P', 'PG', 'DEN', 'SAC', 10, 2)
         self.lineup_optimizer.add_player_to_lineup(player1)
         self.lineup_optimizer.remove_player_from_lineup(player1)
         self.assertEqual(len(self.lineup_optimizer._lineup), 0)
@@ -59,7 +59,6 @@ class TestLineupOptimizer(unittest.TestCase):
         self.lineup_optimizer.remove_player_from_lineup(player3)
         self.assertEqual(self.lineup_optimizer._positions[('PG', )], 1)
         self.assertEqual(self.lineup_optimizer._positions[('PG', 'SG')], 3)
-
 
 
 if __name__ == '__main__':
