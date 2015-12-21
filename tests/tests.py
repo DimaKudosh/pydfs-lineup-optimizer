@@ -22,7 +22,7 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_adding_player_with_salary_bigger_than_budget(self):
         self.lineup_optimizer.reset_lineup()
-        player = Player('', '', 'PG', 'DEN', 'SAC', 100000, 2)
+        player = Player('', '', '', 'PG', 'DEN', 'SAC', 100000, 2)
         self.assertFalse(self.lineup_optimizer.add_player_to_lineup(player))
 
     def test_adding_player_to_formed_lineup(self):
@@ -34,16 +34,16 @@ class TestLineupOptimizer(unittest.TestCase):
         self.lineup_optimizer.reset_lineup()
         players = []
         for i in 'abcd':
-            players.append(Player(i, i, 'PG', 'DEN', 'SAC', 10, 2))
+            players.append(Player(i, i, i, 'PG', 'DEN', 'SAC', 10, 2))
         for i in range(3):
             self.lineup_optimizer.add_player_to_lineup(players[i])
         self.assertFalse(self.lineup_optimizer.add_player_to_lineup(players[3]))
 
     def test_remove_player_from_lineup(self):
         self.lineup_optimizer.reset_lineup()
-        player1 = Player('P', 'P', 'PG', 'DEN', 'SAC', 10, 2)
-        player2 = Player('C', 'C', 'PG', 'DEN', 'SAC', 10, 2)
-        player3 = Player('P', 'P', 'PG', 'DEN', 'SAC', 10, 2)
+        player1 = Player('', 'P', 'P', 'PG', 'DEN', 'SAC', 10, 2)
+        player2 = Player('', 'C', 'C', 'PG', 'DEN', 'SAC', 10, 2)
+        player3 = Player('', 'P', 'P', 'PG', 'DEN', 'SAC', 10, 2)
         self.lineup_optimizer.add_player_to_lineup(player1)
         self.lineup_optimizer.remove_player_from_lineup(player1)
         self.assertEqual(len(self.lineup_optimizer._lineup), 0)
@@ -59,6 +59,18 @@ class TestLineupOptimizer(unittest.TestCase):
         self.lineup_optimizer.remove_player_from_lineup(player3)
         self.assertEqual(self.lineup_optimizer._positions[('PG', )], 1)
         self.assertEqual(self.lineup_optimizer._positions[('PG', 'SG')], 3)
+
+    def test_lineup_with_players_from_same_team(self):
+        self.lineup_optimizer.reset_lineup()
+        self.lineup_optimizer.optimize(teams={'LAL': 4, 'BOS': 4})
+        self.assertEqual(len(filter(lambda x: x.team == 'LAL', self.lineup_optimizer.lineup)), 4)
+        self.assertEqual(len(filter(lambda x: x.team == 'BOS', self.lineup_optimizer.lineup)), 4)
+
+    def test_lineup_with_players_from_same_positions(self):
+        self.lineup_optimizer.reset_lineup()
+        self.lineup_optimizer.optimize(positions={'PG': 3, 'SF': 2})
+        self.assertEqual(len(filter(lambda x: x.position == 'PG', self.lineup_optimizer.lineup)), 3)
+        self.assertEqual(len(filter(lambda x: x.position == 'SF', self.lineup_optimizer.lineup)), 2)
 
 
 if __name__ == '__main__':

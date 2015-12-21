@@ -1,9 +1,12 @@
+"""
+Store classes with settings for specified daily fantasy sports site and kind of sport.
+"""
 from abc import ABCMeta, abstractmethod
 import csv
 from player import Player
 
 
-class BaseSettings:
+class BaseSettings(object):
     __metaclass__ = ABCMeta
     budget = 0
     total_players = 0
@@ -16,12 +19,14 @@ class BaseSettings:
 
 class YahooSettings(BaseSettings):
     @classmethod
+    @abstractmethod
     def load_players_from_CSV(cls, filename):
         players = []
         with open(filename, 'r') as csvfile:
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)
             for row in csvdata:
                 player = Player(
+                    row["Id"],
                     row["First Name"],
                     row["Last Name"],
                     row["Position"],
@@ -70,18 +75,4 @@ class YahooDailyFantasyHockeySettings(YahooSettings):
         ('C', ): 2,
         ('LW', 'RW'): 3,
         ('D', ): 2,
-    }
-
-
-class FanamentsDailyFantasyBasketballSettings(BaseSettings):
-    budget = 100
-    total_players = 9
-    positions = {
-        ('PG', ): 1,
-        ('SG', ): 1,
-        ('SF', ): 1,
-        ('PF', ): 1,
-        ('C', ): 1,
-        ('PG', 'SG'): 3,
-        ('PF', 'SF'): 3,
     }

@@ -1,43 +1,77 @@
 from pulp import *
-import csv
+from settings import BaseSettings
 from player import Player
 
 
-class LineupOptimizer:
+class LineupOptimizer(object):
     def __init__(self, settings):
         '''
-        :param settings: Settings
+        LineupOptimizer select the best lineup for daily fantasy sports.
+        :type settings: BaseSettings
         '''
         self._players = []
-        self._settings = settings
         self._lineup = []
-        self._set_settings()
+        self._set_settings(settings)
         self._removed_players = []
 
-    def _set_settings(self):
+    @property
+    def lineup(self):
+        return self._lineup
+
+    @property
+    def lineup_fantasy_points_projection(self):
+        return sum(player.fppg for player in self._lineup)
+
+    @property
+    def lineup_salary_costs(self):
+        return sum(player.salary for player in self._lineup)
+
+    @property
+    def players(self):
+        return self._players
+
+    @property
+    def removed_players(self):
+        return self._removed_players
+
+    def _set_settings(self, settings=None):
+        '''
+        Set settings with daily fantasy sport site and kind of sport to optimizer.
+        :type settings: BaseSettings
+        '''
+        if settings is not None:
+            self._settings = settings
         self._budget = self._settings.budget
         self._total_players = self._settings.total_players
         self._positions = self._settings.positions.copy()
 
     def reset_lineup(self):
+        '''
+        Reset current lineup.
+        '''
         self._set_settings()
         self._lineup = []
 
     def load_players_from_CSV(self, filename):
+        '''
+        Load player list from CSV file with passed filename.
+        Calls load_players_from_CSV method from _settings object.
+        :type filename: str
+        '''
         self._players = self._settings.load_players_from_CSV(filename)
 
     def remove_player(self, player):
         '''
-
-        :param player: Player
+        Remove player from list for selecting players for lineup.
+        :type player: Player
         '''
         self._removed_players.append(player)
 
     def add_player_to_lineup(self, player):
         '''
+        Force adding specified player to lineup.
         Return true if player successfully added to lineup.
-        :param player: Player
-        :return: bool
+        :type player: Player
         '''
         if player in self._lineup:
             print("This player already in your line up!")
@@ -71,8 +105,8 @@ class LineupOptimizer:
 
     def remove_player_from_lineup(self, player):
         '''
-
-        :param player: Player
+        Remove specified player from lineup.
+        :type player: Player
         '''
         try:
             self._lineup.remove(player)
@@ -87,7 +121,13 @@ class LineupOptimizer:
         except ValueError, KeyError:
             print("Player not in line up!")
 
-    def optimize(self):
+    def optimize(self, teams=None, positions=None):
+        '''
+        Select optimal lineup from players list.
+        This method uses Mixed Integer Linear Programming method for evaluating best starting lineup.
+        :type teams: dict[str, int]
+        :type positions: dict[str, int]
+        '''
         players = [player for player in self._players if player not in self._removed_players]
         prob = LpProblem("Daily Fantasy Sports", LpMaximize)
         x = LpVariable.dicts(
@@ -102,6 +142,12 @@ class LineupOptimizer:
         prob += sum([x[player] for player in players if not player.is_injured]) == self._total_players
         for position, num in self._positions.items():
             prob += sum([x[player] for player in players if player.position in position]) >= num
+        if teams is not None:
+            for key, value in teams.items():
+                prob += sum([x[player] for player in players if player.team == key]) == value
+        if positions is not None:
+            for key, value in positions.items():
+                prob += sum([x[player] for player in players if player.position == key]) == value
         prob.solve()
         if prob.status == 1:
             for player in players:
@@ -114,6 +160,9 @@ class LineupOptimizer:
                     self._lineup.append(player)
 
     def print_lineup(self):
+        '''
+        Represent current lineup as table with players and output it to console.
+        '''
         res = '\n'.join([str(index + 1) + ". " + str(player) for index, player in enumerate(self._lineup)])
         res += '\nFantasy Points ' + str(sum(player.fppg for player in self._lineup))
         res += '\nSalary ' + str(sum(player.salary for player in self._lineup))

@@ -1,5 +1,6 @@
-class Player:
-    def __init__(self, first_name, last_name, position, team, opponent, salary, fppg, is_injured=False):
+class Player(object):
+    def __init__(self, id,  first_name, last_name, position, team, opponent, salary, fppg, is_injured=False):
+        self.id = id
         self.first_name = first_name
         self.last_name = last_name
         self.position = position
