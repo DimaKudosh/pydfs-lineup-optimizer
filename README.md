@@ -4,12 +4,12 @@ PYDFS-Lineup-optimizer is a tool for creating optimal lineups for daily fantasy 
 ## Support
 Now it's support following dfs sites:
 
-League | Yahoo | Fanduel | DraftKing | FantasyDraft | StarFantasy | FantasyAces
------ | ----- | ----- | ----- | ----- | ----- | ----- 
-NFL | + | - | - | - | - | - 
-NBA | + | - | - | - | - | -  
-NHL | + | - | - | - | - | -  
-MLB | - | - | - | - | - | - 
+League | Yahoo | Fanduel | DraftKings | FantasyDraft 
+----- | ----- | ----- | ----- | ----- 
+NFL | + | + | + | + 
+NBA | + | + | + | + 
+NHL | + | - | - | + 
+MLB | - | - | - | - 
 
 ## Usage
 Here is a example for evaluating optimal lineup for Yahoo fantasy NBA. It's loads players list from "yahoo-NBA.csv" and select best lineup with 4 Oklahoma City Thunder players.
