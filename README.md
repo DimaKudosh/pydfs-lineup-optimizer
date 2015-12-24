@@ -1,5 +1,11 @@
 # PYDFS-LINEUP-OPTIMIZER
-PYDFS-Lineup-optimizer is a tool for creating optimal lineups for daily fantasy sport. 
+pydfs-lineup-optimizer is a tool for creating optimal lineups for daily fantasy sport. 
+
+## Installation
+To install pydfs-lineup-optimizer, simply:
+```
+$ pip install pydfs-lineup-optimizer
+```
 
 ## Support
 Now it's support following dfs sites:

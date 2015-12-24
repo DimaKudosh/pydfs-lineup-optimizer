@@ -91,6 +91,8 @@ class LineupOptimizer(object):
         '''
         if player in self._lineup:
             raise LineupOptimizerException("This player already in your line up!")
+        if not isinstance(player, Player):
+            raise LineupOptimizerException("This function accept only Player objects!")
         try:
             if self._budget - player.salary < 0:
                 raise LineupOptimizerException("Can't add this player to line up! Your team is over budget!")
@@ -119,6 +121,8 @@ class LineupOptimizer(object):
         Remove specified player from lineup.
         :type player: Player
         '''
+        if not isinstance(player, Player):
+            raise LineupOptimizerException("This function accept only Player objects!")
         try:
             self._lineup.remove(player)
             self._budget += player.salary
@@ -139,7 +143,7 @@ class LineupOptimizer(object):
         :type teams: dict[str, int]
         :type positions: dict[str, int]
         '''
-        players = [player for player in self._players if player not in self._removed_players]
+        players = [player for player in self._players if player not in self._removed_players and isinstance(player, Player)]
         prob = LpProblem("Daily Fantasy Sports", LpMaximize)
         x = LpVariable.dicts(
             'table', players,
