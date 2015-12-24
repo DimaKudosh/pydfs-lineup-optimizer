@@ -2,6 +2,7 @@ import unittest
 from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 from pydfs_lineup_optimizer.player import Player
 from pydfs_lineup_optimizer import settings
+from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 
 
 class TestLineupOptimizer(unittest.TestCase):
@@ -18,17 +19,20 @@ class TestLineupOptimizer(unittest.TestCase):
     def test_same_players_in_lineup(self):
         self.lineup_optimizer.reset_lineup()
         self.lineup_optimizer.add_player_to_lineup(self._player1)
-        self.assertFalse(self.lineup_optimizer.add_player_to_lineup(self._player1))
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.add_player_to_lineup(self._player1)
 
     def test_adding_player_with_salary_bigger_than_budget(self):
         self.lineup_optimizer.reset_lineup()
         player = Player('', '', '', 'PG', 'DEN', 100000, 2)
-        self.assertFalse(self.lineup_optimizer.add_player_to_lineup(player))
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.add_player_to_lineup(player)
 
     def test_adding_player_to_formed_lineup(self):
         self.lineup_optimizer.reset_lineup()
         self.lineup_optimizer.optimize()
-        self.assertFalse(self.lineup_optimizer.add_player_to_lineup(self._player1))
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.add_player_to_lineup(self._player1)
 
     def test_adding_player_to_formed_position(self):
         self.lineup_optimizer.reset_lineup()
@@ -37,7 +41,8 @@ class TestLineupOptimizer(unittest.TestCase):
             players.append(Player(i, i, i, 'PG', 'DEN', 10, 2))
         for i in range(3):
             self.lineup_optimizer.add_player_to_lineup(players[i])
-        self.assertFalse(self.lineup_optimizer.add_player_to_lineup(players[3]))
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.add_player_to_lineup(players[3])
 
     def test_remove_player_from_lineup(self):
         self.lineup_optimizer.reset_lineup()

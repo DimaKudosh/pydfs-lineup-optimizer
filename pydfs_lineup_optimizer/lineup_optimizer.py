@@ -1,4 +1,5 @@
 from pulp import *
+from exceptions import LineupOptimizerException
 from settings import BaseSettings
 from player import Player
 
@@ -16,22 +17,37 @@ class LineupOptimizer(object):
 
     @property
     def lineup(self):
+        '''
+        :rtype: list[Player]
+        '''
         return self._lineup
 
     @property
     def lineup_fantasy_points_projection(self):
+        '''
+        :rtype: int
+        '''
         return sum(player.fppg for player in self._lineup)
 
     @property
     def lineup_salary_costs(self):
+        '''
+        :rtype: int
+        '''
         return sum(player.salary for player in self._lineup)
 
     @property
     def players(self):
-        return self._players
+        '''
+        :rtype: list[Player]
+        '''
+        return [player for player in self._players if player not in self._removed_players]
 
     @property
     def removed_players(self):
+        '''
+        :rtype: list[Player]
+        '''
         return self._removed_players
 
     def _set_settings(self, settings=None):
@@ -74,15 +90,13 @@ class LineupOptimizer(object):
         :type player: Player
         '''
         if player in self._lineup:
-            print("This player already in your line up!")
-            return False
+            raise LineupOptimizerException("This player already in your line up!")
         try:
             if self._budget - player.salary < 0:
-                print("Can't add this player to line up! Your team is over budget!")
-                return False
+                raise LineupOptimizerException("Can't add this player to line up! Your team is over budget!")
             if self._total_players - 1 < 0:
-                print("Can't add this player to line up! You already select all {} players!".format(self._total_players))
-                return False
+                raise LineupOptimizerException("Can't add this player to line up! You already select all {} players!".
+                                               format(self._total_players))
             position = (player.position, )
             try:
                 if self._positions[position] >= 1:
@@ -93,15 +107,12 @@ class LineupOptimizer(object):
                         self._positions[key] -= 1
                         self._total_players -= 1
                         self._budget -= player.salary
-                        return True
-                print("You're already select all {}'s".format(player.position))
-                return False
+                        return
+                raise LineupOptimizerException("You're already select all {}'s".format(player.position))
             except KeyError:
-                print("This player has wrong position!")
-                return False
+                raise LineupOptimizerException("This player has wrong position!")
         except ValueError:
-            print("Player not in players list!")
-            return False
+            raise LineupOptimizerException("Player not in players list!")
 
     def remove_player_from_lineup(self, player):
         '''
@@ -119,7 +130,7 @@ class LineupOptimizer(object):
                     if self._positions[key] > self._settings.positions[key] - self._settings.positions[position]:
                         self._positions[position] += 1
         except ValueError, KeyError:
-            print("Player not in line up!")
+            raise LineupOptimizerException("Player not in line up!")
 
     def optimize(self, teams=None, positions=None):
         '''
@@ -158,6 +169,8 @@ class LineupOptimizer(object):
                         if player.position in key and value:
                             self._positions[key] -= 1
                     self._lineup.append(player)
+        else:
+            raise LineupOptimizerException("Can't create optimal lineup! Wrong input data!")
 
     def print_lineup(self):
         '''
