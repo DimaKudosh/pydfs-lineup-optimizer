@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name = 'pydfs-lineup-optimizer',
-    version = '0.1.1',
+    version = '0.1.2',
     packages = ['tests', 'pydfs_lineup_optimizer'],
     url = 'https://github.com/DimaKudosh/pydfs-lineup-optimizer',
     license = '',

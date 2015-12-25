@@ -17,7 +17,10 @@ NBA | + | + | + | +
 NHL | + | - | - | + 
 MLB | - | - | - | - 
 
-## Usage
+## Documentation
+Documentation is available at https://github.com/DimaKudosh/pydfs-lineup-optimizer/wiki
+
+## Example
 Here is a example for evaluating optimal lineup for Yahoo fantasy NBA. It's loads players list from "yahoo-NBA.csv" and select best lineup with 4 Oklahoma City Thunder players.
 ```
 optimizer = LineupOptimizer(settings.YahooBasketballSettings)
