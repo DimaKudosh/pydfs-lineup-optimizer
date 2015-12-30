@@ -58,12 +58,15 @@ class TestLineupOptimizer(unittest.TestCase):
         self.lineup_optimizer.remove_player_from_lineup(player1)
         self.assertEqual(self.lineup_optimizer._positions[('PG', )], 0)
         self.assertEqual(self.lineup_optimizer._positions[('PG', 'SG')], 1)
+        self.assertEqual(self.lineup_optimizer._no_position_players, 1)
         self.lineup_optimizer.remove_player_from_lineup(player2)
         self.assertEqual(self.lineup_optimizer._positions[('PG', )], 0)
         self.assertEqual(self.lineup_optimizer._positions[('PG', 'SG')], 2)
+        self.assertEqual(self.lineup_optimizer._no_position_players, 1)
         self.lineup_optimizer.remove_player_from_lineup(player3)
         self.assertEqual(self.lineup_optimizer._positions[('PG', )], 1)
         self.assertEqual(self.lineup_optimizer._positions[('PG', 'SG')], 3)
+        self.assertEqual(self.lineup_optimizer._no_position_players, 1)
 
     def test_lineup_with_players_from_same_team(self):
         self.lineup_optimizer.reset_lineup()
@@ -78,5 +81,9 @@ class TestLineupOptimizer(unittest.TestCase):
         self.assertEqual(len(filter(lambda x: x.position == 'SF', self.lineup_optimizer.lineup)), 2)
 
 
-if __name__ == '__main__':
+def run_tests():
     unittest.main()
+
+
+if __name__ == '__main__':
+    run_tests()

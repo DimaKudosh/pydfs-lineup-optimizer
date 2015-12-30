@@ -24,4 +24,4 @@ class Player(object):
 
     @property
     def efficiency(self):
-        return self.fppg / self.salary
+        return round(self.fppg / self.salary, 2)

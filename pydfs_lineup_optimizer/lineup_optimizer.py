@@ -37,11 +37,18 @@ class LineupOptimizer(object):
         return sum(player.salary for player in self._lineup)
 
     @property
+    def budget(self):
+        '''
+        :rtype: int
+        '''
+        return self._budget
+
+    @property
     def players(self):
         '''
         :rtype: list[Player]
         '''
-        return [player for player in self._players if player not in self._removed_players]
+        return [player for player in self._players if player not in self._removed_players and player not in self._lineup]
 
     @property
     def removed_players(self):
@@ -60,6 +67,7 @@ class LineupOptimizer(object):
         self._budget = self._settings.budget
         self._total_players = self._settings.total_players
         self._positions = self._settings.positions.copy()
+        self._no_position_players = self._settings.no_position_players
 
     def reset_lineup(self):
         '''
@@ -83,6 +91,21 @@ class LineupOptimizer(object):
         '''
         self._removed_players.append(player)
 
+    def restore_player(self, player):
+        try:
+            self._removed_players.remove(player)
+        except ValueError:
+            pass
+
+    def _add_to_lineup(self, player):
+        '''
+        Adding player to lineup without checks
+        :type player: Player
+        '''
+        self._lineup.append(player)
+        self._total_players -= 1
+        self._budget -= player.salary
+
     def add_player_to_lineup(self, player):
         '''
         Force adding specified player to lineup.
@@ -98,19 +121,41 @@ class LineupOptimizer(object):
                 raise LineupOptimizerException("Can't add this player to line up! Your team is over budget!")
             if self._total_players - 1 < 0:
                 raise LineupOptimizerException("Can't add this player to line up! You already select all {} players!".
-                                               format(self._total_players))
-            position = (player.position, )
+                                               format(len(self._lineup)))
             try:
-                if self._positions[position] >= 1:
-                    self._positions[position] -= 1
-                for key, value in self._positions.items():
-                    if position[0] in key and key != position and value >= 1:
-                        self._lineup.append(player)
-                        self._positions[key] -= 1
-                        self._total_players -= 1
-                        self._budget -= player.salary
-                        return
-                raise LineupOptimizerException("You're already select all {}'s".format(player.position))
+                is_added = False
+
+                def decrement_player_from_all_positions():
+                    is_added = False
+                    for key, value in self._positions.items():
+                        if player.position in key and value >= 1:
+                            self._positions[key] -= 1
+                            is_added = True
+                    return is_added
+
+                try:
+                    if self._positions[(player.position, )] > 0:
+                        is_added = decrement_player_from_all_positions()
+                    else:
+                        for key, value in self._positions.items():
+                            if player.position in key and len(key) > 1:
+                                for pos in key:
+                                    if pos != player.position:
+                                        try:
+                                            value -= self._positions[(pos, )]
+                                        except KeyError:
+                                            pass
+                                if value:
+                                    is_added = decrement_player_from_all_positions()
+                except KeyError:
+                    pass
+                if not is_added and self._no_position_players:
+                    self._no_position_players -= 1
+                    is_added = True
+                if is_added:
+                    self._add_to_lineup(player)
+                else:
+                    raise LineupOptimizerException("You're already select all {}'s".format(player.position))
             except KeyError:
                 raise LineupOptimizerException("This player has wrong position!")
         except ValueError:
@@ -124,26 +169,43 @@ class LineupOptimizer(object):
         if not isinstance(player, Player):
             raise LineupOptimizerException("This function accept only Player objects!")
         try:
-            self._lineup.remove(player)
-            self._budget += player.salary
-            self._total_players += 1
-            position = (player.position, )
-            for key in self._positions.keys():
-                if position[0] in key and key != position:
-                    self._positions[key] += 1
-                    if self._positions[key] > self._settings.positions[key] - self._settings.positions[position]:
-                        self._positions[position] += 1
-        except ValueError, KeyError:
+            occupied_positions = {key: len(filter(lambda player: player.position in key, self._lineup))
+                                  for key in self._positions.keys()}
+            positions_difference = {key: occupied_positions[key] - self._settings.positions[key]
+                                    for key in occupied_positions.keys()}
+            try:
+                if positions_difference[(player.position, )] == 0:
+                    for key in self._positions.keys():
+                        if player.position in key:
+                            self._positions[key] += 1
+                else:
+                    is_no_position_player = True
+                    for key, value in positions_difference.items():
+                        if player.position in key and value < 0:
+                            is_no_position_player = False
+                    if is_no_position_player:
+                        self._no_position_players += 1
+                    else:
+                        for key in self._positions.keys():
+                            if player.position in key and key != (player.position, ):
+                                self._positions[key] += 1
+                self._lineup.remove(player)
+                self._budget += player.salary
+                self._total_players += 1
+            except KeyError:
+                pass
+        except ValueError:
             raise LineupOptimizerException("Player not in line up!")
 
-    def optimize(self, teams=None, positions=None):
+    def optimize(self, teams=None, positions=None, with_injured=False):
         '''
         Select optimal lineup from players list.
         This method uses Mixed Integer Linear Programming method for evaluating best starting lineup.
         :type teams: dict[str, int]
         :type positions: dict[str, int]
+        :type with_injured: bool
         '''
-        players = [player for player in self._players if player not in self._removed_players and isinstance(player, Player)]
+        players = [player for player in self._players if player not in self._removed_players and player not in self._lineup and isinstance(player, Player)]
         prob = LpProblem("Daily Fantasy Sports", LpMaximize)
         x = LpVariable.dicts(
             'table', players,
@@ -154,7 +216,8 @@ class LineupOptimizer(object):
         prob += sum([player.fppg * x[player] for player in players])
         prob += sum([player.salary * x[player] for player in players]) <= self._budget
         prob += sum([x[player] for player in players]) == self._total_players
-        prob += sum([x[player] for player in players if not player.is_injured]) == self._total_players
+        if not with_injured:
+            prob += sum([x[player] for player in players if not player.is_injured]) == self._total_players
         for position, num in self._positions.items():
             prob += sum([x[player] for player in players if player.position in position]) >= num
         if teams is not None:
@@ -167,12 +230,13 @@ class LineupOptimizer(object):
         if prob.status == 1:
             for player in players:
                 if x[player].value() == 1.0:
-                    self._total_players -= 1
                     self._budget -= player.salary
                     for key, value in self._positions.items():
                         if player.position in key and value:
                             self._positions[key] -= 1
                     self._lineup.append(player)
+            self._total_players = 0
+            self._no_position_players = 0
         else:
             raise LineupOptimizerException("Can't create optimal lineup! Wrong input data!")
 

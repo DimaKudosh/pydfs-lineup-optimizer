@@ -10,6 +10,7 @@ class BaseSettings(object):
     __metaclass__ = ABCMeta
     budget = 0
     total_players = 0
+    no_position_players = 0
     positions = {}
 
     @abstractmethod
@@ -45,6 +46,7 @@ class YahooSettings(BaseSettings):
 class YahooBasketballSettings(YahooSettings):
     budget = 200
     total_players = 8
+    no_position_players = 1
     positions = {
         ('PG', ): 1,
         ('SG', ): 1,
@@ -156,10 +158,10 @@ class DraftKingsSettings(BaseSettings):
         return players
 
 
-
 class DraftKingsBasketballSettings(DraftKingsSettings):
     budget = 50000
     total_players = 8
+    no_position_players = 1
     positions = {
         ('PG', ): 1,
         ('SG', ): 1,
@@ -211,6 +213,7 @@ class FantasyDraftSettings(BaseSettings):
 class FantasyDraftBasketballSettings(FantasyDraftSettings):
     budget = 100000
     total_players = 8
+    no_position_players = 2
     positions = {
         ('PG', 'SG'): 3,
         ('PF', 'SF', 'C'): 3,
@@ -240,3 +243,31 @@ class FantasyDraftHockeySettings(FantasyDraftSettings):
         ('C', 'W', 'D'): 7,
         ('TG', ): 1,
     }
+
+
+# Fanaments
+
+
+class FanamentsSettings(BaseSettings):
+    @classmethod
+    @abstractmethod
+    def load_players_from_CSV(cls, filename):
+        players = []
+        with open(filename, 'r') as csvfile:
+            csvdata = csv.DictReader(csvfile, skipinitialspace=True)
+            for row in csvdata:
+                try:
+                    player = Player(
+                        row["Id"],
+                        row["First Name"],
+                        row["Last Name"],
+                        row["Position"],
+                        row["Team"],
+                        float(row["Salary"]),
+                        float(row["FPPG"]),
+                        True if row["Injury Status"].strip() else False
+                    )
+                except Exception as e:
+                    print row
+                players.append(player)
+        return players
