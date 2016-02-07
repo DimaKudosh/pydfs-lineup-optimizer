@@ -223,6 +223,7 @@ class FantasyDraftBasketballSettings(FantasyDraftSettings):
 class FantasyDraftFootballSettings(FantasyDraftSettings):
     budget = 100000
     total_players = 9
+    no_position_players = 0
     positions = {
         ('QB', ): 1,
         ('RB', ): 2,
@@ -236,6 +237,7 @@ class FantasyDraftFootballSettings(FantasyDraftSettings):
 class FantasyDraftHockeySettings(FantasyDraftSettings):
     budget = 100000
     total_players = 8
+    no_position_players = 0
     positions = {
         ('C', ): 2,
         ('W', ): 2,

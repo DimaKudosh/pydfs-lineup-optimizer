@@ -2,6 +2,7 @@ from pulp import *
 from exceptions import LineupOptimizerException
 from settings import BaseSettings
 from player import Player
+from lineup import Lineup
 
 
 class LineupOptimizer(object):
@@ -21,20 +22,6 @@ class LineupOptimizer(object):
         :rtype: list[Player]
         '''
         return self._lineup
-
-    @property
-    def lineup_fantasy_points_projection(self):
-        '''
-        :rtype: int
-        '''
-        return sum(player.fppg for player in self._lineup)
-
-    @property
-    def lineup_salary_costs(self):
-        '''
-        :rtype: int
-        '''
-        return sum(player.salary for player in self._lineup)
 
     @property
     def budget(self):
@@ -197,54 +184,50 @@ class LineupOptimizer(object):
         except ValueError:
             raise LineupOptimizerException("Player not in line up!")
 
-    def optimize(self, teams=None, positions=None, with_injured=False):
+    def optimize(self, n=5,  teams=None, positions=None, with_injured=False):
         '''
         Select optimal lineup from players list.
         This method uses Mixed Integer Linear Programming method for evaluating best starting lineup.
+        It's return list with n lineup object. This list sorted by fantasy points projection.
+        :type n: int
         :type teams: dict[str, int]
         :type positions: dict[str, int]
         :type with_injured: bool
+        :rtype: List[Lineup]
         '''
-        players = [player for player in self._players if player not in self._removed_players and player not in self._lineup and isinstance(player, Player)]
-        prob = LpProblem("Daily Fantasy Sports", LpMaximize)
-        x = LpVariable.dicts(
-            'table', players,
-            lowBound = 0,
-            upBound = 1,
-            cat = LpInteger
-        )
-        prob += sum([player.fppg * x[player] for player in players])
-        prob += sum([player.salary * x[player] for player in players]) <= self._budget
-        prob += sum([x[player] for player in players]) == self._total_players
-        if not with_injured:
-            prob += sum([x[player] for player in players if not player.is_injured]) == self._total_players
-        for position, num in self._positions.items():
-            prob += sum([x[player] for player in players if player.position in position]) >= num
-        if teams is not None:
-            for key, value in teams.items():
-                prob += sum([x[player] for player in players if player.team == key]) == value
-        if positions is not None:
-            for key, value in positions.items():
-                prob += sum([x[player] for player in players if player.position == key]) == value
-        prob.solve()
-        if prob.status == 1:
-            for player in players:
-                if x[player].value() == 1.0:
-                    self._budget -= player.salary
-                    for key, value in self._positions.items():
-                        if player.position in key and value:
-                            self._positions[key] -= 1
-                    self._lineup.append(player)
-            self._total_players = 0
-            self._no_position_players = 0
-        else:
-            raise LineupOptimizerException("Can't create optimal lineup! Wrong input data!")
-
-    def print_lineup(self):
-        '''
-        Represent current lineup as table with players and output it to console.
-        '''
-        res = '\n'.join([str(index + 1) + ". " + str(player) for index, player in enumerate(self._lineup)])
-        res += '\nFantasy Points ' + str(sum(player.fppg for player in self._lineup))
-        res += '\nSalary ' + str(sum(player.salary for player in self._lineup))
-        print(res)
+        lineups = []
+        current_max_points = self._budget
+        for i in range(n):
+            players = [player for player in self._players if player not in self._removed_players and player not in self._lineup and isinstance(player, Player)]
+            prob = LpProblem("Daily Fantasy Sports", LpMaximize)
+            x = LpVariable.dicts(
+                'table', players,
+                lowBound = 0,
+                upBound = 1,
+                cat = LpInteger
+            )
+            prob += sum([player.fppg * x[player] for player in players])
+            prob += sum([player.salary * x[player] for player in players]) <= current_max_points
+            prob += sum([x[player] for player in players]) == self._total_players
+            if not with_injured:
+                prob += sum([x[player] for player in players if not player.is_injured]) == self._total_players
+            for position, num in self._positions.items():
+                prob += sum([x[player] for player in players if player.position in position]) >= num
+            if teams is not None:
+                for key, value in teams.items():
+                    prob += sum([x[player] for player in players if player.team == key]) == value
+            if positions is not None:
+                for key, value in positions.items():
+                    prob += sum([x[player] for player in players if player.position == key]) == value
+            prob.solve()
+            if prob.status == 1:
+                lineup_players = self._lineup[:]
+                for player in players:
+                    if x[player].value() == 1.0:
+                        lineup_players.append(player)
+                lineup = Lineup(lineup_players)
+                current_max_points = lineup.lineup_salary_costs - 0.01
+                lineups.append(lineup)
+            else:
+                raise LineupOptimizerException("Can't create optimal lineup! Wrong input data!")
+        return lineups
