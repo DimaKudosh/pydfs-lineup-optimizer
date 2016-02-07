@@ -188,7 +188,7 @@ class LineupOptimizer(object):
         '''
         Select optimal lineup from players list.
         This method uses Mixed Integer Linear Programming method for evaluating best starting lineup.
-        It's return list with n lineup object. This list sorted by fantasy points projection.
+        It's return list with n lineup object. This list sorted by
         :type n: int
         :type teams: dict[str, int]
         :type positions: dict[str, int]
@@ -196,7 +196,7 @@ class LineupOptimizer(object):
         :rtype: List[Lineup]
         '''
         lineups = []
-        current_max_points = self._budget
+        current_max_points = 100000
         for i in range(n):
             players = [player for player in self._players if player not in self._removed_players and player not in self._lineup and isinstance(player, Player)]
             prob = LpProblem("Daily Fantasy Sports", LpMaximize)
@@ -207,7 +207,8 @@ class LineupOptimizer(object):
                 cat = LpInteger
             )
             prob += sum([player.fppg * x[player] for player in players])
-            prob += sum([player.salary * x[player] for player in players]) <= current_max_points
+            prob += sum([player.fppg * x[player] for player in players]) <= current_max_points
+            prob += sum([player.salary * x[player] for player in players]) <= self._budget
             prob += sum([x[player] for player in players]) == self._total_players
             if not with_injured:
                 prob += sum([x[player] for player in players if not player.is_injured]) == self._total_players
@@ -226,7 +227,7 @@ class LineupOptimizer(object):
                     if x[player].value() == 1.0:
                         lineup_players.append(player)
                 lineup = Lineup(lineup_players)
-                current_max_points = lineup.lineup_salary_costs - 0.01
+                current_max_points = lineup.fantasy_points_projection - 0.1
                 lineups.append(lineup)
             else:
                 raise LineupOptimizerException("Can't create optimal lineup! Wrong input data!")

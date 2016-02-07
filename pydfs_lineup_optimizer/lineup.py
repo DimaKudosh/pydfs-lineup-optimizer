@@ -22,14 +22,14 @@ class Lineup:
         return self.players
 
     @property
-    def lineup_fantasy_points_projection(self):
+    def fantasy_points_projection(self):
         '''
         :rtype: int
         '''
         return sum(player.fppg for player in self.players)
 
     @property
-    def lineup_salary_costs(self):
+    def salary_costs(self):
         '''
         :rtype: int
         '''

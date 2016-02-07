@@ -3,21 +3,26 @@ import ttk
 import tkMessageBox, tkFileDialog
 from pydfs_lineup_optimizer import *
 from pydfs_lineup_optimizer.constants import *
+from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
+
+
+LINEUPS_NUMBER = 10
 
 
 class App(Tk):
-    def __init__(self,):
+    def __init__(self):
         Tk.__init__(self)
         self.title("pydfs-lineup-optimizer")
         self.minsize(1000, 600)
         self.resizable(True, True)
         self.optimizer = None
+        self.lineups = []
         container = Frame(self)
         container.pack(side="top", fill="both", expand = True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
         self.frames = {}
-        for F in (SelectLineupFrame, SelectOptimizerFrame, LoadPlayersFrame):
+        for F in (SelectLineupFrame, SelectOptimizerFrame, LoadPlayersFrame, PrintLineupFrame):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -27,6 +32,8 @@ class App(Tk):
         frame = self.frames[cont]
         if cont == SelectLineupFrame:
             frame.load_players()
+        elif cont == PrintLineupFrame:
+            frame.load_lineups()
         frame.tkraise()
 
 
@@ -199,8 +206,8 @@ class SelectLineupFrame(Frame):
 
     def generate_lineup(self):
         with_injured = self.with_injured.get()
-        self.controller.optimizer.optimize(with_injured=with_injured)
-        self.load_players()
+        self.controller.lineups = self.controller.optimizer.optimize(LINEUPS_NUMBER, with_injured=with_injured)
+        self.controller.show_frame(PrintLineupFrame)
 
     def reset_lineup(self):
         self.controller.optimizer.reset_lineup()
@@ -233,8 +240,6 @@ class SelectLineupFrame(Frame):
             tkMessageBox.showerror("Error!", e.message)
 
     def load_players(self):
-        self.info.set("Budget: {}$  Projection: {}".format(self.controller.optimizer.budget,
-                                                           self.controller.optimizer.lineup_fantasy_points_projection))
         self.all_players_table.delete(*self.all_players_table.get_children())
         self.removed_players_table.delete(*self.removed_players_table.get_children())
         self.lineup_table.delete(*self.lineup_table.get_children())
@@ -250,6 +255,32 @@ class SelectLineupFrame(Frame):
             self.lineup_table.insert("", index, text='', tags=('injured' if player.is_injured else None, ),
                                      values=(player.full_name, player.team,
                                              player.position, player.fppg, player.salary, player.efficiency))
+
+
+class PrintLineupFrame(Frame):
+    def __init__(self, master, controller):
+        Frame.__init__(self, master)
+        self.controller = controller
+        self.create_widgets()
+        self.place_widgets()
+
+    def create_widgets(self):
+        self.scrollbar = Scrollbar(self)
+        self.text = Text(self, wrap=WORD, yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=self.text.yview)
+        self.return_button = Button(self, text='Return', command=self.return_to_selecting)
+
+    def place_widgets(self):
+        self.return_button.pack()
+        self.scrollbar.pack(side=RIGHT, fill=Y)
+        self.text.pack(fill=BOTH)
+
+    def load_lineups(self):
+        lineups = "\n\n".join(["N {}\n{}".format(index + 1, str(lineup)) for index, lineup in enumerate(self.controller.lineups)])
+        self.text.insert(INSERT, lineups)
+
+    def return_to_selecting(self):
+        self.controller.show_frame(SelectLineupFrame)
 
 
 def run():
