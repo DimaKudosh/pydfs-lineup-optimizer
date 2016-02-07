@@ -28,12 +28,6 @@ class TestLineupOptimizer(unittest.TestCase):
         with self.assertRaises(LineupOptimizerException):
             self.lineup_optimizer.add_player_to_lineup(player)
 
-    def test_adding_player_to_formed_lineup(self):
-        self.lineup_optimizer.reset_lineup()
-        self.lineup_optimizer.optimize()
-        with self.assertRaises(LineupOptimizerException):
-            self.lineup_optimizer.add_player_to_lineup(self._player1)
-
     def test_adding_player_to_formed_position(self):
         self.lineup_optimizer.reset_lineup()
         players = []
@@ -70,15 +64,15 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_lineup_with_players_from_same_team(self):
         self.lineup_optimizer.reset_lineup()
-        self.lineup_optimizer.optimize(teams={'LAL': 4, 'BOS': 4})
-        self.assertEqual(len(filter(lambda x: x.team == 'LAL', self.lineup_optimizer.lineup)), 4)
-        self.assertEqual(len(filter(lambda x: x.team == 'BOS', self.lineup_optimizer.lineup)), 4)
+        lineup = self.lineup_optimizer.optimize(teams={'LAL': 4, 'BOS': 4})[0]
+        self.assertEqual(len(filter(lambda x: x.team == 'LAL', lineup.lineup)), 4)
+        self.assertEqual(len(filter(lambda x: x.team == 'BOS', lineup.lineup)), 4)
 
     def test_lineup_with_players_from_same_positions(self):
         self.lineup_optimizer.reset_lineup()
-        self.lineup_optimizer.optimize(positions={'PG': 3, 'SF': 2})
-        self.assertEqual(len(filter(lambda x: x.position == 'PG', self.lineup_optimizer.lineup)), 3)
-        self.assertEqual(len(filter(lambda x: x.position == 'SF', self.lineup_optimizer.lineup)), 2)
+        lineup = self.lineup_optimizer.optimize(positions={'PG': 3, 'SF': 2})[0]
+        self.assertEqual(len(filter(lambda x: x.position == 'PG', lineup.lineup)), 3)
+        self.assertEqual(len(filter(lambda x: x.position == 'SF', lineup.lineup)), 2)
 
 
 def run_tests():
