@@ -276,6 +276,7 @@ class PrintLineupFrame(Frame):
         self.text.pack(fill=BOTH)
 
     def load_lineups(self):
+        self.text.delete('1.0', END)
         lineups = "\n\n".join(["N {}\n{}".format(index + 1, str(lineup)) for index, lineup in enumerate(self.controller.lineups)])
         self.text.insert(INSERT, lineups)
 

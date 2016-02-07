@@ -197,6 +197,7 @@ class LineupOptimizer(object):
         '''
         lineups = []
         current_max_points = 100000
+        lineup_points = sum(player.fppg for player in self._lineup)
         for i in range(n):
             players = [player for player in self._players if player not in self._removed_players and player not in self._lineup and isinstance(player, Player)]
             prob = LpProblem("Daily Fantasy Sports", LpMaximize)
@@ -227,7 +228,7 @@ class LineupOptimizer(object):
                     if x[player].value() == 1.0:
                         lineup_players.append(player)
                 lineup = Lineup(lineup_players)
-                current_max_points = lineup.fantasy_points_projection - 0.1
+                current_max_points = lineup.fantasy_points_projection - lineup_points - 0.1
                 lineups.append(lineup)
             else:
                 raise LineupOptimizerException("Can't create optimal lineup! Wrong input data!")
