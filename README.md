@@ -22,15 +22,14 @@ Documentation is available at https://github.com/DimaKudosh/pydfs-lineup-optimiz
 
 ## Example
 Here is a example for evaluating optimal lineup for Yahoo fantasy NBA. It's loads players list from "yahoo-NBA.csv" and select 10 best lineup with 4 Oklahoma City Thunder players.
-```
+```python
 optimizer = LineupOptimizer(settings.YahooBasketballSettings)
 optimizer.load_players_from_CSV("yahoo-NBA.csv")
-lineups = optimizer.optimize(n=10, teams={'OKC': 4})
-for lineup in lineups:
+for lineup in optimizer.optimize(n=10, teams={'OKC': 4}):
     print(lineup)
 ```
 Also you can use simple standard GUI:
-```
+```python
 import pydfs_lineup_optimizer 
 pydfs_lineup_optimizer.run_app()
 ```
