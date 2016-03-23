@@ -184,22 +184,29 @@ class LineupOptimizer(object):
         except ValueError:
             raise LineupOptimizerException("Player not in line up!")
 
-    def optimize(self, n=5,  teams=None, positions=None, with_injured=False):
+    def optimize(self, n=None,  teams=None, positions=None, with_injured=False):
         '''
         Select optimal lineup from players list.
         This method uses Mixed Integer Linear Programming method for evaluating best starting lineup.
-        It's return list with n lineup object. This list sorted by
+        It's return generator. If you don't specify n it will return generator with all possible lineups started
+        from highest fppg to lowest fppg.
         :type n: int
         :type teams: dict[str, int]
         :type positions: dict[str, int]
         :type with_injured: bool
         :rtype: List[Lineup]
         '''
-        lineups = []
         current_max_points = 100000
         lineup_points = sum(player.fppg for player in self._lineup)
-        for i in range(n):
-            players = [player for player in self._players if player not in self._removed_players and player not in self._lineup and isinstance(player, Player)]
+        if len(self._lineup) == self._settings.total_players:
+            lineup = Lineup(self._lineup)
+            yield lineup
+            raise StopIteration()
+        counter = 0
+        while n is None or n > counter:
+            players = [player for player in self._players
+                       if player not in self._removed_players and player not in self._lineup
+                       and isinstance(player, Player)]
             prob = LpProblem("Daily Fantasy Sports", LpMaximize)
             x = LpVariable.dicts(
                 'table', players,
@@ -229,7 +236,8 @@ class LineupOptimizer(object):
                         lineup_players.append(player)
                 lineup = Lineup(lineup_players)
                 current_max_points = lineup.fantasy_points_projection - lineup_points - 0.1
-                lineups.append(lineup)
+                yield lineup
+                counter += 1
             else:
-                raise LineupOptimizerException("Can't create optimal lineup! Wrong input data!")
-        return lineups
+                break
+        raise StopIteration()

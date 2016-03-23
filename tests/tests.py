@@ -64,16 +64,31 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_lineup_with_players_from_same_team(self):
         self.lineup_optimizer.reset_lineup()
-        lineup = self.lineup_optimizer.optimize(teams={'LAL': 4, 'BOS': 4})[0]
+        lineup = self.lineup_optimizer.optimize(teams={'LAL': 4, 'BOS': 4}).next()
         self.assertEqual(len(filter(lambda x: x.team == 'LAL', lineup.lineup)), 4)
         self.assertEqual(len(filter(lambda x: x.team == 'BOS', lineup.lineup)), 4)
 
     def test_lineup_with_players_from_same_positions(self):
         self.lineup_optimizer.reset_lineup()
-        lineup = self.lineup_optimizer.optimize(positions={'PG': 3, 'SF': 2})[0]
+        lineup = self.lineup_optimizer.optimize(positions={'PG': 3, 'SF': 2}).next()
         self.assertEqual(len(filter(lambda x: x.position == 'PG', lineup.lineup)), 3)
         self.assertEqual(len(filter(lambda x: x.position == 'SF', lineup.lineup)), 2)
 
+    def test_lineup_with_max_players(self):
+        self.lineup_optimizer.reset_lineup()
+        players = []
+        players.append(Player('', 'P', 'P', 'PG', 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', 'SG', 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', 'SF', 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', 'PF', 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', 'C', 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', 'PG', 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', 'PF', 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', 'PG', 'DEN', 10, 2))
+        for player in players:
+            self.lineup_optimizer.add_player_to_lineup(player)
+        gen = self.lineup_optimizer.optimize()
+        self.assertEqual(len(list(gen)), 1)
 
 def run_tests():
     unittest.main()
