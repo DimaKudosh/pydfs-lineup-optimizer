@@ -6,6 +6,6 @@ install:
   - pip install -r requirements.txt
   - pip install coveralls
 script:
-  - python tests/tests.py
+  - python tests/test_optimizer.py
   - coverage run --source=pydfs-lineup-optimizer setup.py test
 after_success: coveralls
