@@ -2,10 +2,8 @@ language: python
 python:
   - "2.7"
 install:
-  - python setup.py install
   - pip install -r requirements.txt
   - pip install coveralls
 script:
-  - python tests/test_optimizer.py
   - coverage run --source=pydfs-lineup-optimizer setup.py test
 after_success: coveralls
