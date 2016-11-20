@@ -33,7 +33,7 @@ class YahooSettings(BaseSettings):
                     row["Id"],
                     row["First Name"],
                     row["Last Name"],
-                    row["Position"],
+                    row["Position"].split('/'),
                     row["Team"],
                     float(row["Salary"]),
                     float(row["FPPG"]),
@@ -97,7 +97,7 @@ class FanDuelSettings(BaseSettings):
                     row["Id"],
                     row["First Name"],
                     row["Last Name"],
-                    row["Position"],
+                    row["Position"].split('/'),
                     row["Team"],
                     float(row["Salary"]),
                     float(row["FPPG"]),
@@ -149,7 +149,7 @@ class DraftKingsSettings(BaseSettings):
                     '',
                     name[0],
                     name[1],
-                    row["Position"],
+                    row["Position"].split('/'),
                     '',
                     float(row["Salary"]),
                     float(row["AvgPointsPerGame"])
@@ -201,7 +201,7 @@ class FantasyDraftSettings(BaseSettings):
                     "",
                     name[0],
                     name[1],
-                    row["Position"],
+                    row["Position"].split('/'),
                     row["Team"],
                     float(row["Salary"].replace('$', '').replace(',', '')),
                     float(row["Avg FPPG"])
@@ -245,31 +245,3 @@ class FantasyDraftHockeySettings(FantasyDraftSettings):
         ('C', 'W', 'D'): 7,
         ('TG', ): 1,
     }
-
-
-# Fanaments
-
-
-class FanamentsSettings(BaseSettings):
-    @classmethod
-    @abstractmethod
-    def load_players_from_CSV(cls, filename):
-        players = []
-        with open(filename, 'r') as csvfile:
-            csvdata = csv.DictReader(csvfile, skipinitialspace=True)
-            for row in csvdata:
-                try:
-                    player = Player(
-                        row["Id"],
-                        row["First Name"],
-                        row["Last Name"],
-                        row["Position"],
-                        row["Team"],
-                        float(row["Salary"]),
-                        float(row["FPPG"]),
-                        True if row["Injury Status"].strip() else False
-                    )
-                except Exception as e:
-                    print row
-                players.append(player)
-        return players

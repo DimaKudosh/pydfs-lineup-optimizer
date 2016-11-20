@@ -24,7 +24,7 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_adding_player_with_salary_bigger_than_budget(self):
         self.lineup_optimizer.reset_lineup()
-        player = Player('', '', '', 'PG', 'DEN', 100000, 2)
+        player = Player('', '', '', ['PG'], 'DEN', 100000, 2)
         with self.assertRaises(LineupOptimizerException):
             self.lineup_optimizer.add_player_to_lineup(player)
 
@@ -32,7 +32,7 @@ class TestLineupOptimizer(unittest.TestCase):
         self.lineup_optimizer.reset_lineup()
         players = []
         for i in 'abcd':
-            players.append(Player(i, i, i, 'PG', 'DEN', 10, 2))
+            players.append(Player(i, i, i, ['PG'], 'DEN', 10, 2))
         for i in range(3):
             self.lineup_optimizer.add_player_to_lineup(players[i])
         with self.assertRaises(LineupOptimizerException):
@@ -40,9 +40,9 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_remove_player_from_lineup(self):
         self.lineup_optimizer.reset_lineup()
-        player1 = Player('', 'P', 'P', 'PG', 'DEN', 10, 2)
-        player2 = Player('', 'C', 'C', 'PG', 'DEN', 10, 2)
-        player3 = Player('', 'P', 'P', 'PG', 'DEN', 10, 2)
+        player1 = Player('', 'P', 'P', ['PG'], 'DEN', 10, 2)
+        player2 = Player('', 'C', 'C', ['PG'], 'DEN', 10, 2)
+        player3 = Player('', 'P', 'P', ['PG'], 'DEN', 10, 2)
         self.lineup_optimizer.add_player_to_lineup(player1)
         self.lineup_optimizer.remove_player_from_lineup(player1)
         self.assertEqual(len(self.lineup_optimizer._lineup), 0)
@@ -71,20 +71,20 @@ class TestLineupOptimizer(unittest.TestCase):
     def test_lineup_with_players_from_same_positions(self):
         self.lineup_optimizer.reset_lineup()
         lineup = self.lineup_optimizer.optimize(positions={'PG': 3, 'SF': 2}).next()
-        self.assertEqual(len(filter(lambda x: x.position == 'PG', lineup.lineup)), 3)
-        self.assertEqual(len(filter(lambda x: x.position == 'SF', lineup.lineup)), 2)
+        self.assertEqual(len(filter(lambda x: x.positions[0] == 'PG', lineup.lineup)), 3)
+        self.assertEqual(len(filter(lambda x: x.positions[0] == 'SF', lineup.lineup)), 2)
 
     def test_lineup_with_max_players(self):
         self.lineup_optimizer.reset_lineup()
         players = []
-        players.append(Player('', 'P', 'P', 'PG', 'DEN', 10, 2))
-        players.append(Player('', 'P', 'P', 'SG', 'DEN', 10, 2))
-        players.append(Player('', 'P', 'P', 'SF', 'DEN', 10, 2))
-        players.append(Player('', 'P', 'P', 'PF', 'DEN', 10, 2))
-        players.append(Player('', 'P', 'P', 'C', 'DEN', 10, 2))
-        players.append(Player('', 'P', 'P', 'PG', 'DEN', 10, 2))
-        players.append(Player('', 'P', 'P', 'PF', 'DEN', 10, 2))
-        players.append(Player('', 'P', 'P', 'PG', 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', ['PG'], 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', ['SG'], 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', ['SF'], 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', ['PF'], 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', ['C'], 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', ['PG'], 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', ['PF'], 'DEN', 10, 2))
+        players.append(Player('', 'P', 'P', ['PG'], 'DEN', 10, 2))
         for player in players:
             self.lineup_optimizer.add_player_to_lineup(player)
         gen = self.lineup_optimizer.optimize()

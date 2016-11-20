@@ -115,19 +115,19 @@ class LineupOptimizer(object):
                 def decrement_player_from_all_positions():
                     is_added = False
                     for key, value in self._positions.items():
-                        if player.position in key and value >= 1:
+                        if player.positions[0] in key and value >= 1:
                             self._positions[key] -= 1
                             is_added = True
                     return is_added
 
                 try:
-                    if self._positions[(player.position, )] > 0:
+                    if self._positions[(player.positions[0], )] > 0:
                         is_added = decrement_player_from_all_positions()
                     else:
                         for key, value in self._positions.items():
-                            if player.position in key and len(key) > 1:
+                            if player.positions[0] in key and len(key) > 1:
                                 for pos in key:
-                                    if pos != player.position:
+                                    if pos != player.positions[0]:
                                         try:
                                             value -= self._positions[(pos, )]
                                         except KeyError:
@@ -142,7 +142,7 @@ class LineupOptimizer(object):
                 if is_added:
                     self._add_to_lineup(player)
                 else:
-                    raise LineupOptimizerException("You're already select all {}'s".format(player.position))
+                    raise LineupOptimizerException("You're already select all {}'s".format(player.positions))
             except KeyError:
                 raise LineupOptimizerException("This player has wrong position!")
         except ValueError:
@@ -156,25 +156,25 @@ class LineupOptimizer(object):
         if not isinstance(player, Player):
             raise LineupOptimizerException("This function accept only Player objects!")
         try:
-            occupied_positions = {key: len(filter(lambda player: player.position in key, self._lineup))
+            occupied_positions = {key: len(filter(lambda player: player.positions[0] in key, self._lineup))
                                   for key in self._positions.keys()}
             positions_difference = {key: occupied_positions[key] - self._settings.positions[key]
                                     for key in occupied_positions.keys()}
             try:
-                if positions_difference[(player.position, )] == 0:
+                if positions_difference[(player.positions[0], )] == 0:
                     for key in self._positions.keys():
-                        if player.position in key:
+                        if player.positions[0] in key:
                             self._positions[key] += 1
                 else:
                     is_no_position_player = True
                     for key, value in positions_difference.items():
-                        if player.position in key and value < 0:
+                        if player.positions[0] in key and value < 0:
                             is_no_position_player = False
                     if is_no_position_player:
                         self._no_position_players += 1
                     else:
                         for key in self._positions.keys():
-                            if player.position in key and key != (player.position, ):
+                            if player.positions[0] in key and key != (player.positions[0], ):
                                 self._positions[key] += 1
                 self._lineup.remove(player)
                 self._budget += player.salary
@@ -210,9 +210,9 @@ class LineupOptimizer(object):
             prob = LpProblem("Daily Fantasy Sports", LpMaximize)
             x = LpVariable.dicts(
                 'table', players,
-                lowBound = 0,
-                upBound = 1,
-                cat = LpInteger
+                lowBound=0,
+                upBound=1,
+                cat=LpInteger
             )
             prob += sum([player.fppg * x[player] for player in players])
             prob += sum([player.fppg * x[player] for player in players]) <= current_max_points
@@ -221,13 +221,14 @@ class LineupOptimizer(object):
             if not with_injured:
                 prob += sum([x[player] for player in players if not player.is_injured]) == self._total_players
             for position, num in self._positions.items():
-                prob += sum([x[player] for player in players if player.position in position]) >= num
+                prob += sum([x[player] for player in players if
+                             any([player_position in position for player_position in player.positions])]) >= num
             if teams is not None:
                 for key, value in teams.items():
                     prob += sum([x[player] for player in players if player.team == key]) == value
             if positions is not None:
                 for key, value in positions.items():
-                    prob += sum([x[player] for player in players if player.position == key]) == value
+                    prob += sum([x[player] for player in players if key in player.positions]) == value
             prob.solve()
             if prob.status == 1:
                 lineup_players = self._lineup[:]
