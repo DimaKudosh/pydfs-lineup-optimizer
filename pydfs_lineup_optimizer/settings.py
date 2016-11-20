@@ -148,7 +148,7 @@ class DraftKingsSettings(BaseSettings):
                 player = Player(
                     '',
                     name[0],
-                    name[1],
+                    name[1] if len(name) > 1 else '',
                     row["Position"].split('/'),
                     '',
                     float(row["Salary"]),
@@ -200,7 +200,7 @@ class FantasyDraftSettings(BaseSettings):
                 player = Player(
                     "",
                     name[0],
-                    name[1],
+                    name[1] if len(name) > 1 else '',
                     row["Position"].split('/'),
                     row["Team"],
                     float(row["Salary"].replace('$', '').replace(',', '')),
