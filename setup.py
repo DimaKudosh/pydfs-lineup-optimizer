@@ -16,7 +16,7 @@ class PyTest(TestCommand):
 
 setup(
     name = 'pydfs-lineup-optimizer',
-    version = '0.4.1',
+    version = '0.4.2',
     packages = ['tests', 'pydfs_lineup_optimizer', 'pydfs_lineup_optimizer.app'],
     url = 'https://github.com/DimaKudosh/pydfs-lineup-optimizer',
     license = '',
