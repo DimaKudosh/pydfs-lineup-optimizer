@@ -12,9 +12,9 @@ class Player(object):
     def __str__(self):
         return "{}{}{}{}{}".format(
             "{:<30}".format(self.full_name),
-            "{:<4}".format(self.positions),
+            "{:<5}".format('/'.join(self.positions)),
             "{:<15}".format(self.team),
-            "{:<6}".format(str(self.fppg)),
+            "{:<8}".format(str(round(self.fppg, 3))),
             "{:<10}".format(str(self.salary) + '$')
         )
 
