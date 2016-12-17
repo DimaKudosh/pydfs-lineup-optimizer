@@ -128,7 +128,7 @@ class FanDuelFootballSettings(FanDuelSettings):
         ('RB', ): 2,
         ('WR', ): 3,
         ('TE', ): 1,
-        ('DF', ): 1,
+        ('D', ): 1,
         ('K', ): 1
     }
 
