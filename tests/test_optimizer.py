@@ -70,9 +70,8 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_lineup_with_players_from_same_positions(self):
         self.lineup_optimizer.reset_lineup()
-        lineup = self.lineup_optimizer.optimize(positions={'PG': 3, 'SF': 2}).next()
-        self.assertEqual(len(filter(lambda x: x.positions[0] == 'PG', lineup.lineup)), 3)
-        self.assertEqual(len(filter(lambda x: x.positions[0] == 'SF', lineup.lineup)), 2)
+        lineup = self.lineup_optimizer.optimize(positions={'C': 1}).next()
+        self.assertEqual(len(filter(lambda x: x.positions[0] == 'C', lineup.lineup)), 2)
 
     def test_lineup_with_max_players(self):
         self.lineup_optimizer.reset_lineup()

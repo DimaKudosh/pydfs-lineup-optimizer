@@ -4,7 +4,7 @@ class Player(object):
         self.first_name = first_name
         self.last_name = last_name
         self.positions = positions
-        self.team = team
+        self.team = team.upper()
         self.salary = salary
         self.fppg = fppg
         self.is_injured = is_injured

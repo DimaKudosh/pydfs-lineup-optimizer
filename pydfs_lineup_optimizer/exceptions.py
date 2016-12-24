@@ -4,3 +4,11 @@ class LineupOptimizerException(Exception):
 
     def __str__(self):
         return self.message
+
+
+class LineupOptimizerIncorrectTeamName(Exception):
+    pass
+
+
+class LineupOptimizerIncorrectPositionName(Exception):
+    pass

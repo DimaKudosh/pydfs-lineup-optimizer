@@ -150,7 +150,7 @@ class DraftKingsSettings(BaseSettings):
                     name[0],
                     name[1] if len(name) > 1 else '',
                     row["Position"].split('/'),
-                    '',
+                    row["teamAbbrev"],
                     float(row["Salary"]),
                     float(row["AvgPointsPerGame"])
                 )

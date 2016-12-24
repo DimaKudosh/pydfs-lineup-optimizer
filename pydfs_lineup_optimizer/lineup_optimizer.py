@@ -1,5 +1,6 @@
+from itertools import chain
 from pulp import *
-from exceptions import LineupOptimizerException
+from exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, LineupOptimizerIncorrectPositionName
 from settings import BaseSettings
 from player import Player
 from lineup import Lineup
@@ -13,6 +14,8 @@ class LineupOptimizer(object):
         '''
         self._players = []
         self._lineup = []
+        self._available_positions = []
+        self._available_teams = []
         self._set_settings(settings)
         self._removed_players = []
 
@@ -55,6 +58,7 @@ class LineupOptimizer(object):
         self._total_players = self._settings.total_players
         self._positions = self._settings.positions.copy()
         self._no_position_players = self._settings.no_position_players
+        self._available_positions = set(chain(*[pos for pos in self._settings.positions]))
 
     def reset_lineup(self):
         '''
@@ -70,6 +74,7 @@ class LineupOptimizer(object):
         :type filename: str
         '''
         self._players = self._settings.load_players_from_CSV(filename)
+        self._available_teams = set([p.team for p in self._players])
 
     def remove_player(self, player):
         '''
@@ -196,6 +201,36 @@ class LineupOptimizer(object):
         :type with_injured: bool
         :rtype: List[Lineup]
         '''
+        # check teams parameter
+        if teams:
+            if not isinstance(teams, dict) or not all([isinstance(team, str) for team in teams.keys()]) or \
+                    not all([isinstance(num_of_players, int) for num_of_players in teams.values()]):
+                raise LineupOptimizerException("Teams parameter must be dict where key is team name and value is number"
+                                               " of players from specified team.")
+            teams = {team.upper(): num_of_players for team, num_of_players in teams.items()}
+            _teams = teams.keys()
+            for team in _teams:
+                if team not in self._available_teams:
+                    raise LineupOptimizerIncorrectTeamName("{} is incorrect team name.".format(team))
+        # check positions parameter
+        if positions:
+            if not isinstance(positions, dict) or \
+                    not all([isinstance(position, str) for position in positions.keys()]) or \
+                    not all([isinstance(num_of_players, int) for num_of_players in positions.values()]):
+                raise LineupOptimizerException("Positions parameter must be dict where key is position name and value "
+                                               "is number of players from specified position.")
+            if sum(positions.values()) > self._no_position_players:
+                raise LineupOptimizerException("You can specify only {} utils players.".
+                                               format(self._no_position_players))
+            positions = {position.upper(): num_of_players for position, num_of_players in positions.items()}
+            _positions = positions.keys()
+            for pos in _positions:
+                if pos not in self._available_positions:
+                    raise LineupOptimizerIncorrectPositionName("{} is incorrect position name.".format(pos))
+        else:
+            positions = {}
+
+        # optimize
         current_max_points = 100000
         lineup_points = sum(player.fppg for player in self._lineup)
         if len(self._lineup) == self._settings.total_players:
@@ -221,14 +256,15 @@ class LineupOptimizer(object):
             if not with_injured:
                 prob += sum([x[player] for player in players if not player.is_injured]) == self._total_players
             for position, num in self._positions.items():
+                addition = 0
+                if len(position) == 1:
+                    addition = positions.get(position[0], 0)
                 prob += sum([x[player] for player in players if
-                             any([player_position in position for player_position in player.positions])]) >= num
+                             any([player_position in position for player_position in player.positions])]) >= num + \
+                                                                                                             addition
             if teams is not None:
                 for key, value in teams.items():
                     prob += sum([x[player] for player in players if player.team == key]) == value
-            if positions is not None:
-                for key, value in positions.items():
-                    prob += sum([x[player] for player in players if key in player.positions]) == value
             prob.solve()
             if prob.status == 1:
                 lineup_players = self._lineup[:]
@@ -240,5 +276,5 @@ class LineupOptimizer(object):
                 yield lineup
                 counter += 1
             else:
-                break
+                raise LineupOptimizerException("Can't generate lineups")
         raise StopIteration()
