@@ -4,6 +4,7 @@ from exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamNam
 from settings import BaseSettings
 from player import Player
 from lineup import Lineup
+from utils import ratio
 
 
 class LineupOptimizer(object):
@@ -18,6 +19,7 @@ class LineupOptimizer(object):
         self._available_teams = []
         self._set_settings(settings)
         self._removed_players = []
+        self._search_threshold = 0.8
 
     @property
     def lineup(self):
@@ -97,6 +99,27 @@ class LineupOptimizer(object):
         self._lineup.append(player)
         self._total_players -= 1
         self._budget -= player.salary
+
+    def find_players(self, name):
+        '''
+        Return list of players with similar name.
+        :param name: str
+        :return: List[Player]
+        '''
+        players = self.players
+        possibilities = [(player, ratio(name, player.full_name)) for player in players]
+        possibilities = filter(lambda pos: pos[1] >= self._search_threshold, possibilities)
+        players = sorted(possibilities, key=lambda pos: -pos[1])
+        return map(lambda p: p[0], players)
+
+    def get_player_by_name(self, name):
+        '''
+        Return closest player with similar name or None.
+        :param name: str
+        :return: Player
+        '''
+        players = self.find_players(name)
+        return players[0] if players else None
 
     def add_player_to_lineup(self, player):
         '''

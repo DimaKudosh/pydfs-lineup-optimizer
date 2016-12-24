@@ -3,6 +3,7 @@ from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 from pydfs_lineup_optimizer.player import Player
 from pydfs_lineup_optimizer import settings
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
+from pydfs_lineup_optimizer.utils import ratio
 
 
 class TestLineupOptimizer(unittest.TestCase):
@@ -88,6 +89,14 @@ class TestLineupOptimizer(unittest.TestCase):
             self.lineup_optimizer.add_player_to_lineup(player)
         gen = self.lineup_optimizer.optimize()
         self.assertEqual(len(list(gen)), 1)
+
+    def test_ratio(self):
+        threshold = 0.8
+        self.assertTrue(ratio('Blake Griffin', 'Blake Griffin') >= threshold)
+        self.assertTrue(ratio('griffin', 'Blake Griffin') >= threshold)
+        self.assertTrue(ratio('grifin', 'Blake Griffin') >= threshold)
+        self.assertFalse(ratio('Hood', 'Blake Griffin') >= threshold)
+
 
 def run_tests():
     unittest.main()
