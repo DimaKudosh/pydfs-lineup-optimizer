@@ -2,8 +2,12 @@
 Store classes with settings for specified daily fantasy sports site and kind of sport.
 """
 from abc import ABCMeta, abstractmethod
+from collections import namedtuple
 import csv
 from player import Player
+
+
+LineupPosition = namedtuple('LineupPosition', ['name', 'positions'])
 
 
 class BaseSettings(object):
@@ -162,15 +166,16 @@ class DraftKingsBasketballSettings(DraftKingsSettings):
     budget = 50000
     total_players = 8
     no_position_players = 1
-    positions = {
-        ('PG', ): 1,
-        ('SG', ): 1,
-        ('SF', ): 1,
-        ('PF',): 1,
-        ('C', ): 1,
-        ('PG', 'SG'): 3,
-        ('SF', 'PF'): 3
-    }
+    positions = [
+        LineupPosition('PG', ('PG', )),
+        LineupPosition('SG', ('SG', )),
+        LineupPosition('SF', ('SF', )),
+        LineupPosition('PF', ('PF', )),
+        LineupPosition('C', ('C', )),
+        LineupPosition('G', ('PG', 'SG')),
+        LineupPosition('F', ('SF', 'PF')),
+        LineupPosition('UTIL', ('PG', 'SG', 'PF', 'SF', 'C'))
+    ]
 
 
 class DraftKingsFootballSettings(DraftKingsSettings):

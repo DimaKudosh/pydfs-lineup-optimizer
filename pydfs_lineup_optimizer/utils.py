@@ -1,6 +1,10 @@
 from difflib import SequenceMatcher
 
 
+def list_intersection(first_list, second_list):
+    return set(first_list).intersection(set(second_list))
+
+
 def ratio(search_string, possible_match):
     search_string = search_string.lower()
     possible_match = possible_match.lower()
