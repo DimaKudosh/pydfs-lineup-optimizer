@@ -1,0 +1,328 @@
+{
+  "players": [
+    {
+      "id": "",
+      "first_name": "Russel",
+      "last_name": "Westbrook",
+      "positions": ["PG"],
+      "team": "OKC",
+      "salary": 8000,
+      "fppg": 58
+    },
+    {
+      "id": "",
+      "first_name": "Steven",
+      "last_name": "Adams",
+      "positions": ["C"],
+      "team": "OKC",
+      "salary": 4000,
+      "fppg": 20
+    },
+    {
+      "id": "",
+      "first_name": "Victor",
+      "last_name": "Aladipo",
+      "positions": ["PG", "SG"],
+      "team": "OKC",
+      "salary": 5600,
+      "fppg": 32
+    },
+    {
+      "id": "",
+      "first_name": "Giannis",
+      "last_name": "Antetokounmpo",
+      "positions": ["PG", "SG", "SF"],
+      "team": "Bucks",
+      "salary": 9000,
+      "fppg": 50
+    },
+    {
+      "id": "",
+      "first_name": "Andrew",
+      "last_name": "Wiggins",
+      "positions": ["SG", "SF"],
+      "team": "Wolws",
+      "salary": 6800,
+      "fppg": 37
+    },
+    {
+      "id": "",
+      "first_name": "Ricky",
+      "last_name": "Rubio",
+      "positions": ["PG"],
+      "team": "Wolws",
+      "salary": 6200,
+      "fppg": 34
+    },
+    {
+      "id": "",
+      "first_name": "Karl-Anthony",
+      "last_name": "Towns",
+      "positions": ["PF", "C"],
+      "team": "Wolws",
+      "salary": 7300,
+      "fppg": 48
+    },
+    {
+      "id": "",
+      "first_name": "Jimmy",
+      "last_name": "Batler",
+      "positions": ["SG", "SF"],
+      "team": "Bulls",
+      "salary": 6900,
+      "fppg": 38
+    },
+    {
+      "id": "",
+      "first_name": "Andrew",
+      "last_name": "Drummond",
+      "positions": ["C"],
+      "team": "Pistons",
+      "salary": 6400,
+      "fppg": 38.5
+    },
+    {
+      "id": "",
+      "first_name": "Reggie",
+      "last_name": "Jackson",
+      "positions": ["PG", "SG"],
+      "team": "Pistons",
+      "salary": 6100,
+      "fppg": 36
+    },
+    {
+      "id": "",
+      "first_name": "Steph",
+      "last_name": "Curry",
+      "positions": ["PG"],
+      "team": "GSW",
+      "salary": 7800,
+      "fppg": 42
+    },
+    {
+      "id": "",
+      "first_name": "Klay",
+      "last_name": "Thompson",
+      "positions": ["SG"],
+      "team": "GSW",
+      "salary": 6300,
+      "fppg": 33
+    },
+    {
+      "id": "",
+      "first_name": "Kevin",
+      "last_name": "Durant",
+      "positions": ["SF", "PF"],
+      "team": "GSW",
+      "salary": 7800,
+      "fppg": 48
+    },
+    {
+      "id": "",
+      "first_name": "Draymond",
+      "last_name": "Green",
+      "positions": ["PF", "C"],
+      "team": "GSW",
+      "salary": 7000,
+      "fppg": 41
+    },
+    {
+      "id": "",
+      "first_name": "Brook",
+      "last_name": "Lopez",
+      "positions": ["PF", "C"],
+      "team": "Nets",
+      "salary": 6500,
+      "fppg": 40.5
+    },
+    {
+      "id": "",
+      "first_name": "Trevor",
+      "last_name": "Booker",
+      "positions": ["PF"],
+      "team": "Nets",
+      "salary": 5600,
+      "fppg": 2300
+    },
+    {
+      "id": "",
+      "first_name": "John",
+      "last_name": "Wall",
+      "positions": ["PG"],
+      "team": "Wizards",
+      "salary": 7500,
+      "fppg": 46.5
+    },
+    {
+      "id": "",
+      "first_name": "Bradly",
+      "last_name": "Beal",
+      "positions": ["SG"],
+      "team": "Wizards",
+      "salary": 6600,
+      "fppg": 35
+    },
+    {
+      "id": "",
+      "first_name": "Otto",
+      "last_name": "Porter",
+      "positions": ["SG", "SF"],
+      "team": "Wizards",
+      "salary": 5700,
+      "fppg": 26
+    },
+    {
+      "id": "",
+      "first_name": "Marcin",
+      "last_name": "Gortat",
+      "positions": ["C"],
+      "team": "Wizards",
+      "salary": 5900,
+      "fppg": 33
+    },
+    {
+      "id": "",
+      "first_name": "LeBron",
+      "last_name": "James",
+      "positions": ["SF", "PF"],
+      "team": "Cavs",
+      "salary": 7800,
+      "fppg": 49.5
+    },
+    {
+      "id": "",
+      "first_name": "Kevin",
+      "last_name": "Love",
+      "positions": ["PF", "C"],
+      "team": "Cavs",
+      "salary": 6600,
+      "fppg": 36
+    },
+    {
+      "id": "",
+      "first_name": "Kyrie",
+      "last_name": "Irving",
+      "positions": ["PG"],
+      "team": "Cavs",
+      "salary": 6800,
+      "fppg": 31
+    },
+    {
+      "id": "",
+      "first_name": "Tristan",
+      "last_name": "Thompson",
+      "positions": ["PF", "C"],
+      "team": "Cavs",
+      "salary": 5100,
+      "fppg": 21
+    },
+    {
+      "id": "",
+      "first_name": "JR",
+      "last_name": "Smith",
+      "positions": ["SG"],
+      "team": "Cavs",
+      "salary": 5300,
+      "fppg": 23
+    },
+    {
+      "id": "",
+      "first_name": "Andrew",
+      "last_name": "Bogut",
+      "positions": ["C"],
+      "team": "Cavs",
+      "salary": 4900,
+      "fppg": 18
+    },
+    {
+      "id": "",
+      "first_name": "Paul",
+      "last_name": "Millsap",
+      "positions": ["PF"],
+      "team": "Hawks",
+      "salary": 7000,
+      "fppg": 36
+    },
+    {
+      "id": "",
+      "first_name": "Tim",
+      "last_name": "Hardway Jr.",
+      "positions": ["SG", "SF"],
+      "team": "Hawks",
+      "salary": 5200,
+      "fppg": 24
+    },
+    {
+      "id": "",
+      "first_name": "Denis",
+      "last_name": "Schrouder",
+      "positions": ["PG"],
+      "team": "Hawks",
+      "salary": 6400,
+      "fppg": 28
+    },
+    {
+      "id": "",
+      "first_name": "Chris",
+      "last_name": "Paul",
+      "positions": ["PG"],
+      "team": "LAC",
+      "salary": 7300,
+      "fppg": 45
+    },
+    {
+      "id": "",
+      "first_name": "Blake",
+      "last_name": "Griffin",
+      "positions": ["PF", "C"],
+      "team": "LAC",
+      "salary": 6900,
+      "fppg": 41
+    },
+    {
+      "id": "",
+      "first_name": "DeAndre",
+      "last_name": "Jordan",
+      "positions": ["C"],
+      "team": "LAC",
+      "salary": 6600,
+      "fppg": 34.5
+    },
+    {
+      "id": "",
+      "first_name": "Wesley",
+      "last_name": "Johnson",
+      "positions": ["SF"],
+      "team": "LAC",
+      "salary": 4700,
+      "fppg": 17
+    },
+    {
+      "id": "",
+      "first_name": "Raymond",
+      "last_name": "Felton",
+      "positions": ["PG", "SG"],
+      "team": "LAC",
+      "salary": 4200,
+      "fppg": 13
+    },
+    {
+      "id": "",
+      "first_name": "Austin",
+      "last_name": "Rivers",
+      "positions": ["PG", "SG"],
+      "team": "LAC",
+      "salary": 4600,
+      "fppg": 18
+    },
+    {
+      "id": "",
+      "first_name": "Mareese",
+      "last_name": "Speights",
+      "positions": ["PF", "C"],
+      "team": "LAC",
+      "salary": 4600,
+      "fppg": 16.5
+    }
+  ]
+}
