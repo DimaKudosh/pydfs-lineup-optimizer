@@ -13,9 +13,11 @@ LineupPosition = namedtuple('LineupPosition', ['name', 'positions'])
 class BaseSettings(object):
     __metaclass__ = ABCMeta
     budget = 0
-    total_players = 0
-    no_position_players = 0
-    positions = {}
+    positions = []
+
+    @property
+    def total_players(self):
+        return len(self.positions)
 
     @abstractmethod
     def load_players_from_CSV(self, filename):
@@ -49,41 +51,45 @@ class YahooSettings(BaseSettings):
 
 class YahooBasketballSettings(YahooSettings):
     budget = 200
-    total_players = 8
-    no_position_players = 1
-    positions = {
-        ('PG', ): 1,
-        ('SG', ): 1,
-        ('SF', ): 1,
-        ('PF', ): 1,
-        ('C', ): 1,
-        ('PG', 'SG'): 3,
-        ('PF', 'SF'): 3,
-    }
+    positions = [
+        LineupPosition('PG', ('PG', )),
+        LineupPosition('SG', ('SG', )),
+        LineupPosition('SF', ('SF', )),
+        LineupPosition('PF', ('PF', )),
+        LineupPosition('C', ('C', )),
+        LineupPosition('G', ('PG', 'SG')),
+        LineupPosition('F', ('SF', 'PF')),
+        LineupPosition('UTIL', ('PG', 'SG', 'SF', 'PF', 'C'))
+    ]
 
 
 class YahooFootballSettings(YahooSettings):
     budget = 200
-    total_players = 9
-    positions = {
-        ('QB', ): 1,
-        ('WR', ): 3,
-        ('RB', ): 2,
-        ('TE', ): 1,
-        ('WR', 'RB', 'TE'): 7,
-        ('DEF', ): 1,
-    }
+    positions = [
+        LineupPosition('QB', ('QB', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('TE', ('TE', )),
+        LineupPosition('FLEX', ('WR', 'RB', 'TE')),
+        LineupPosition('DEF', ('DEF', ))
+    ]
 
 
 class YahooHockeySettings(YahooSettings):
     budget = 200
-    total_players = 9
-    positions = {
-        ('G', ): 2,
-        ('C', ): 2,
-        ('LW', 'RW'): 3,
-        ('D', ): 2,
-    }
+    positions = [
+        LineupPosition('G', ('G', )),
+        LineupPosition('G', ('G', )),
+        LineupPosition('C', ('C', )),
+        LineupPosition('C', ('C', )),
+        LineupPosition('W', ('LW', 'RW')),
+        LineupPosition('W', ('LW', 'RW')),
+        LineupPosition('W', ('LW', 'RW')),
+        LineupPosition('D', ('D', ))
+    ]
 
 
 # FanDuel
@@ -114,27 +120,32 @@ class FanDuelSettings(BaseSettings):
 
 class FanDuelBasketballSettings(FanDuelSettings):
     budget = 60000
-    total_players = 9
-    positions = {
-        ('PG', ): 2,
-        ('SG', ): 2,
-        ('SF', ): 2,
-        ('PF', ): 2,
-        ('C', ): 1
-    }
+    positions = [
+        LineupPosition('PG', ('PG', )),
+        LineupPosition('PG', ('PG', )),
+        LineupPosition('SG', ('SG', )),
+        LineupPosition('SG', ('SG', )),
+        LineupPosition('SF', ('SF', )),
+        LineupPosition('SF', ('SF', )),
+        LineupPosition('PF', ('PF', )),
+        LineupPosition('PF', ('PF', )),
+        LineupPosition('C', ('C', )),
+    ]
 
 
 class FanDuelFootballSettings(FanDuelSettings):
     budget = 60000
-    total_players = 9
-    positions = {
-        ('QB', ): 1,
-        ('RB', ): 2,
-        ('WR', ): 3,
-        ('TE', ): 1,
-        ('D', ): 1,
-        ('K', ): 1
-    }
+    positions = [
+        LineupPosition('QB', ('QB', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('TE', ('TE', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('K', ('K', )),
+    ]
 
 
 # DraftKings
@@ -180,15 +191,17 @@ class DraftKingsBasketballSettings(DraftKingsSettings):
 
 class DraftKingsFootballSettings(DraftKingsSettings):
     budget = 50000
-    total_players = 9
-    positions = {
-        ('QB', ): 1,
-        ('RB', ): 2,
-        ('WR', ): 3,
-        ('TE', ): 1,
-        ('RB', 'WR', 'TE'): 7,
-        ('DST', ): 1
-    }
+    positions = [
+        LineupPosition('QB', ('QB',)),
+        LineupPosition('WR1', ('WR',)),
+        LineupPosition('WR2', ('WR',)),
+        LineupPosition('WR3', ('WR',)),
+        LineupPosition('RB1', ('RB',)),
+        LineupPosition('RB2', ('RB',)),
+        LineupPosition('TE', ('TE',)),
+        LineupPosition('FLEX', ('WR', 'RB', 'TE')),
+        LineupPosition('DST', ('DST',))
+    ]
 
 # FantasyDraft
 
@@ -217,36 +230,42 @@ class FantasyDraftSettings(BaseSettings):
 
 class FantasyDraftBasketballSettings(FantasyDraftSettings):
     budget = 100000
-    total_players = 8
-    no_position_players = 2
-    positions = {
-        ('PG', 'SG'): 3,
-        ('PF', 'SF', 'C'): 3,
-    }
+    positions = [
+        LineupPosition('G', ('PG', 'SG')),
+        LineupPosition('G', ('PG', 'SG')),
+        LineupPosition('G', ('PG', 'SG')),
+        LineupPosition('F/C', ('SF', 'PF', 'C')),
+        LineupPosition('F/C', ('SF', 'PF', 'C')),
+        LineupPosition('F/C', ('SF', 'PF', 'C')),
+        LineupPosition('UTIL', ('PG', 'SG', 'SF', 'PF', 'C')),
+        LineupPosition('UTIL', ('PG', 'SG', 'SF', 'PF', 'C')),
+    ]
 
 
 class FantasyDraftFootballSettings(FantasyDraftSettings):
     budget = 100000
-    total_players = 9
-    no_position_players = 0
-    positions = {
-        ('QB', ): 1,
-        ('RB', ): 2,
-        ('WR', ): 2,
-        ('TE', ): 1,
-        ('RB', 'WR', 'TE'): 7,
-        ('DST', ): 1
-    }
+    positions = [
+        LineupPosition('QB', ('QB', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('TE', ('TE', )),
+        LineupPosition('FLEX', ('RB', 'WR', 'TE')),
+        LineupPosition('FLEX', ('RB', 'WR', 'TE')),
+        LineupPosition('DST', ('DST', ))
+    ]
 
 
 class FantasyDraftHockeySettings(FantasyDraftSettings):
     budget = 100000
-    total_players = 8
-    no_position_players = 0
-    positions = {
-        ('C', ): 2,
-        ('W', ): 2,
-        ('D', ): 1,
-        ('C', 'W', 'D'): 7,
-        ('TG', ): 1,
-    }
+    positions = [
+        LineupPosition('C', ('C', )),
+        LineupPosition('C', ('C', )),
+        LineupPosition('W', ('W', )),
+        LineupPosition('W', ('W', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('UTIL', ('C', 'W', 'D')),
+        LineupPosition('UTIL', ('C', 'W', 'D')),
+        LineupPosition('Team G', ('TG', )),
+    ]
