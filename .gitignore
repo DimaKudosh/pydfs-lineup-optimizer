@@ -1,0 +1,9 @@
+*.csv
+*.pyc
+.cache
+.coverage
+.idea
+csv_examples
+dist
+pydfs_lineup_optimizer.egg-info
+MANIFEST
