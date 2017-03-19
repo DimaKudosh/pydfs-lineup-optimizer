@@ -30,7 +30,7 @@ class BaseSettings(object):
 class YahooSettings(BaseSettings):
     @classmethod
     @abstractmethod
-    def load_players_from_CSV(cls, filename):
+    def load_players_from_CSV(cls, filename):  # pragma: no cover
         players = []
         with open(filename, 'r') as csvfile:
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)
@@ -100,7 +100,7 @@ class YahooHockeySettings(YahooSettings):
 class FanDuelSettings(BaseSettings):
     @classmethod
     @abstractmethod
-    def load_players_from_CSV(cls, filename):
+    def load_players_from_CSV(cls, filename):  # pragma: no cover
         players = []
         with open(filename, 'r') as csvfile:
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)
@@ -155,7 +155,7 @@ class FanDuelFootballSettings(FanDuelSettings):
 # DraftKings
 
 
-class DraftKingsSettings(BaseSettings):
+class DraftKingsSettings(BaseSettings):  # pragma: no cover
     @classmethod
     @abstractmethod
     def load_players_from_CSV(cls, filename):
@@ -215,7 +215,7 @@ class DraftKingsFootballSettings(DraftKingsSettings):
 class FantasyDraftSettings(BaseSettings):
     @classmethod
     @abstractmethod
-    def load_players_from_CSV(cls, filename):
+    def load_players_from_CSV(cls, filename):  # pragma: no cover
         players = []
         with open(filename, 'r') as csvfile:
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)

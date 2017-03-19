@@ -5,5 +5,6 @@
 .idea
 csv_examples
 dist
+htmlcov
 pydfs_lineup_optimizer.egg-info
 MANIFEST
