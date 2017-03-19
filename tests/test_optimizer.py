@@ -27,7 +27,7 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def setUp(self):
         self.lineup_optimizer = LineupOptimizer(settings.DraftKingsBasketballSettings)
-        self.lineup_optimizer.load_players(self.players)
+        self.lineup_optimizer.load_players(self.players[:])
 
     def test_optimizer_positions_processing(self):
         positions = [
@@ -85,10 +85,10 @@ class TestLineupOptimizer(unittest.TestCase):
         self.lineup_optimizer.add_player_to_lineup(players[1])
         self.lineup_optimizer.add_player_to_lineup(players[2])
         self.lineup_optimizer.add_player_to_lineup(players[3])
-        lineup = next(self.lineup_optimizer.optimize())
+        lineup = next(self.lineup_optimizer.optimize(1))
         self.assertTrue(all([p in lineup.players for p in players[:4]]))
         self.lineup_optimizer.add_player_to_lineup(players[4])
-        lineup = next(self.lineup_optimizer.optimize())
+        lineup = next(self.lineup_optimizer.optimize(1))
         self.assertTrue(all([p in lineup.players for p in players[:5]]))
         num_of_selected_by_optimizer = len(list(filter(
             lambda p: 'C' in p.positions or 'PF' in p.positions, lineup.players
@@ -147,7 +147,7 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_lineup_with_players_from_same_team(self):
         self.lineup_optimizer.reset_lineup()
-        lineup = next(self.lineup_optimizer.optimize(teams={'CAVS': 4, 'LAC': 4}))
+        lineup = next(self.lineup_optimizer.optimize(1, teams={'CAVS': 4, 'LAC': 4}))
         self.assertEqual(len(list(filter(lambda x: x.team == 'CAVS', lineup.lineup))), 4)
         self.assertEqual(len(list(filter(lambda x: x.team == 'LAC', lineup.lineup))), 4)
 
@@ -157,7 +157,7 @@ class TestLineupOptimizer(unittest.TestCase):
             Player('', 'p1', 'p1', ['C'], 'DEN', 10, 2),
             Player('', 'p2', 'p2', ['C'], 'DEN', 10, 2),
         ])
-        lineup = next(self.lineup_optimizer.optimize(positions={'C': 1}))
+        lineup = next(self.lineup_optimizer.optimize(1, positions={'C': 1}))
         self.assertTrue(len(list(filter(lambda x: 'C' in x.positions, lineup.lineup))) >= 2)
 
     def test_lineup_with_max_players(self):
@@ -173,8 +173,35 @@ class TestLineupOptimizer(unittest.TestCase):
         players.append(Player('', 'P', 'P', ['PG'], 'DEN', 10, 2))
         for player in players:
             self.lineup_optimizer.add_player_to_lineup(player)
-        gen = self.lineup_optimizer.optimize()
+        gen = self.lineup_optimizer.optimize(10)
         self.assertEqual(len(list(gen)), 1)
+
+    def test_max_exposure(self):
+        optimizer = self.lineup_optimizer
+        players = [
+            Player('', 'p1', 'p1', ['PG', 'SG'], 'DEN', 10, 200, max_exposure=0.3),
+            Player('', 'p2', 'p2', ['PF', 'SF'], 'DEN', 10, 200),
+            Player('', 'p3', 'p3', ['C'], 'DEN', 100, 2, max_exposure=0.35),
+            Player('', 'p4', 'p4', ['PG'], 'DEN', 100, 2),
+            Player('', 'p5', 'p5', ['PF'], 'DEN', 100, 2, max_exposure=0),
+            Player('', 'p6', 'p6', ['SF'], 'DEN', 1, 2001, max_exposure=0),
+        ]
+        optimizer._players.extend(players)
+        optimizer.add_player_to_lineup(players[2])
+        optimizer.add_player_to_lineup(players[3])
+        optimizer.add_player_to_lineup(players[4])
+        lineups_with_players = [0 for _ in players]
+        for lineup in optimizer.optimize(10, max_exposure=0.5):
+            for i, player in enumerate(players):
+                if player in lineup.players:
+                    lineups_with_players[i] += 1
+        self.assertEqual(lineups_with_players[0], 3)
+        self.assertEqual(lineups_with_players[1], 5)
+        self.assertEqual(lineups_with_players[2], 4)
+        self.assertEqual(lineups_with_players[3], 5)
+        self.assertEqual(lineups_with_players[4], 0)
+        self.assertEqual(lineups_with_players[5], 0)
+        self.assertEqual(optimizer.lineup, players[2:5])
 
     def test_ratio(self):
         threshold = 0.8

@@ -35,6 +35,7 @@ class YahooSettings(BaseSettings):
         with open(filename, 'r') as csvfile:
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)
             for row in csvdata:
+                max_exposure = row.get("Max Exposure")
                 player = Player(
                     row["Id"],
                     row["First Name"],
@@ -43,7 +44,8 @@ class YahooSettings(BaseSettings):
                     row["Team"],
                     float(row["Salary"]),
                     float(row["FPPG"]),
-                    True if row["Injury Status"].strip() else False
+                    True if row["Injury Status"].strip() else False,
+                    max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None
                 )
                 players.append(player)
         return players
@@ -103,6 +105,7 @@ class FanDuelSettings(BaseSettings):
         with open(filename, 'r') as csvfile:
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)
             for row in csvdata:
+                max_exposure = row.get("Max Exposure")
                 player = Player(
                     row["Id"],
                     row["First Name"],
@@ -111,7 +114,8 @@ class FanDuelSettings(BaseSettings):
                     row["Team"],
                     float(row["Salary"]),
                     float(row["FPPG"]),
-                    True if row["Injury Indicator"].strip() else False
+                    True if row["Injury Indicator"].strip() else False,
+                    max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None
                 )
                 players.append(player)
         return players
@@ -159,6 +163,7 @@ class DraftKingsSettings(BaseSettings):
         with open(filename, 'r') as csvfile:
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)
             for row in csvdata:
+                max_exposure = row.get("Max Exposure")
                 name = row["Name"].split()
                 player = Player(
                     '',
@@ -167,7 +172,8 @@ class DraftKingsSettings(BaseSettings):
                     row["Position"].split('/'),
                     row["teamAbbrev"],
                     float(row["Salary"]),
-                    float(row["AvgPointsPerGame"])
+                    float(row["AvgPointsPerGame"]),
+                    max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None
                 )
                 players.append(player)
         return players
@@ -215,6 +221,7 @@ class FantasyDraftSettings(BaseSettings):
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)
             for row in csvdata:
                 name = row["Name"].split()
+                max_exposure = row.get("Max Exposure")
                 player = Player(
                     "",
                     name[0],
@@ -222,7 +229,8 @@ class FantasyDraftSettings(BaseSettings):
                     row["Position"].split('/'),
                     row["Team"],
                     float(row["Salary"].replace('$', '').replace(',', '')),
-                    float(row["Avg FPPG"])
+                    float(row["Avg FPPG"]),
+                    max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None
                 )
                 players.append(player)
         return players

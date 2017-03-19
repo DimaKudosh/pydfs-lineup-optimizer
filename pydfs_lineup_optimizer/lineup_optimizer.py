@@ -1,4 +1,5 @@
-from collections import Counter, OrderedDict
+from __future__ import division
+from collections import Counter, OrderedDict, defaultdict
 from itertools import chain, combinations
 from copy import deepcopy
 from pulp import *
@@ -269,17 +270,12 @@ class LineupOptimizer(object):
         except ValueError:
             raise LineupOptimizerException("Player not in line up!")
 
-    def optimize(self, n=None,  teams=None, positions=None, with_injured=False):
+    def _validate_optimizer_params(self, teams=None, positions=None):
         """
-        Select optimal lineup from players list.
-        This method uses Mixed Integer Linear Programming method for evaluating best starting lineup.
-        It"s return generator. If you don"t specify n it will return generator with all possible lineups started
-        from highest fppg to lowest fppg.
-        :type n: int
+        Validate passed to optimizer parameters.
         :type teams: dict[str, int]
         :type positions: dict[str, int]
-        :type with_injured: bool
-        :rtype: List[Lineup]
+        :return: processed teams and positions
         """
         # check teams parameter
         if teams:
@@ -301,27 +297,56 @@ class LineupOptimizer(object):
                                                "is number of players from specified position.")
             positions = {position.upper(): num_of_players for position, num_of_players in positions.items()}
             for pos, val in positions.items():
-                available_places = self._positions[(pos, )].optional
-                if val > self._positions[(pos, )].optional:
+                available_places = self._positions[(pos,)].optional
+                if val > self._positions[(pos,)].optional:
                     raise LineupOptimizerException("Max available places for position {} is {}. Got {} ".
                                                    format(pos, available_places, val))
-                if (pos, ) not in self._available_positions:
+                if (pos,) not in self._available_positions:
                     raise LineupOptimizerIncorrectPositionName("{} is incorrect position name.".format(pos))
         else:
             positions = {}
+        return teams, positions
 
-        # optimize
-        current_max_points = 100000
-        lineup_points = sum(player.fppg for player in self._lineup)
+    def optimize(self, n,  teams=None, positions=None, max_exposure=None, with_injured=False):
+        """
+        Select optimal lineup from players list.
+        This method uses Mixed Integer Linear Programming method for evaluating best starting lineup.
+        It"s return generator. If you don"t specify n it will return generator with all possible lineups started
+        from highest fppg to lowest fppg.
+        :type n: int
+        :type teams: dict[str, int]
+        :type positions: dict[str, int]
+        :type max_exposure: float
+        :type with_injured: bool
+        :rtype: List[Lineup]
+        """
+        teams, positions = self._validate_optimizer_params(teams, positions)
         if len(self._lineup) == self._settings.total_players:
             lineup = Lineup(self._lineup)
             yield lineup
             return
+        locked_players = self._lineup[:]
+        players = [player for player in self._players
+                   if player not in self._removed_players and player not in self._lineup
+                   and isinstance(player, Player) and player.max_exposure != 0.0]
+        for player in self._lineup:
+            if player.max_exposure == 0:
+                self.remove_player_from_lineup(player)
+        current_max_points = 10000000
+        lineup_points = sum(player.fppg for player in self._lineup)
+        used_players = defaultdict(int)
         counter = 0
-        while n is None or n > counter:
-            players = [player for player in self._players
-                       if player not in self._removed_players and player not in self._lineup
-                       and isinstance(player, Player)]
+        while n > counter:
+            # filter players with exceeded max exposure
+            for player, used in used_players.items():
+                exposure = player.max_exposure if player.max_exposure is not None else max_exposure
+                if exposure is not None and exposure <= used / n:
+                    if player in players:
+                        players.remove(player)
+                    if player in self.lineup:
+                        self.remove_player_from_lineup(player)
+                        current_max_points += player.fppg
+                        lineup_points -= player.fppg
             prob = LpProblem("Daily Fantasy Sports", LpMaximize)
             x = LpVariable.dicts(
                 "table", players,
@@ -336,12 +361,12 @@ class LineupOptimizer(object):
             if not with_injured:
                 prob += sum([x[player] for player in players if not player.is_injured]) == self._total_players
             for position, places in self._positions.items():
-                addition = 0
+                extra = 0
                 if len(position) == 1:
-                    addition = positions.get(position[0], 0)
+                    extra = positions.get(position[0], 0)
                 prob += sum([x[player] for player in players if
                              any([player_position in position for player_position in player.positions])
-                             ]) >= places.min + addition
+                             ]) >= places.min + extra
             for position, places in self._not_linked_positions.items():
                 prob += sum([x[player] for player in players if
                              any([player_position in position for player_position in player.positions])
@@ -355,10 +380,13 @@ class LineupOptimizer(object):
                 for player in players:
                     if x[player].value() == 1.0:
                         lineup_players.append(player)
+                for player in lineup_players:
+                    used_players[player] += 1
                 lineup = Lineup(lineup_players)
-                current_max_points = lineup.fantasy_points_projection - lineup_points - 0.1
+                current_max_points = lineup.fantasy_points_projection - lineup_points - 0.001
                 yield lineup
                 counter += 1
             else:
                 raise LineupOptimizerException("Can't generate lineups")
+        self._lineup = locked_players
         return
