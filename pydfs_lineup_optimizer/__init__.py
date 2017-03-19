@@ -1,4 +1,4 @@
-__version__ = "0.2"
+__version__ = "1.0"
 
 from .player import Player
 from .exceptions import LineupOptimizerException
