@@ -28,8 +28,3 @@ optimizer.load_players_from_CSV("yahoo-NBA.csv")
 for lineup in optimizer.optimize(n=10, teams={'OKC': 4}):
     print(lineup)
 ```
-Also you can use simple standard GUI:
-```python
-import pydfs_lineup_optimizer 
-pydfs_lineup_optimizer.run_app()
-```
