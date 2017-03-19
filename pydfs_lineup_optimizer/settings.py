@@ -4,7 +4,7 @@ Store classes with settings for specified daily fantasy sports site and kind of 
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 import csv
-from player import Player
+from .player import Player
 
 
 LineupPosition = namedtuple('LineupPosition', ['name', 'positions'])

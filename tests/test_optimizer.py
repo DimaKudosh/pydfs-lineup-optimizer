@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 import json
 from pydfs_lineup_optimizer import settings
@@ -11,16 +12,17 @@ from pydfs_lineup_optimizer.utils import ratio
 class TestLineupOptimizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        players_dict = json.loads(open('tests/players.json', 'r').read())['players']
-        players = [Player(
-            p['id'],
-            p['first_name'],
-            p['last_name'],
-            p['positions'],
-            p['team'],
-            p['salary'],
-            p['fppg']
-        ) for p in players_dict]
+        with open('tests/players.json', 'r') as file:
+            players_dict = json.loads(file.read())['players']
+            players = [Player(
+                p['id'],
+                p['first_name'],
+                p['last_name'],
+                p['positions'],
+                p['team'],
+                p['salary'],
+                p['fppg']
+            ) for p in players_dict]
         cls.players = players
 
     def setUp(self):
@@ -40,6 +42,7 @@ class TestLineupOptimizer(unittest.TestCase):
         test_settings = type('TestSettings', (settings.BaseSettings, ), {})
         test_settings.positions = positions
         optimizer = LineupOptimizer(test_settings)
+        self.assertEqual(len(optimizer._positions), 5)
         self.assertEqual(optimizer._positions[('1', )].min, 1)
         self.assertEqual(optimizer._positions[('1', )].max, 3)
         self.assertEqual(optimizer._positions[('2', )].min, 1)
@@ -50,6 +53,11 @@ class TestLineupOptimizer(unittest.TestCase):
         self.assertEqual(optimizer._positions[('2', '3')].max, 6)
         self.assertEqual(optimizer._positions[('1', '2', '3')].min, 7)
         self.assertEqual(optimizer._positions[('1', '2', '3')].max, 7)
+        self.assertEqual(len(optimizer._not_linked_positions), 2)
+        self.assertEqual(optimizer._not_linked_positions[('1', '2')].min, 2)
+        self.assertEqual(optimizer._not_linked_positions[('1', '2')].max, 8)
+        self.assertEqual(optimizer._not_linked_positions[('1', '3')].min, 2)
+        self.assertEqual(optimizer._not_linked_positions[('1', '3')].max, 8)
 
     def test_add_player_to_lineup(self):
         self.lineup_optimizer.reset_lineup()
@@ -67,11 +75,25 @@ class TestLineupOptimizer(unittest.TestCase):
             Player('', 'p1', 'p1', ['PG', 'SG'], 'DEN', 10, 200),
             Player('', 'p2', 'p2', ['PG'], 'DEN', 10, 200),
             Player('', 'p3', 'p3', ['PG'], 'DEN', 10, 200),
+            Player('', 'p4', 'p4', ['PG'], 'DEN', 10, 200),
+            Player('', 'p5', 'p5', ['PG', 'SG', 'SF'], 'DEN', 10, 200),
+            Player('', 'p6', 'p6', ['SF'], 'DEN', 10, 200),
+            Player('', 'p7', 'p7', ['SF'], 'DEN', 10, 190),
         ]
         self.lineup_optimizer._players.extend(players)
         self.lineup_optimizer.add_player_to_lineup(players[0])
-        lineup = self.lineup_optimizer.optimize().next()
-        self.assertTrue(all([p in lineup.players for p in players]))
+        self.lineup_optimizer.add_player_to_lineup(players[1])
+        self.lineup_optimizer.add_player_to_lineup(players[2])
+        self.lineup_optimizer.add_player_to_lineup(players[3])
+        lineup = next(self.lineup_optimizer.optimize())
+        self.assertTrue(all([p in lineup.players for p in players[:4]]))
+        self.lineup_optimizer.add_player_to_lineup(players[4])
+        lineup = next(self.lineup_optimizer.optimize())
+        self.assertTrue(all([p in lineup.players for p in players[:5]]))
+        num_of_selected_by_optimizer = len(list(filter(
+            lambda p: 'C' in p.positions or 'PF' in p.positions, lineup.players
+        )))
+        self.assertEqual(num_of_selected_by_optimizer, 2)
 
     def test_adding_player_with_salary_bigger_than_budget(self):
         self.lineup_optimizer.reset_lineup()
@@ -125,9 +147,9 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_lineup_with_players_from_same_team(self):
         self.lineup_optimizer.reset_lineup()
-        lineup = self.lineup_optimizer.optimize(teams={'CAVS': 4, 'LAC': 4}).next()
-        self.assertEqual(len(filter(lambda x: x.team == 'CAVS', lineup.lineup)), 4)
-        self.assertEqual(len(filter(lambda x: x.team == 'LAC', lineup.lineup)), 4)
+        lineup = next(self.lineup_optimizer.optimize(teams={'CAVS': 4, 'LAC': 4}))
+        self.assertEqual(len(list(filter(lambda x: x.team == 'CAVS', lineup.lineup))), 4)
+        self.assertEqual(len(list(filter(lambda x: x.team == 'LAC', lineup.lineup))), 4)
 
     def test_lineup_with_players_from_same_positions(self):
         self.lineup_optimizer.reset_lineup()
@@ -135,8 +157,8 @@ class TestLineupOptimizer(unittest.TestCase):
             Player('', 'p1', 'p1', ['C'], 'DEN', 10, 2),
             Player('', 'p2', 'p2', ['C'], 'DEN', 10, 2),
         ])
-        lineup = self.lineup_optimizer.optimize(positions={'C': 1}).next()
-        self.assertTrue(len(filter(lambda x: 'C' in x.positions, lineup.lineup)) >= 2)
+        lineup = next(self.lineup_optimizer.optimize(positions={'C': 1}))
+        self.assertTrue(len(list(filter(lambda x: 'C' in x.positions, lineup.lineup))) >= 2)
 
     def test_lineup_with_max_players(self):
         self.lineup_optimizer.reset_lineup()
