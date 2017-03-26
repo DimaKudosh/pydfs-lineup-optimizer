@@ -8,3 +8,5 @@ dist
 htmlcov
 pydfs_lineup_optimizer.egg-info
 MANIFEST
+docs/_build
+.eggs
