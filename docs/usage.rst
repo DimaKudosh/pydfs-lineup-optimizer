@@ -7,8 +7,19 @@ Usage
 Base Usage
 ----------
 Creating optimal lineups with **pydfs-lineup-optimizer** is very simple.
-Firstly you should create object of LineupOptimizer class.
-Optimizer constructor takes only one argument, it's settings.
+Firstly you should create optimizer. Preferred way for creating optimizer is using
+shortcut get_optimizer. You must provide daily fantasy site for it and kind of sport.
+If site doesn't support specified sport you will get NotImplementedError.
+
+.. code-block:: python
+
+    from pydfs_lineup_optimizer import get_optimizer, Site, Sport
+
+
+    optimizer = get_optimizer(Site.FANDUEL, Sport.BASKETBALL)
+
+Another way to create optimizer is to use LineupOptimizer class directly.
+LineupOptimizer constructor takes only one argument, it's settings.
 Settings is a class inherited from BaseSettings abstract class, it store all necessary for optimizer data
 like positions and budget etc. Each fantasy sport site and sport have there own settings class.
 For example for FanDuel fantasy football it's FanDuelFootballSettings class.
@@ -125,6 +136,19 @@ For this you can pass dictionaries with constraints to optimize method.
 
    Positions constraint hasn't effect for dfs sites without UTIL positions
 
+Optimizer also have randomness feature. It adds some deviation for players projection for
+creating less optimized but more randomized lineups. For activating randomness feature you must set randomness parameter to True.
+By default min deviation is 6% and max deviation is 12%. You can change it with set_deviation method.
+
+.. code-block:: python
+
+    lineups = optimizer.optimize(n=10, randomness=True)
+    lineups = optimizer.set_deviation(0.2, 0.4)  # for making more random lineups
+    lineups = optimizer.optimize(n=10, randomness=True)
+
+.. note::
+
+    With randomness = True optimizer generate lineups without ordering by max points projection.
 
 Example of advanced usage
 -------------------------
