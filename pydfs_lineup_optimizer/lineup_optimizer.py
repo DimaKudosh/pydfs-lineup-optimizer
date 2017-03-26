@@ -46,7 +46,7 @@ class LineupOptimizer(object):
         self._available_teams = []
         self._positions = {}
         self._not_linked_positions = {}
-        self._settings = settings()
+        self._settings = settings
         self._set_settings()
         self._removed_players = []
         self._max_from_one_team = None
@@ -88,7 +88,7 @@ class LineupOptimizer(object):
         Set settings with daily fantasy sport site and kind of sport to optimizer.
         """
         self._budget = self._settings.budget
-        self._total_players = self._settings.total_players
+        self._total_players = self._settings.get_total_players()
         self._max_from_one_team = self._settings.max_from_one_team
         self._get_positions_for_optimizer(self._settings.positions)
         self._available_positions = self._positions.keys()
@@ -342,7 +342,7 @@ class LineupOptimizer(object):
         :rtype: List[Lineup]
         """
         teams, positions = self._validate_optimizer_params(teams, positions)
-        if len(self._lineup) == self._settings.total_players:
+        if len(self._lineup) == self._settings.get_total_players():
             lineup = Lineup(self._lineup)
             yield lineup
             return

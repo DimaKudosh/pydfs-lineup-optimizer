@@ -16,9 +16,9 @@ class BaseSettings(object):
     positions = []
     max_from_one_team = None
 
-    @property
-    def total_players(self):
-        return len(self.positions)
+    @classmethod
+    def get_total_players(cls):
+        return len(cls.positions)
 
     @abstractmethod
     def load_players_from_CSV(self, filename):

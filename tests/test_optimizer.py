@@ -237,7 +237,7 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_get_optimizer(self):
         optimizer = get_optimizer(Site.YAHOO, Sport.FOOTBALL)
-        self.assertTrue(isinstance(optimizer._settings, settings.YahooFootballSettings))
+        self.assertEqual(optimizer._settings, settings.YahooFootballSettings)
         with self.assertRaises(NotImplementedError):
             get_optimizer(Site.DRAFTKINGS, 'Some sport')
 
