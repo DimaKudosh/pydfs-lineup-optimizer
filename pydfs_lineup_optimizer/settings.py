@@ -14,6 +14,7 @@ class BaseSettings(object):
     __metaclass__ = ABCMeta
     budget = 0
     positions = []
+    max_from_one_team = None
 
     @property
     def total_players(self):
@@ -152,6 +153,36 @@ class FanDuelFootballSettings(FanDuelSettings):
     ]
 
 
+class FanDuelHockeySettings(FanDuelSettings):
+    budget = 55000
+    positions = [
+        LineupPosition('C', ('C', )),
+        LineupPosition('C', ('C', )),
+        LineupPosition('W', ('W', )),
+        LineupPosition('W', ('W', )),
+        LineupPosition('W', ('W', )),
+        LineupPosition('W', ('W', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('G', ('G', )),
+    ]
+
+
+class FanDuelBaseballSettings(FanDuelSettings):
+    budget = 35000
+    positions = [
+        LineupPosition('P', ('P',)),
+        LineupPosition('C', ('C',)),
+        LineupPosition('1B', ('1B',)),
+        LineupPosition('2B', ('2B',)),
+        LineupPosition('3B', ('3B',)),
+        LineupPosition('SS', ('SS',)),
+        LineupPosition('OF', ('OF',)),
+        LineupPosition('OF', ('OF',)),
+        LineupPosition('OF', ('OF',)),
+    ]
+
+
 # DraftKings
 
 
@@ -208,6 +239,39 @@ class DraftKingsFootballSettings(DraftKingsSettings):
         LineupPosition('FLEX', ('WR', 'RB', 'TE')),
         LineupPosition('DST', ('DST',))
     ]
+
+
+class DraftKingsHockeySettings(DraftKingsSettings):
+    budget = 50000
+    positions = [
+        LineupPosition('W', ('LW', 'RW')),
+        LineupPosition('W', ('LW', 'RW')),
+        LineupPosition('W', ('LW', 'RW')),
+        LineupPosition('C', ('C',)),
+        LineupPosition('C', ('C',)),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('G', ('G',)),
+        LineupPosition('UTIL', ('LW', 'RW', 'C', 'D'))
+    ]
+
+
+class DraftKingBaseballSettings(DraftKingsSettings):
+    budget = 50000
+    positions = [
+        LineupPosition('P', ('P', )),
+        LineupPosition('P', ('P', )),
+        LineupPosition('C', ('C', )),
+        LineupPosition('1B', ('1B', )),
+        LineupPosition('2B', ('2B', )),
+        LineupPosition('3B', ('3B', )),
+        LineupPosition('SS', ('SS', )),
+        LineupPosition('OF', ('OF', )),
+        LineupPosition('OF', ('OF', )),
+        LineupPosition('OF', ('OF', )),
+    ]
+    max_from_one_team = 5
+
 
 # FantasyDraft
 
