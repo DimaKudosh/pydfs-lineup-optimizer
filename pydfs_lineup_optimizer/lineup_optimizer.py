@@ -2,6 +2,7 @@ from __future__ import division
 from collections import Counter, OrderedDict, defaultdict
 from itertools import chain, combinations
 from copy import deepcopy
+from random import getrandbits, uniform
 from pulp import *
 from .exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, LineupOptimizerIncorrectPositionName
 from .settings import BaseSettings
@@ -49,6 +50,8 @@ class LineupOptimizer(object):
         self._set_settings()
         self._removed_players = []
         self._search_threshold = 0.8
+        self._min_deviation = 0.06
+        self._max_deviation = 0.12
 
     @property
     def lineup(self):
@@ -119,6 +122,15 @@ class LineupOptimizer(object):
         self._not_linked_positions = not_linked_positions
         self._positions = positions
         self._init_positions = positions
+
+    def set_deviation(self, min_deviation, max_deviation):
+        """
+        Set deviation ranges for randomness mode
+        :type min_deviation: float
+        :type max_deviation: float
+        """
+        self._min_deviation = min_deviation
+        self._max_deviation = max_deviation
 
     def reset_lineup(self):
         """
@@ -307,7 +319,7 @@ class LineupOptimizer(object):
             positions = {}
         return teams, positions
 
-    def optimize(self, n,  teams=None, positions=None, max_exposure=None, with_injured=False):
+    def optimize(self, n,  teams=None, positions=None, max_exposure=None, randomness=None, with_injured=False):
         """
         Select optimal lineup from players list.
         This method uses Mixed Integer Linear Programming method for evaluating best starting lineup.
@@ -354,8 +366,14 @@ class LineupOptimizer(object):
                 upBound=1,
                 cat=LpInteger
             )
-            prob += lpSum([player.fppg * x[player] for player in players])
-            prob += lpSum([player.fppg * x[player] for player in players]) <= current_max_points
+            if randomness:
+                for i, player in enumerate(players):
+                    player.deviated_fppg = player.fppg * (1 + (-1 if bool(getrandbits(1)) else 1) *
+                                                          uniform(self._min_deviation, self._max_deviation))
+                prob += lpSum([player.deviated_fppg * x[player] for player in players])
+            else:
+                prob += lpSum([player.fppg * x[player] for player in players])
+                prob += lpSum([player.fppg * x[player] for player in players]) <= current_max_points
             prob += lpSum([player.salary * x[player] for player in players]) <= self._budget
             prob += lpSum([x[player] for player in players]) == self._total_players
             if not with_injured:

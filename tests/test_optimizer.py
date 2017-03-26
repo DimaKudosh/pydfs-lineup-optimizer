@@ -203,6 +203,15 @@ class TestLineupOptimizer(unittest.TestCase):
         self.assertEqual(lineups_with_players[5], 0)
         self.assertEqual(optimizer.lineup, players[2:5])
 
+    def test_randomness(self):
+        optimized_lineup = next(self.lineup_optimizer.optimize(1))
+        random_lineup = next(self.lineup_optimizer.optimize(1, randomness=True))
+        self.assertTrue(optimized_lineup.fantasy_points_projection > random_lineup.fantasy_points_projection)
+        self.assertTrue(
+            random_lineup.fantasy_points_projection >
+            (1 - self.lineup_optimizer._max_deviation) * optimized_lineup.fantasy_points_projection
+        )
+
     def test_ratio(self):
         threshold = 0.8
         self.assertTrue(ratio('Blake Griffin', 'Blake Griffin') >= threshold)
