@@ -6,9 +6,9 @@ class LineupOptimizerException(Exception):
         return self.message
 
 
-class LineupOptimizerIncorrectTeamName(Exception):
+class LineupOptimizerIncorrectTeamName(LineupOptimizerException):
     pass
 
 
-class LineupOptimizerIncorrectPositionName(Exception):
+class LineupOptimizerIncorrectPositionName(LineupOptimizerException):
     pass

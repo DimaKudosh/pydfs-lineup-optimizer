@@ -3,6 +3,8 @@ import unittest
 import json
 from collections import Counter
 from pydfs_lineup_optimizer import settings
+from pydfs_lineup_optimizer import get_optimizer
+from pydfs_lineup_optimizer.constants import Site, Sport
 from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 from pydfs_lineup_optimizer.player import Player
 from pydfs_lineup_optimizer.settings import LineupPosition
@@ -232,6 +234,12 @@ class TestLineupOptimizer(unittest.TestCase):
         optimizer.add_player_to_lineup(players[0])
         with self.assertRaises(LineupOptimizerException):
             optimizer.add_player_to_lineup(players[1])
+
+    def test_get_optimizer(self):
+        optimizer = get_optimizer(Site.YAHOO, Sport.FOOTBALL)
+        self.assertTrue(isinstance(optimizer._settings, settings.YahooFootballSettings))
+        with self.assertRaises(NotImplementedError):
+            get_optimizer(Site.DRAFTKINGS, 'Some sport')
 
     def test_ratio(self):
         threshold = 0.8

@@ -3,7 +3,7 @@ from collections import Counter, OrderedDict, defaultdict
 from itertools import chain, combinations
 from copy import deepcopy
 from random import getrandbits, uniform
-from pulp import *
+from pulp import LpProblem, LpMaximize, LpVariable, LpInteger, lpSum
 from .exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, LineupOptimizerIncorrectPositionName
 from .settings import BaseSettings
 from .player import Player
@@ -86,7 +86,6 @@ class LineupOptimizer(object):
     def _set_settings(self):
         """
         Set settings with daily fantasy sport site and kind of sport to optimizer.
-        :type settings: BaseSettings
         """
         self._budget = self._settings.budget
         self._total_players = self._settings.total_players
@@ -338,6 +337,7 @@ class LineupOptimizer(object):
         :type teams: dict[str, int]
         :type positions: dict[str, int]
         :type max_exposure: float
+        :type randomness: bool
         :type with_injured: bool
         :rtype: List[Lineup]
         """
@@ -392,12 +392,12 @@ class LineupOptimizer(object):
                 if len(position) == 1:
                     extra = positions.get(position[0], 0)
                 prob += lpSum([x[player] for player in players if
-                             any([player_position in position for player_position in player.positions])
-                             ]) >= places.min + extra
+                               any([player_position in position for player_position in player.positions])
+                               ]) >= places.min + extra
             for position, places in self._not_linked_positions.items():
                 prob += lpSum([x[player] for player in players if
-                             any([player_position in position for player_position in player.positions])
-                             ]) >= places.min
+                               any([player_position in position for player_position in player.positions])
+                               ]) >= places.min
             if teams is not None:
                 for key, value in teams.items():
                     prob += lpSum([x[player] for player in players if player.team == key]) == value
