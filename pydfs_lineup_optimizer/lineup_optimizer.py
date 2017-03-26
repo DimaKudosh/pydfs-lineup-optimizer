@@ -46,9 +46,10 @@ class LineupOptimizer(object):
         self._available_teams = []
         self._positions = {}
         self._not_linked_positions = {}
-        self._settings = settings
+        self._settings = settings()
         self._set_settings()
         self._removed_players = []
+        self._max_from_one_team = None
         self._search_threshold = 0.8
         self._min_deviation = 0.06
         self._max_deviation = 0.12
@@ -89,6 +90,7 @@ class LineupOptimizer(object):
         """
         self._budget = self._settings.budget
         self._total_players = self._settings.total_players
+        self._max_from_one_team = self._settings.max_from_one_team
         self._get_positions_for_optimizer(self._settings.positions)
         self._available_positions = self._positions.keys()
 
@@ -250,6 +252,11 @@ class LineupOptimizer(object):
         if self._total_players - 1 < 0:
             raise LineupOptimizerException("Can't add this player to line up! You already select all {} players!".
                                            format(len(self._lineup)))
+        if self._max_from_one_team:
+            from_same_team = len(list(filter(lambda p: p.team == player.team, self.lineup)))
+            if from_same_team + 1 > self._max_from_one_team:
+                raise LineupOptimizerException("You can't set more than {} players from one team.".
+                                               format(self._max_from_one_team))
         players = self.lineup[:]
         players.append(player)
         positions, total_added = self._recalculate_positions(players)
@@ -296,10 +303,12 @@ class LineupOptimizer(object):
                 raise LineupOptimizerException("Teams parameter must be dict where key is team name and value is number"
                                                " of players from specified team.")
             teams = {team.upper(): num_of_players for team, num_of_players in teams.items()}
-            _teams = teams.keys()
-            for team in _teams:
+            for team, num_of_players in teams.items():
                 if team not in self._available_teams:
                     raise LineupOptimizerIncorrectTeamName("{} is incorrect team name.".format(team))
+                if self._max_from_one_team and num_of_players > self._max_from_one_team:
+                    raise LineupOptimizerException("You can't set more than {} players from one team.".
+                                                   format(self._max_from_one_team))
         # check positions parameter
         if positions:
             if not isinstance(positions, dict) or \
@@ -392,6 +401,9 @@ class LineupOptimizer(object):
             if teams is not None:
                 for key, value in teams.items():
                     prob += lpSum([x[player] for player in players if player.team == key]) == value
+            if self._max_from_one_team:
+                for team in self._available_teams:
+                    prob += lpSum([x[player] for player in players if player.team == team]) <= self._max_from_one_team
             prob.solve()
             if prob.status == 1:
                 lineup_players = self._lineup[:]

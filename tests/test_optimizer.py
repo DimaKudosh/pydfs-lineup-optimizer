@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import unittest
 import json
+from collections import Counter
 from pydfs_lineup_optimizer import settings
 from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 from pydfs_lineup_optimizer.player import Player
@@ -211,6 +212,26 @@ class TestLineupOptimizer(unittest.TestCase):
             random_lineup.fantasy_points_projection >
             (1 - self.lineup_optimizer._max_deviation) * optimized_lineup.fantasy_points_projection
         )
+
+    def test_max_from_one_team(self):
+        max_from_one_team = 1
+        optimizer = self.lineup_optimizer
+        optimizer._max_from_one_team = max_from_one_team
+        players = [
+            Player('', 'p1', 'p1', ['PG', 'SG'], 'DEN', 10, 200),
+            Player('', 'p2', 'p2', ['PF', 'SF'], 'DEN', 10, 200),
+            Player('', 'p3', 'p3', ['C'], 'DEN', 10, 200),
+        ]
+        optimizer._players.extend(players)
+        optimizer._available_teams.add('DEN')
+        lineup = next(optimizer.optimize(1))
+        team_counter = Counter([p.team for p in lineup.players])
+        self.assertTrue(all([team_players <= max_from_one_team for team_players in team_counter.values()]))
+        with self.assertRaises(LineupOptimizerException):
+            next(optimizer.optimize(1, teams={'DEN': 3}))
+        optimizer.add_player_to_lineup(players[0])
+        with self.assertRaises(LineupOptimizerException):
+            optimizer.add_player_to_lineup(players[1])
 
     def test_ratio(self):
         threshold = 0.8
