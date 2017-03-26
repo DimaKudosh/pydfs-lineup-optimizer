@@ -1,14 +1,11 @@
-from enum import Enum
-
-
-class Site(Enum):
+class Site:
     DRAFTKINGS = 'DRAFTKINGS'
     FANDUEL = 'FANDUEL'
     YAHOO = 'YAHOO'
     FANTASY_DRAFT = 'FANTASY_DRAFT'
 
 
-class Sport(Enum):
+class Sport:
     BASKETBALL = 'BASKETBALL'
     FOOTBALL = 'FOOTBALL'
     HOCKEY = 'HOCKEY'
