@@ -14,8 +14,8 @@ League | Yahoo | Fanduel | DraftKings | FantasyDraft
 ----- | ----- | ----- | ----- | ----- 
 NFL | + | + | + | + 
 NBA | + | + | + | + 
-NHL | + | - | - | + 
-MLB | - | - | - | - 
+NHL | + | + | + | +
+MLB | - | + | + | -
 
 ## Documentation
 Documentation is available at https://pydfs-lineup-optimizer.readthedocs.io/en/latest
@@ -23,8 +23,12 @@ Documentation is available at https://pydfs-lineup-optimizer.readthedocs.io/en/l
 ## Example
 Here is a example for evaluating optimal lineup for Yahoo fantasy NBA. It's loads players list from "yahoo-NBA.csv" and select 10 best lineup with 4 Oklahoma City Thunder players.
 ```python
-optimizer = LineupOptimizer(settings.YahooBasketballSettings)
+from pydfs_lineup_optimizer import Site, Sport, get_optimizer
+
+
+optimizer = get_optimizer(Site.YAHOO, Sport.BASKETBALL)
 optimizer.load_players_from_CSV("yahoo-NBA.csv")
-for lineup in optimizer.optimize(n=10, teams={'OKC': 4}):
+lineup_generator = optimizer.optimize(10)
+for lineup in lineup_generator:
     print(lineup)
 ```
