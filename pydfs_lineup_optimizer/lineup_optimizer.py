@@ -354,26 +354,26 @@ class LineupOptimizer(object):
                 upBound=1,
                 cat=LpInteger
             )
-            prob += sum([player.fppg * x[player] for player in players])
-            prob += sum([player.fppg * x[player] for player in players]) <= current_max_points
-            prob += sum([player.salary * x[player] for player in players]) <= self._budget
-            prob += sum([x[player] for player in players]) == self._total_players
+            prob += lpSum([player.fppg * x[player] for player in players])
+            prob += lpSum([player.fppg * x[player] for player in players]) <= current_max_points
+            prob += lpSum([player.salary * x[player] for player in players]) <= self._budget
+            prob += lpSum([x[player] for player in players]) == self._total_players
             if not with_injured:
-                prob += sum([x[player] for player in players if not player.is_injured]) == self._total_players
+                prob += lpSum([x[player] for player in players if not player.is_injured]) == self._total_players
             for position, places in self._positions.items():
                 extra = 0
                 if len(position) == 1:
                     extra = positions.get(position[0], 0)
-                prob += sum([x[player] for player in players if
+                prob += lpSum([x[player] for player in players if
                              any([player_position in position for player_position in player.positions])
                              ]) >= places.min + extra
             for position, places in self._not_linked_positions.items():
-                prob += sum([x[player] for player in players if
+                prob += lpSum([x[player] for player in players if
                              any([player_position in position for player_position in player.positions])
                              ]) >= places.min
             if teams is not None:
                 for key, value in teams.items():
-                    prob += sum([x[player] for player in players if player.team == key]) == value
+                    prob += lpSum([x[player] for player in players if player.team == key]) == value
             prob.solve()
             if prob.status == 1:
                 lineup_players = self._lineup[:]
