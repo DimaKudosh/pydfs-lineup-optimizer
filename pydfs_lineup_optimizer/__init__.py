@@ -5,7 +5,7 @@ from .exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamNa
     LineupOptimizerIncorrectPositionName
 from .lineup_optimizer import LineupOptimizer
 from .lineup import Lineup
-from .settings import YahooBasketballSettings, YahooFootballSettings, YahooHockeySettings, \
+from .settings import YahooBasketballSettings, YahooFootballSettings, YahooHockeySettings, YahooBaseballSettings, \
     FanDuelBasketballSettings, FanDuelFootballSettings, FanDuelHockeySettings, FanDuelBaseballSettings, \
     DraftKingsBasketballSettings, DraftKingsFootballSettings, DraftKingsHockeySettings, DraftKingBaseballSettings, \
     FantasyDraftBasketballSettings, FantasyDraftFootballSettings, FantasyDraftHockeySettings
@@ -29,6 +29,7 @@ settings_mapping = {
         Sport.BASKETBALL: YahooBasketballSettings,
         Sport.FOOTBALL: YahooFootballSettings,
         Sport.HOCKEY: YahooHockeySettings,
+        Sport.BASEBALL: YahooBaseballSettings,
     },
     Site.FANTASY_DRAFT: {
         Sport.BASKETBALL: FantasyDraftBasketballSettings,

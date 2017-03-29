@@ -46,10 +46,10 @@ class LineupOptimizer(object):
         self._available_teams = []
         self._positions = {}
         self._not_linked_positions = {}
+        self._max_from_one_team = None
         self._settings = settings
         self._set_settings()
         self._removed_players = []
-        self._max_from_one_team = None
         self._search_threshold = 0.8
         self._min_deviation = 0.06
         self._max_deviation = 0.12

@@ -29,6 +29,8 @@ class BaseSettings(object):
 
 
 class YahooSettings(BaseSettings):
+    max_from_one_team = 6
+
     @classmethod
     @abstractmethod
     def load_players_from_CSV(cls, filename):  # pragma: no cover
@@ -95,10 +97,28 @@ class YahooHockeySettings(YahooSettings):
     ]
 
 
+class YahooBaseballSettings(YahooSettings):
+    budget = 200
+    positions = [
+        LineupPosition('P', ('P',)),
+        LineupPosition('P', ('P',)),
+        LineupPosition('C', ('C',)),
+        LineupPosition('1B', ('1B',)),
+        LineupPosition('2B', ('2B',)),
+        LineupPosition('3B', ('3B',)),
+        LineupPosition('SS', ('SS',)),
+        LineupPosition('OF', ('OF',)),
+        LineupPosition('OF', ('OF',)),
+        LineupPosition('OF', ('OF',)),
+    ]
+
+
 # FanDuel
 
 
 class FanDuelSettings(BaseSettings):
+    max_from_one_team = 4
+
     @classmethod
     @abstractmethod
     def load_players_from_CSV(cls, filename):  # pragma: no cover
@@ -277,6 +297,8 @@ class DraftKingBaseballSettings(DraftKingsSettings):
 
 
 class FantasyDraftSettings(BaseSettings):
+    max_from_one_team = 6
+
     @classmethod
     @abstractmethod
     def load_players_from_CSV(cls, filename):  # pragma: no cover
