@@ -15,7 +15,7 @@ League | Yahoo | Fanduel | DraftKings | FantasyDraft
 NFL | + | + | + | + 
 NBA | + | + | + | + 
 NHL | + | + | + | +
-MLB | - | + | + | -
+MLB | + | + | + | -
 
 ## Documentation
 Documentation is available at https://pydfs-lineup-optimizer.readthedocs.io/en/latest
