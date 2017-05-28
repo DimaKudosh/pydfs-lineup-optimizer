@@ -1,4 +1,4 @@
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 from .player import Player
 from .exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
