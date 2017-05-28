@@ -7,7 +7,7 @@ from .lineup_optimizer import LineupOptimizer
 from .lineup import Lineup
 from .settings import YahooBasketballSettings, YahooFootballSettings, YahooHockeySettings, YahooBaseballSettings, \
     FanDuelBasketballSettings, FanDuelFootballSettings, FanDuelHockeySettings, FanDuelBaseballSettings, \
-    DraftKingsBasketballSettings, DraftKingsFootballSettings, DraftKingsHockeySettings, DraftKingBaseballSettings, \
+    DraftKingsBasketballSettings, DraftKingsFootballSettings, DraftKingsHockeySettings, DraftKingsBaseballSettings, \
     FantasyDraftBasketballSettings, FantasyDraftFootballSettings, FantasyDraftHockeySettings
 from .constants import Site, Sport
 
@@ -17,13 +17,13 @@ settings_mapping = {
         Sport.BASKETBALL: DraftKingsBasketballSettings,
         Sport.FOOTBALL: DraftKingsFootballSettings,
         Sport.HOCKEY: DraftKingsHockeySettings,
-        Sport.BASEBALL: DraftKingBaseballSettings,
+        Sport.BASEBALL: DraftKingsBaseballSettings,
     },
     Site.FANDUEL: {
         Sport.BASKETBALL: FanDuelBasketballSettings,
         Sport.FOOTBALL: FanDuelFootballSettings,
         Sport.HOCKEY: FanDuelHockeySettings,
-        Sport.BASEBALL: FanDuelBasketballSettings,
+        Sport.BASEBALL: FanDuelBaseballSettings,
     },
     Site.YAHOO: {
         Sport.BASKETBALL: YahooBasketballSettings,

@@ -276,7 +276,7 @@ class DraftKingsHockeySettings(DraftKingsSettings):
     ]
 
 
-class DraftKingBaseballSettings(DraftKingsSettings):
+class DraftKingsBaseballSettings(DraftKingsSettings):
     budget = 50000
     positions = [
         LineupPosition('P', ('P', )),
