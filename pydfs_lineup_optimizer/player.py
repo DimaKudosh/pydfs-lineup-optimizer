@@ -2,8 +2,9 @@ from __future__ import division
 
 
 class Player(object):
-    def __init__(self, id,  first_name, last_name, positions, team, salary, fppg, is_injured=False, max_exposure=None):
-        self.id = id
+    def __init__(self, player_id,  first_name, last_name, positions, team, salary, fppg, is_injured=False,
+                 max_exposure=None):
+        self.id = player_id
         self.first_name = first_name
         self.last_name = last_name
         self.positions = positions
@@ -30,7 +31,7 @@ class Player(object):
 
     @property
     def full_name(self):
-        return "{} {}".format(self.first_name, self.last_name)
+        return '{} {}'.format(self.first_name, self.last_name)
 
     @property
     def efficiency(self):

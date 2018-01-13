@@ -34,14 +34,14 @@ class Lineup(object):
     def __str__(self):
         res = ''
         for index, player in enumerate(self.players):
-            res += "{0}. {1} {2}{3}{4}{5}{6}".format(
+            res += '{0}. {1:<5} {2:<30}{3:<6}{4:<15}{5:<8}{6:<10}\n'.format(
                 index,
-                '{:<5}'.format(player.lineup_position),
-                "{:<30}".format(player.full_name),
-                "{:<5}".format('/'.join(player.positions)),
-                "{:<15}".format(player.team),
-                "{:<8}".format(str(round(player.fppg, 3))),
-                "{:<10}".format(str(player.salary) + '$')
+                player.lineup_position,
+                player.full_name,
+                '/'.join(player.positions),
+                player.team,
+                round(player.fppg, 3),
+                str(player.salary) + '$',
             )
         res += '\nFantasy Points ' + str(self.fantasy_points_projection)
         res += '\nSalary ' + str(self.salary_costs)

@@ -11,9 +11,12 @@ from .lineup import Lineup, LineupPlayer
 from .utils import ratio, list_intersection
 
 
-class PositionPlaces:
-    def __init__(self, min, optional):
-        self.min = min
+class PositionPlaces(object):
+    """
+    Helper class, used for converting positions from settings readable format to format for PuLP
+    """
+    def __init__(self, min_players, optional):
+        self.min = min_players
         self._init_optional = optional
         self.optional = optional
 
@@ -192,7 +195,7 @@ class LineupOptimizer(object):
     def find_players(self, name):
         """
         Return list of players with similar name.
-        :param name: str
+        :type name: str
         :return: List[Player]
         """
         players = self.players
@@ -204,7 +207,7 @@ class LineupOptimizer(object):
     def get_player_by_name(self, name):
         """
         Return closest player with similar name or None.
-        :param name: str
+        :type name: str
         :return: Player
         """
         players = self.find_players(name)
@@ -238,7 +241,7 @@ class LineupOptimizer(object):
 
     def add_player_to_lineup(self, player):
         """
-        Force adding specified player to lineup.
+        Forces adding specified player to lineup.
         Return true if player successfully added to lineup.
         :type player: Player
         """
@@ -270,7 +273,7 @@ class LineupOptimizer(object):
 
     def remove_player_from_lineup(self, player):
         """
-        Remove specified player from lineup.
+        Removes specified player from lineup.
         :type player: Player
         """
         if not isinstance(player, Player):
@@ -300,7 +303,7 @@ class LineupOptimizer(object):
             available_players = [player for player in players if set(position.positions).intersection(player.positions)]
             if available_players:
                 player = sorted(available_players, key=lambda player: (-len(player.positions), min(
-                    [positions_priority[position] for position in player.positions])), reverse=True)[0]
+                    [positions_priority[pos] for pos in player.positions])), reverse=True)[0]
                 players.remove(player)
                 players_with_position.append(LineupPlayer(player, position.name))
             else:

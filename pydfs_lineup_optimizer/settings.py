@@ -1,7 +1,7 @@
 """
 Store classes with settings for specified daily fantasy sports site and kind of sport.
 """
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractclassmethod
 from collections import namedtuple
 import csv
 from .player import Player
@@ -16,12 +16,12 @@ class BaseSettings(object):
     positions = []
     max_from_one_team = None
 
-    @classmethod
+    @abstractclassmethod
     def get_total_players(cls):
         return len(cls.positions)
 
-    @abstractmethod
-    def load_players_from_CSV(self, filename):
+    @abstractclassmethod
+    def load_players_from_CSV(cls, filename):
         return NotImplemented
 
 
@@ -31,23 +31,22 @@ class BaseSettings(object):
 class YahooSettings(BaseSettings):
     max_from_one_team = 6
 
-    @classmethod
-    @abstractmethod
+    @abstractclassmethod
     def load_players_from_CSV(cls, filename):  # pragma: no cover
         players = []
         with open(filename, 'r') as csvfile:
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)
             for row in csvdata:
-                max_exposure = row.get("Max Exposure")
+                max_exposure = row.get('Max Exposure')
                 player = Player(
-                    row["Id"],
-                    row["First Name"],
-                    row["Last Name"],
-                    row["Position"].split('/'),
-                    row["Team"],
-                    float(row["Salary"]),
-                    float(row["FPPG"]),
-                    True if row["Injury Status"].strip() else False,
+                    row['Id'],
+                    row['First Name'],
+                    row['Last Name'],
+                    row['Position'].split('/'),
+                    row['Team'],
+                    float(row['Salary']),
+                    float(row['FPPG']),
+                    True if row['Injury Status'].strip() else False,
                     max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None
                 )
                 players.append(player)
@@ -119,23 +118,22 @@ class YahooBaseballSettings(YahooSettings):
 class FanDuelSettings(BaseSettings):
     max_from_one_team = 4
 
-    @classmethod
-    @abstractmethod
+    @abstractclassmethod
     def load_players_from_CSV(cls, filename):  # pragma: no cover
         players = []
         with open(filename, 'r') as csvfile:
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)
             for row in csvdata:
-                max_exposure = row.get("Max Exposure")
+                max_exposure = row.get('Max Exposure')
                 player = Player(
-                    row["Id"],
-                    row["First Name"],
-                    row["Last Name"],
-                    row["Position"].split('/'),
-                    row["Team"],
-                    float(row["Salary"]),
-                    float(row["FPPG"]),
-                    True if row["Injury Indicator"].strip() else False,
+                    row['Id'],
+                    row['First Name'],
+                    row['Last Name'],
+                    row['Position'].split('/'),
+                    row['Team'],
+                    float(row['Salary']),
+                    float(row['FPPG']),
+                    True if row['Injury Indicator'].strip() else False,
                     max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None
                 )
                 players.append(player)
@@ -207,23 +205,22 @@ class FanDuelBaseballSettings(FanDuelSettings):
 
 
 class DraftKingsSettings(BaseSettings):  # pragma: no cover
-    @classmethod
-    @abstractmethod
+    @abstractclassmethod
     def load_players_from_CSV(cls, filename):
         players = []
         with open(filename, 'r') as csvfile:
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)
             for row in csvdata:
-                max_exposure = row.get("Max Exposure")
-                name = row["Name"].split()
+                max_exposure = row.get('Max Exposure')
+                name = row['Name'].split()
                 player = Player(
                     '',
                     name[0],
                     name[1] if len(name) > 1 else '',
-                    row["Position"].split('/'),
-                    row["teamAbbrev"],
-                    float(row["Salary"]),
-                    float(row["AvgPointsPerGame"]),
+                    row['Position'].split('/'),
+                    row['teamAbbrev'],
+                    float(row['Salary']),
+                    float(row['AvgPointsPerGame']),
                     max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None
                 )
                 players.append(player)
@@ -299,23 +296,22 @@ class DraftKingsBaseballSettings(DraftKingsSettings):
 class FantasyDraftSettings(BaseSettings):
     max_from_one_team = 6
 
-    @classmethod
-    @abstractmethod
+    @abstractclassmethod
     def load_players_from_CSV(cls, filename):  # pragma: no cover
         players = []
         with open(filename, 'r') as csvfile:
             csvdata = csv.DictReader(csvfile, skipinitialspace=True)
             for row in csvdata:
-                name = row["Name"].split()
-                max_exposure = row.get("Max Exposure")
+                name = row['Name'].split()
+                max_exposure = row.get('Max Exposure')
                 player = Player(
-                    "",
+                    '',
                     name[0],
                     name[1] if len(name) > 1 else '',
-                    row["Position"].split('/'),
-                    row["Team"],
-                    float(row["Salary"].replace('$', '').replace(',', '')),
-                    float(row["Avg FPPG"]),
+                    row['Position'].split('/'),
+                    row['Team'],
+                    float(row['Salary'].replace('$', '').replace(',', '')),
+                    float(row['Avg FPPG']),
                     max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None
                 )
                 players.append(player)
