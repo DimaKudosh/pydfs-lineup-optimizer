@@ -10,6 +10,7 @@ from .settings import YahooBasketballSettings, YahooFootballSettings, YahooHocke
     DraftKingsBasketballSettings, DraftKingsFootballSettings, DraftKingsHockeySettings, DraftKingsBaseballSettings, \
     FantasyDraftBasketballSettings, FantasyDraftFootballSettings, FantasyDraftHockeySettings
 from .constants import Site, Sport
+from .lineup_exporter import CSVLineupExporter
 
 
 settings_mapping = {

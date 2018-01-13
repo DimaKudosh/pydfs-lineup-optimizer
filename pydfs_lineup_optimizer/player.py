@@ -15,13 +15,10 @@ class Player(object):
         self.max_exposure = max_exposure
 
     def __str__(self):
-        return "{}{}{}{}{}".format(
-            "{:<30}".format(self.full_name),
-            "{:<5}".format('/'.join(self.positions)),
-            "{:<15}".format(self.team),
-            "{:<8}".format(str(round(self.fppg, 3))),
-            "{:<10}".format(str(self.salary) + '$')
-        )
+        return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)
+
+    def __repr__(self):
+        return str(self)
 
     @property
     def max_exposure(self):

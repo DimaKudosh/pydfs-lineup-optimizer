@@ -15,7 +15,7 @@ from pydfs_lineup_optimizer.utils import ratio
 class TestLineupOptimizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        with open('tests/players.json', 'r') as file:
+        with open('players.json', 'r') as file:
             players_dict = json.loads(file.read())['players']
             players = [Player(
                 p['id'],
@@ -227,7 +227,7 @@ class TestLineupOptimizer(unittest.TestCase):
         optimizer._players.extend(players)
         optimizer._available_teams.add('DEN')
         lineup = next(optimizer.optimize(1))
-        team_counter = Counter([p.team for p in lineup.players])
+        team_counter = Counter([p.team for p in lineup.lineup])
         self.assertTrue(all([team_players <= max_from_one_team for team_players in team_counter.values()]))
         with self.assertRaises(LineupOptimizerException):
             next(optimizer.optimize(1, teams={'DEN': 3}))
@@ -247,11 +247,3 @@ class TestLineupOptimizer(unittest.TestCase):
         self.assertTrue(ratio('griffin', 'Blake Griffin') >= threshold)
         self.assertTrue(ratio('grifin', 'Blake Griffin') >= threshold)
         self.assertFalse(ratio('Hood', 'Blake Griffin') >= threshold)
-
-
-def run_tests():
-    unittest.main()
-
-
-if __name__ == '__main__':
-    run_tests()

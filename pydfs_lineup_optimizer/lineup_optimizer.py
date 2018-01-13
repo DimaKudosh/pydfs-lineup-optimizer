@@ -7,7 +7,7 @@ from pulp import LpProblem, LpMaximize, LpVariable, LpInteger, lpSum
 from .exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, LineupOptimizerIncorrectPositionName
 from .settings import BaseSettings
 from .player import Player
-from .lineup import Lineup
+from .lineup import Lineup, LineupPlayer
 from .utils import ratio, list_intersection
 
 
@@ -288,6 +288,25 @@ class LineupOptimizer(object):
         except ValueError:
             raise LineupOptimizerException("Player not in line up!")
 
+    def _build_lineup(self, players):
+        """
+        Creates lineup after optimizer run, set position name like in dfs site for players
+        :type players: list[Player]
+        :return: Lineup
+        """
+        players_with_position = []
+        positions_priority = Counter((pos for player in players for pos in player.positions))
+        for position in self._settings.positions:
+            available_players = [player for player in players if set(position.positions).intersection(player.positions)]
+            if available_players:
+                player = sorted(available_players, key=lambda player: (-len(player.positions), min(
+                    [positions_priority[position] for position in player.positions])), reverse=True)[0]
+                players.remove(player)
+                players_with_position.append(LineupPlayer(player, position.name))
+            else:
+                raise LineupOptimizerException('Unable to build lineup from optimizer result')
+        return Lineup(players_with_position)
+
     def _validate_optimizer_params(self, teams=None, positions=None):
         """
         Validate passed to optimizer parameters.
@@ -412,7 +431,7 @@ class LineupOptimizer(object):
                         lineup_players.append(player)
                 for player in lineup_players:
                     used_players[player] += 1
-                lineup = Lineup(lineup_players)
+                lineup = self._build_lineup(lineup_players)
                 current_max_points = lineup.fantasy_points_projection - lineup_points - 0.001
                 yield lineup
                 counter += 1
