@@ -1,4 +1,4 @@
-__version__ = "1.1.2"
+__version__ = "1.2"
 
 from .player import Player
 from .exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
@@ -45,4 +45,3 @@ def get_optimizer(site, sport):
         return LineupOptimizer(settings_mapping[site][sport])
     except KeyError:
         raise NotImplementedError
-
