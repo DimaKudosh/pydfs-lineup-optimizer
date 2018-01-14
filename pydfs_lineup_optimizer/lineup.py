@@ -18,7 +18,9 @@ class LineupPlayer(object):
     def __eq__(self, other):
         if isinstance(other, Player):
             return self._player == other
-        return self._player == other._player
+        elif isinstance(other, LineupPlayer):
+            return self._player == other._player
+        return NotImplemented
 
     def __str__(self):
         return str(self._player)
@@ -30,6 +32,12 @@ class Lineup(object):
         :type players: list[LineupPlayer]
         """
         self.players = players
+
+    def __iter__(self):
+        return iter(self.players)
+
+    def __contains__(self, item):
+        return item in self.players
 
     def __str__(self):
         res = ''
