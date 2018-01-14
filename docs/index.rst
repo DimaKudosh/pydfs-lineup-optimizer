@@ -40,3 +40,5 @@ Contents
 
    installation
    usage
+   constraints
+   export

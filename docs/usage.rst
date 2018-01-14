@@ -21,7 +21,7 @@ If site doesn't support specified sport you will get NotImplementedError.
 Another way to create optimizer is to use LineupOptimizer class directly.
 LineupOptimizer constructor takes only one argument, it's settings.
 Settings is a class inherited from BaseSettings abstract class, it store all necessary for optimizer data
-like positions and budget etc. Each fantasy sport site and sport have there own settings class.
+like positions, budget etc. Each fantasy sport site and sport have there own settings class.
 For example for FanDuel fantasy football it's FanDuelFootballSettings class.
 
 .. code-block:: python
@@ -37,6 +37,10 @@ First is to load players from CSV file like this:
 .. code-block:: python
 
     optimizer.load_players_from_CSV("path_to_csv")
+
+.. note::
+
+   CSV file must have the same format as export file in specified dfs site, if you have custom CSV file this method will not work.
 
 Or you can load players using load_players method and pass list with players.
 
@@ -123,19 +127,6 @@ pass max_exposure parameter to optimize method
    Player exposure has higher priority than max_exposure that you pass in optimize method.
    Exposure percentage rounds to ceil.
 
-Also you can add more constraints to your optimizer like players from same team and players positions for UTIL.
-For this you can pass dictionaries with constraints to optimize method.
-
-.. code-block:: python
-
-    team_constraint = {'OKC': 4}  # Optimizer will generate lineups with 4 Oklahoma players
-    position_constraint = {'C': 1}  # Optimizer will generate lineups with >= 1 centers for util positions.
-    lineups = optimizer.optimize(n=10, teams=team_constraint, positions=position_constraint)
-
-.. note::
-
-   Positions constraint hasn't effect for dfs sites without UTIL positions
-
 Optimizer also have randomness feature. It adds some deviation for players projection for
 creating less optimized but more randomized lineups. For activating randomness feature you must set randomness parameter to True.
 By default min deviation is 6% and max deviation is 12%. You can change it with set_deviation method.
@@ -163,10 +154,10 @@ Below is an full example of how **pydfs-lineup-optimizer** can be used to genera
     for player in nets_centers:
         optimzier.remove_player(player)  # Remove all Nets centers from optimizer
     harden = optimizer.get_player_by_name('Harden')
-    westbrook = optimzier.get_player_by_name('Westbrook')  # Get Harden and Westbrook
+    westbrook = optimizer.get_player_by_name('Westbrook')  # Get Harden and Westbrook
     harden.max_exposure = 0.6
     westbrook.max_exposure = 0.4  # Set exposures for Harden and Westbrook
     optimizer.add_player_to_lineup(harden)
     optimizer.add_player_to_lineup(westbrook)  # Lock Harden and Westbrook
-    for lineup in optimizer.optimize(n=10, teams={'Heat': 4}, max_exposure=0.3):
+    for lineup in optimizer.optimize(n=10, max_exposure=0.3):
         print(lineup)
