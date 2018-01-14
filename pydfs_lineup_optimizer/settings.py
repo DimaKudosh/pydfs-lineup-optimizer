@@ -1,7 +1,7 @@
 """
 Store classes with settings for specified daily fantasy sports site and kind of sport.
 """
-from abc import ABCMeta, abstractclassmethod
+from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 import csv
 from .player import Player
@@ -16,11 +16,13 @@ class BaseSettings(object):
     positions = []
     max_from_one_team = None
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def get_total_players(cls):
         return len(cls.positions)
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def load_players_from_CSV(cls, filename):
         return NotImplemented
 
@@ -31,7 +33,8 @@ class BaseSettings(object):
 class YahooSettings(BaseSettings):
     max_from_one_team = 6
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def load_players_from_CSV(cls, filename):  # pragma: no cover
         players = []
         with open(filename, 'r') as csvfile:
@@ -118,7 +121,8 @@ class YahooBaseballSettings(YahooSettings):
 class FanDuelSettings(BaseSettings):
     max_from_one_team = 4
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def load_players_from_CSV(cls, filename):  # pragma: no cover
         players = []
         with open(filename, 'r') as csvfile:
@@ -205,7 +209,8 @@ class FanDuelBaseballSettings(FanDuelSettings):
 
 
 class DraftKingsSettings(BaseSettings):  # pragma: no cover
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def load_players_from_CSV(cls, filename):
         players = []
         with open(filename, 'r') as csvfile:
@@ -296,7 +301,8 @@ class DraftKingsBaseballSettings(DraftKingsSettings):
 class FantasyDraftSettings(BaseSettings):
     max_from_one_team = 6
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def load_players_from_CSV(cls, filename):  # pragma: no cover
         players = []
         with open(filename, 'r') as csvfile:

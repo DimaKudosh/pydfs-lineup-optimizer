@@ -15,7 +15,7 @@ from pydfs_lineup_optimizer.utils import ratio
 class TestLineupOptimizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        with open('players.json', 'r') as file:
+        with open('tests/players.json', 'r') as file:
             players_dict = json.loads(file.read())['players']
             players = [Player(
                 p['id'],
