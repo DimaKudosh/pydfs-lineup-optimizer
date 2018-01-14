@@ -150,7 +150,8 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_lineup_with_players_from_same_team(self):
         self.lineup_optimizer.reset_lineup()
-        lineup = next(self.lineup_optimizer.optimize(1, teams={'CAVS': 4, 'LAC': 4}))
+        self.lineup_optimizer.set_players_from_one_team({'CAVS': 4, 'LAC': 4})
+        lineup = next(self.lineup_optimizer.optimize(1))
         self.assertEqual(len(list(filter(lambda x: x.team == 'CAVS', lineup.lineup))), 4)
         self.assertEqual(len(list(filter(lambda x: x.team == 'LAC', lineup.lineup))), 4)
 
@@ -160,7 +161,8 @@ class TestLineupOptimizer(unittest.TestCase):
             Player('', 'p1', 'p1', ['C'], 'DEN', 10, 2),
             Player('', 'p2', 'p2', ['C'], 'DEN', 10, 2),
         ])
-        lineup = next(self.lineup_optimizer.optimize(1, positions={'C': 1}))
+        self.lineup_optimizer.set_players_with_same_position({'C': 1})
+        lineup = next(self.lineup_optimizer.optimize(1))
         self.assertTrue(len(list(filter(lambda x: 'C' in x.positions, lineup.lineup))) >= 2)
 
     def test_lineup_with_max_players(self):
@@ -192,7 +194,8 @@ class TestLineupOptimizer(unittest.TestCase):
         optimizer._players.extend(players)
         optimizer.add_player_to_lineup(players[2])
         optimizer.add_player_to_lineup(players[3])
-        optimizer.add_player_to_lineup(players[4])
+        with self.assertRaises(LineupOptimizerException):
+            optimizer.add_player_to_lineup(players[4])
         lineups_with_players = [0 for _ in players]
         for lineup in optimizer.optimize(10, max_exposure=0.5):
             for i, player in enumerate(players):
@@ -204,12 +207,12 @@ class TestLineupOptimizer(unittest.TestCase):
         self.assertEqual(lineups_with_players[3], 5)
         self.assertEqual(lineups_with_players[4], 0)
         self.assertEqual(lineups_with_players[5], 0)
-        self.assertEqual(optimizer.lineup, players[2:5])
+        self.assertEqual(optimizer.lineup, players[2:4])
 
     def test_randomness(self):
         optimized_lineup = next(self.lineup_optimizer.optimize(1))
         random_lineup = next(self.lineup_optimizer.optimize(1, randomness=True))
-        self.assertTrue(optimized_lineup.fantasy_points_projection > random_lineup.fantasy_points_projection)
+        self.assertTrue(optimized_lineup.fantasy_points_projection >= random_lineup.fantasy_points_projection)
         self.assertTrue(
             random_lineup.fantasy_points_projection >
             (1 - self.lineup_optimizer._max_deviation) * optimized_lineup.fantasy_points_projection
@@ -230,10 +233,46 @@ class TestLineupOptimizer(unittest.TestCase):
         team_counter = Counter([p.team for p in lineup.lineup])
         self.assertTrue(all([team_players <= max_from_one_team for team_players in team_counter.values()]))
         with self.assertRaises(LineupOptimizerException):
-            next(optimizer.optimize(1, teams={'DEN': 3}))
+            self.lineup_optimizer.set_players_from_one_team({'DEN': 3})
+            next(optimizer.optimize(1))
         optimizer.add_player_to_lineup(players[0])
         with self.assertRaises(LineupOptimizerException):
             optimizer.add_player_to_lineup(players[1])
+
+    def test_positions_from_same_team(self):
+        optimizer = get_optimizer(Site.YAHOO, Sport.BASKETBALL)
+        players = [
+            Player(1, 'p1', 'p1', ['PG'], 'team1', 10, 200),
+            Player(2, 'p2', 'p2', ['SG'], 'team2', 10, 200),
+            Player(3, 'p3', 'p3', ['SF'], 'team3', 10, 200),
+            Player(4, 'p4', 'p4', ['PF'], 'team4', 10, 200),
+            Player(5, 'p5', 'p5', ['C'], 'team5', 10, 200),
+            Player(6, 'p6', 'p6', ['PG', 'SG'], 'team6', 10, 200),
+            Player(7, 'p7', 'p7', ['SF', 'PF'], 'team7', 10, 200),
+            Player(8, 'p8', 'p8', ['PG', 'SG', 'SF'], 'team8', 10, 200),
+            Player(9, 'p9', 'p9', ['C'], 'team1', 10, 5),
+            Player(10, 'p10', 'p10', ['SF'], 'team1', 10, 2),
+            Player(11, 'p11', 'p11', ['PF', 'C'], 'team1', 10, 2),
+        ]
+        optimizer.load_players(players)
+        lineup = next(optimizer.optimize(1))
+        self.assertEqual(len(set([p.team for p in lineup.lineup])), 8)
+        optimizer.set_positions_for_same_team(['PG', 'C'])
+        lineup = next(optimizer.optimize(1))
+        self.assertEqual(len(set([p.team for p in lineup.lineup])), 7)
+        self.assertTrue(all(players[i] in lineup.lineup for i in [0, 8]))
+        optimizer.set_positions_for_same_team(['PG', 'SF', 'C'])
+        lineup = next(optimizer.optimize(1))
+        self.assertEqual(len(set([p.team for p in lineup.lineup])), 6)
+        self.assertTrue(all(players[i] in lineup.lineup for i in [0, 8, 9]))
+        optimizer.set_positions_for_same_team(['PG', 'SF', 'C', 'C'])
+        lineup = next(optimizer.optimize(1))
+        self.assertEqual(len(set([p.team for p in lineup.lineup])), 5)
+        self.assertTrue(all(players[i] in lineup.lineup for i in [0, 8, 9, 10]))
+        # Test reset
+        optimizer.set_positions_for_same_team(None)
+        lineup = next(optimizer.optimize(1))
+        self.assertEqual(len(set([p.team for p in lineup.lineup])), 8)
 
     def test_get_optimizer(self):
         optimizer = get_optimizer(Site.YAHOO, Sport.FOOTBALL)

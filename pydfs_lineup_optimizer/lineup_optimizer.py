@@ -1,9 +1,9 @@
 from __future__ import division
 from collections import Counter, OrderedDict, defaultdict
-from itertools import chain, combinations
+from itertools import chain, combinations, product
 from copy import deepcopy
 from random import getrandbits, uniform
-from pulp import LpProblem, LpMaximize, LpVariable, LpInteger, lpSum
+from pulp import LpProblem, LpMaximize, LpVariable, LpInteger, lpSum, LpStatusOptimal
 from .exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, LineupOptimizerIncorrectPositionName
 from .settings import BaseSettings
 from .player import Player
@@ -40,7 +40,7 @@ class PositionPlaces(object):
 class LineupOptimizer(object):
     def __init__(self, settings):
         """
-        LineupOptimizer select the best lineup for daily fantasy sports.
+        LineupOptimizer creates the best lineup for daily fantasy sports.
         :type settings: BaseSettings
         """
         self._players = []
@@ -56,6 +56,9 @@ class LineupOptimizer(object):
         self._search_threshold = 0.8
         self._min_deviation = 0.06
         self._max_deviation = 0.12
+        self._players_from_one_team = {}
+        self._players_with_same_position = {}
+        self._positions_from_same_team = []
 
     @property
     def lineup(self):
@@ -142,6 +145,9 @@ class LineupOptimizer(object):
         """
         self._set_settings()
         self._lineup = []
+        self._players_with_same_position = {}
+        self._players_from_one_team = {}
+        self._positions_from_same_team = []
 
     def load_players_from_CSV(self, filename):
         """
@@ -181,7 +187,7 @@ class LineupOptimizer(object):
         try:
             self._removed_players.remove(player)
         except ValueError:
-            pass
+            raise LineupOptimizerException('Player not removed!')
 
     def _add_to_lineup(self, player):
         """
@@ -245,20 +251,22 @@ class LineupOptimizer(object):
         Return true if player successfully added to lineup.
         :type player: Player
         """
+        if player.max_exposure == 0:
+            raise LineupOptimizerException('Can\'t add this player to line up! Player has max exposure set to 0.')
         if player in self._lineup:
-            raise LineupOptimizerException("This player already in your line up!")
+            raise LineupOptimizerException('This player already in your line up!')
         if not isinstance(player, Player):
-            raise LineupOptimizerException("This function accept only Player objects!")
+            raise LineupOptimizerException('This function accept only Player objects!')
         if self._budget - player.salary < 0:
-            raise LineupOptimizerException("Can't add this player to line up! Your team is over budget!")
+            raise LineupOptimizerException('Can\'t add this player to line up! Your team is over budget!')
         if self._total_players - 1 < 0:
-            raise LineupOptimizerException("Can't add this player to line up! You already select all {} players!".
-                                           format(len(self._lineup)))
+            raise LineupOptimizerException('Can\'t add this player to line up! You already select all %s players!' %
+                                           len(self._lineup))
         if self._max_from_one_team:
             from_same_team = len(list(filter(lambda p: p.team == player.team, self.lineup)))
             if from_same_team + 1 > self._max_from_one_team:
-                raise LineupOptimizerException("You can't set more than {} players from one team.".
-                                               format(self._max_from_one_team))
+                raise LineupOptimizerException('You can\'t set more than %s players from one team.' %
+                                               self._max_from_one_team)
         players = self.lineup[:]
         players.append(player)
         positions, total_added = self._recalculate_positions(players)
@@ -269,7 +277,7 @@ class LineupOptimizer(object):
                 if list_intersection(position, player.positions):
                     self._not_linked_positions[position].add()
         else:
-            raise LineupOptimizerException("You're already select all {}'s".format("/".join(player.positions)))
+            raise LineupOptimizerException('You\'re already select all %s\'s' % '/'.join(player.positions))
 
     def remove_player_from_lineup(self, player):
         """
@@ -277,7 +285,7 @@ class LineupOptimizer(object):
         :type player: Player
         """
         if not isinstance(player, Player):
-            raise LineupOptimizerException("This function accept only Player objects!")
+            raise LineupOptimizerException('This function accept only Player objects!')
         try:
             self._lineup.remove(player)
             self._budget += player.salary
@@ -289,7 +297,7 @@ class LineupOptimizer(object):
                 if list_intersection(position, player.positions):
                     self._not_linked_positions[position].remove()
         except ValueError:
-            raise LineupOptimizerException("Player not in line up!")
+            raise LineupOptimizerException('Player not in line up!')
 
     def _build_lineup(self, players):
         """
@@ -310,60 +318,69 @@ class LineupOptimizer(object):
                 raise LineupOptimizerException('Unable to build lineup from optimizer result')
         return Lineup(players_with_position)
 
-    def _validate_optimizer_params(self, teams=None, positions=None):
-        """
-        Validate passed to optimizer parameters.
-        :type teams: dict[str, int]
-        :type positions: dict[str, int]
-        :return: processed teams and positions
-        """
-        # check teams parameter
-        if teams:
-            if not isinstance(teams, dict) or not all([isinstance(team, str) for team in teams.keys()]) or \
-                    not all([isinstance(num_of_players, int) for num_of_players in teams.values()]):
-                raise LineupOptimizerException("Teams parameter must be dict where key is team name and value is number"
-                                               " of players from specified team.")
-            teams = {team.upper(): num_of_players for team, num_of_players in teams.items()}
-            for team, num_of_players in teams.items():
-                if team not in self._available_teams:
-                    raise LineupOptimizerIncorrectTeamName("{} is incorrect team name.".format(team))
-                if self._max_from_one_team and num_of_players > self._max_from_one_team:
-                    raise LineupOptimizerException("You can't set more than {} players from one team.".
-                                                   format(self._max_from_one_team))
-        # check positions parameter
-        if positions:
-            if not isinstance(positions, dict) or \
-                    not all([isinstance(position, str) for position in positions.keys()]) or \
-                    not all([isinstance(num_of_players, int) for num_of_players in positions.values()]):
-                raise LineupOptimizerException("Positions parameter must be dict where key is position name and value "
-                                               "is number of players from specified position.")
-            positions = {position.upper(): num_of_players for position, num_of_players in positions.items()}
-            for pos, val in positions.items():
-                available_places = self._positions[(pos,)].optional
-                if val > self._positions[(pos,)].optional:
-                    raise LineupOptimizerException("Max available places for position {} is {}. Got {} ".
-                                                   format(pos, available_places, val))
-                if (pos,) not in self._available_positions:
-                    raise LineupOptimizerIncorrectPositionName("{} is incorrect position name.".format(pos))
-        else:
-            positions = {}
-        return teams, positions
+    def _check_team_constraint(self, team, num_of_players):
+        if team not in self._available_teams:
+            raise LineupOptimizerIncorrectTeamName('%s is incorrect team name.' % team)
+        if self._max_from_one_team and num_of_players > self._max_from_one_team:
+            raise LineupOptimizerException('You can\'t set more than %s players from one team.' %
+                                           self._max_from_one_team)
 
-    def optimize(self, n,  teams=None, positions=None, max_exposure=None, randomness=None, with_injured=False):
+    def _check_position_constraint(self, position, num_of_positions):
+        if (position,) not in self._available_positions:
+            raise LineupOptimizerIncorrectPositionName('%s is incorrect position name.' % position)
+        available_places = self._positions[(position,)].max
+        if num_of_positions > available_places:
+            raise LineupOptimizerException('Max available places for position %s is %s. Got %s' %
+                                           (position, available_places, num_of_positions))
+
+    def set_players_from_one_team(self, teams=None):
+        """
+        :type teams: dict[str, int]|None
+        """
+        teams = teams or {}
+        teams = {team.upper(): num_of_players for team, num_of_players in teams.items()}
+        for team, num_of_players in teams.items():
+            self._check_team_constraint(team, num_of_players)
+        self._players_from_one_team = teams
+
+    def set_players_with_same_position(self, positions):
+        """
+        :type positions:
+        :return: positions: dict[str, int]|None
+        """
+        positions = positions or {}
+        positions = {position.upper(): num_of_players for position, num_of_players in positions.items()}
+        for pos, val in positions.items():
+            self._check_position_constraint(pos, val)
+        self._players_with_same_position = positions
+
+    def set_positions_for_same_team(self, positions):
+        """
+        :type positions: list[str]
+        """
+        positions = positions or []
+        if self._max_from_one_team and len(positions) > self._max_from_one_team:
+            raise LineupOptimizerException('You can\'t set more than %s players from one team.' %
+                                           self._max_from_one_team)
+        positions = [position.upper() for position in positions]
+        for position, num_of_players in Counter(positions).items():
+            self._check_position_constraint(position, num_of_players)
+        self._positions_from_same_team = positions
+
+    def optimize(self, n, max_exposure=None, randomness=None, with_injured=False):
         """
         Select optimal lineup from players list.
         This method uses Mixed Integer Linear Programming method for evaluating best starting lineup.
-        It"s return generator. If you don"t specify n it will return generator with all possible lineups started
+        It"s return generator. If you don't specify n it will return generator with all possible lineups started
         from highest fppg to lowest fppg.
         :type n: int
-        :type teams: dict[str, int]
-        :type positions: dict[str, int]
         :type max_exposure: float
         :type randomness: bool
         :type with_injured: bool
-        :rtype: List[Lineup]
+        :rtype: list[Lineup]
         """
-        teams, positions = self._validate_optimizer_params(teams, positions)
+        teams, positions = self._players_from_one_team, self._players_with_same_position
+        # Check for empty places
         if len(self._lineup) == self._settings.get_total_players():
             lineup = Lineup(self._lineup)
             yield lineup
@@ -372,14 +389,10 @@ class LineupOptimizer(object):
         players = [player for player in self._players
                    if player not in self._removed_players and player not in self._lineup
                    and isinstance(player, Player) and player.max_exposure != 0.0]
-        for player in self._lineup:
-            if player.max_exposure == 0:
-                self.remove_player_from_lineup(player)
         current_max_points = 10000000
         lineup_points = sum(player.fppg for player in self._lineup)
         used_players = defaultdict(int)
-        counter = 0
-        while n > counter:
+        for _ in range(n):
             # filter players with exceeded max exposure
             for player, used in used_players.items():
                 exposure = player.max_exposure if player.max_exposure is not None else max_exposure
@@ -390,13 +403,14 @@ class LineupOptimizer(object):
                         self.remove_player_from_lineup(player)
                         current_max_points += player.fppg
                         lineup_points -= player.fppg
-            prob = LpProblem("Daily Fantasy Sports", LpMaximize)
+            prob = LpProblem('Daily Fantasy Sports', LpMaximize)
             x = LpVariable.dicts(
-                "table", players,
+                'players', players,
                 lowBound=0,
                 upBound=1,
                 cat=LpInteger
             )
+            #  Add random for projections
             if randomness:
                 for i, player in enumerate(players):
                     player.deviated_fppg = player.fppg * (1 + (-1 if bool(getrandbits(1)) else 1) *
@@ -426,8 +440,33 @@ class LineupOptimizer(object):
             if self._max_from_one_team:
                 for team in self._available_teams:
                     prob += lpSum([x[player] for player in players if player.team == team]) <= self._max_from_one_team
+            if self._positions_from_same_team:
+                from_same_team = len(self._positions_from_same_team)
+                players_combinations = []
+                # Create all possible combinations with specified position for each team
+                for team in self._available_teams:
+                    team_players = [player for player in players if player.team == team]
+                    players_by_positions = []
+                    for position in self._positions_from_same_team:
+                        players_by_positions.append([player for player in team_players if position in player.positions])
+                    for players_combination in product(*players_by_positions):
+                        # Remove combinations with duplicated players
+                        if len(set(players_combination)) != from_same_team:
+                            continue
+                        players_combinations.append(tuple([player for player in players_combination]))
+                combinations_variable = LpVariable.dicts(
+                    'combinations', players_combinations,
+                    lowBound=0,
+                    upBound=1,
+                    cat=LpInteger
+                )
+                prob += lpSum([combinations_variable[combination] for combination in players_combinations]) >= 1
+                for combination in players_combinations:
+                    prob += sum(x[player] for player in combination) >= \
+                            from_same_team * combinations_variable[combination]
+
             prob.solve()
-            if prob.status == 1:
+            if prob.status == LpStatusOptimal:
                 lineup_players = self._lineup[:]
                 for player in players:
                     if x[player].value() == 1.0:
@@ -437,8 +476,7 @@ class LineupOptimizer(object):
                 lineup = self._build_lineup(lineup_players)
                 current_max_points = lineup.fantasy_points_projection - lineup_points - 0.001
                 yield lineup
-                counter += 1
             else:
-                raise LineupOptimizerException("Can't generate lineups")
+                raise LineupOptimizerException('Can\'t generate lineups')
         self._lineup = locked_players
         return
