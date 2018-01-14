@@ -1,7 +1,14 @@
 from __future__ import absolute_import
+import sys
 import unittest
-from unittest.mock import mock_open, patch
+from mock import mock_open, patch
 from pydfs_lineup_optimizer import Site, Sport, get_optimizer, CSVLineupExporter, Player
+
+
+if sys.version_info < (3, ):
+    OPEN_METHOD = '__builtin__.open'
+else:
+    OPEN_METHOD = 'builtins.open'
 
 
 class TestLineupExporter(unittest.TestCase):
@@ -21,7 +28,7 @@ class TestLineupExporter(unittest.TestCase):
         optimizer.load_players(cls.players)
         cls.lineups = list(optimizer.optimize(1))
 
-    @patch('builtins.open', new_callable=mock_open)
+    @patch(OPEN_METHOD, new_callable=mock_open)
     def test_csv_exporter(self, mocked_open):
         filename = 'test.csv'
         CSVLineupExporter(self.lineups).export(filename)
@@ -34,7 +41,7 @@ class TestLineupExporter(unittest.TestCase):
         mocked_open.return_value.write.assert_any_call(header)
         mocked_open.return_value.write.assert_any_call(body)
 
-    @patch('builtins.open', new_callable=mock_open)
+    @patch(OPEN_METHOD, new_callable=mock_open)
     def test_csv_exporter_with_custom_player_render(self, mocked_open):
         filename = 'test.csv'
         player_render = lambda player: '%s %s' % (player.full_name, player.team)
