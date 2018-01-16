@@ -22,7 +22,7 @@ It accepts list with positions that must be selected from one team.
 
 .. code-block:: python
 
-    optimizer.set_players_from_one_team(['QB', 'WR', 'WR'])
+    optimizer.set_positions_for_same_team(['QB', 'WR', 'WR'])
 
 For setting specific players positions for multi-position slots optimizer has `set_players_with_same_position` method.
 It accepts dict where key is a position name and value is number of players with this position.
