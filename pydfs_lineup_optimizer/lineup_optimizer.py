@@ -306,14 +306,16 @@ class LineupOptimizer(object):
         :return: Lineup
         """
         players_with_position = []
-        positions_priority = Counter((pos for player in players for pos in player.positions))
-        for position in self._settings.positions:
-            available_players = [player for player in players if set(position.positions).intersection(player.positions)]
-            if available_players:
-                player = sorted(available_players, key=lambda player: (-len(player.positions), min(
-                    [positions_priority[pos] for pos in player.positions])), reverse=True)[0]
-                players.remove(player)
-                players_with_position.append(LineupPlayer(player, position.name))
+        positions = self._settings.positions
+        single_positions = {pos.positions[0]: priority for priority, pos in enumerate(positions)
+                            if len(pos.positions) == 1}
+        players.sort(key=lambda p: (len(p.positions), max([single_positions[pos] for pos in p.positions])))
+        for position in positions:
+            for player in players:
+                if list_intersection(position.positions, player.positions):
+                    players.remove(player)
+                    players_with_position.append(LineupPlayer(player, position.name))
+                    break
             else:
                 raise LineupOptimizerException('Unable to build lineup from optimizer result')
         return Lineup(players_with_position)
@@ -382,7 +384,7 @@ class LineupOptimizer(object):
         teams, positions = self._players_from_one_team, self._players_with_same_position
         # Check for empty places
         if len(self._lineup) == self._settings.get_total_players():
-            lineup = Lineup(self._lineup)
+            lineup = self._build_lineup(self._lineup)
             yield lineup
             return
         locked_players = self._lineup[:]
