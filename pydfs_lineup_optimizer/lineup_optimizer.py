@@ -309,7 +309,7 @@ class LineupOptimizer(object):
         positions = self._settings.positions
         single_positions = {pos.positions[0]: priority for priority, pos in enumerate(positions)
                             if len(pos.positions) == 1}
-        players.sort(key=lambda p: (len(p.positions), max([single_positions[pos] for pos in p.positions])))
+        players.sort(key=lambda p: (len(p.positions), max([single_positions.get(pos, 0) for pos in p.positions])))
         for position in positions:
             for player in players:
                 if list_intersection(position.positions, player.positions):
