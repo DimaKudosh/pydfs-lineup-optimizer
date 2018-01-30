@@ -307,17 +307,27 @@ class LineupOptimizer(object):
         """
         players_with_position = []
         positions = self._settings.positions
-        single_positions = {pos.positions[0]: priority for priority, pos in enumerate(positions)
-                            if len(pos.positions) == 1}
-        players.sort(key=lambda p: (len(p.positions), max([single_positions.get(pos, 0) for pos in p.positions])))
+        positions_order = [pos.name for pos in positions]
+        players.sort(key=lambda p: len(p.positions))
+        position_eligible_players = []
         for position in positions:
+            eligible_players = []
             for player in players:
                 if list_intersection(position.positions, player.positions):
-                    players.remove(player)
-                    players_with_position.append(LineupPlayer(player, position.name))
-                    break
-            else:
+                    eligible_players.append(player)
+            position_eligible_players.append([position.name, eligible_players])
+        for _ in positions:
+            position_eligible_players.sort(key=lambda p: len(p[1]))
+            position_name, eligible_players = position_eligible_players.pop(0)
+            try:
+                selected_player = eligible_players[0]
+            except IndexError:
                 raise LineupOptimizerException('Unable to build lineup from optimizer result')
+            players_with_position.append(LineupPlayer(selected_player, position_name))
+            for _, position_players in position_eligible_players:
+                if selected_player in position_players:
+                    position_players.remove(selected_player)
+        players_with_position.sort(key=lambda p: positions_order.index(p.lineup_position))
         return Lineup(players_with_position)
 
     def _check_team_constraint(self, team, num_of_players):
