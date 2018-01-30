@@ -306,27 +306,45 @@ class LineupOptimizer(object):
         :return: Lineup
         """
         players_with_position = []
-        positions = self._settings.positions
+        positions = self._settings.positions.copy()
         positions_order = [pos.name for pos in positions]
-        players.sort(key=lambda p: len(p.positions))
-        position_eligible_players = []
-        for position in positions:
-            eligible_players = []
-            for player in players:
-                if list_intersection(position.positions, player.positions):
-                    eligible_players.append(player)
-            position_eligible_players.append([position.name, eligible_players])
-        for _ in positions:
-            position_eligible_players.sort(key=lambda p: len(p[1]))
-            position_name, eligible_players = position_eligible_players.pop(0)
+        single_position_players = []
+        multi_positions_players = []
+        # Split single and multiple positions players
+        for player in players:
+            if len(player.positions) == 1:
+                single_position_players.append(player)
+            else:
+                multi_positions_players.append(player)
+        # Firstly set positions for single position players
+        for player in single_position_players:
+            for position in positions:
+                if list_intersection(player.positions, position.positions):
+                    players_with_position.append(LineupPlayer(player, position.name))
+                    positions.remove(position)
+                    break
+            else:
+                raise LineupOptimizerException('Unable to build lineup from optimizer result')
+        # Set positions for multi-positional players
+        # Create list of eligible positions for each player
+        players_eligible_positions = []
+        for player in multi_positions_players:
+            players_eligible_positions.append((player, [position for position in positions
+                                                        if list_intersection(player.positions, position.positions)]))
+        # Set position for player with fewest eligible positions
+        for _ in range(len(players_eligible_positions)):
+            players_eligible_positions.sort(key=lambda p: len(p[1]))
+            player, eligible_positions = players_eligible_positions.pop(0)
             try:
-                selected_player = eligible_players[0]
+                selected_position = eligible_positions[0]
             except IndexError:
                 raise LineupOptimizerException('Unable to build lineup from optimizer result')
-            players_with_position.append(LineupPlayer(selected_player, position_name))
-            for _, position_players in position_eligible_players:
-                if selected_player in position_players:
-                    position_players.remove(selected_player)
+            players_with_position.append(LineupPlayer(player, selected_position.name))
+            # Remove selected positions from eligible positions for other players
+            for _, other_player_positions in players_eligible_positions:
+                try:
+                    other_player_positions.remove(selected_position)
+                except ValueError: pass
         players_with_position.sort(key=lambda p: positions_order.index(p.lineup_position))
         return Lineup(players_with_position)
 
