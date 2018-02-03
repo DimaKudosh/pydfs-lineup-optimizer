@@ -306,7 +306,7 @@ class LineupOptimizer(object):
         :return: Lineup
         """
         players_with_position = []
-        positions = self._settings.positions.copy()
+        positions = self._settings.positions[:]
         positions_order = [pos.name for pos in positions]
         single_position_players = []
         multi_positions_players = []
