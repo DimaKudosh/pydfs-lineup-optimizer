@@ -6,3 +6,6 @@ All notable changes to this project will be documented in this file.
 - Added csv export
 - Added constraints for positions in same team
 - Changed constraint setting interface
+
+## [v1.3]
+- Fixed bug with setting lineup positions
