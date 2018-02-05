@@ -326,25 +326,33 @@ class LineupOptimizer(object):
             else:
                 raise LineupOptimizerException('Unable to build lineup from optimizer result')
         # Set positions for multi-positional players
-        # Create list of eligible positions for each player
-        players_eligible_positions = []
-        for player in multi_positions_players:
-            players_eligible_positions.append((player, [position for position in positions
-                                                        if list_intersection(player.positions, position.positions)]))
-        # Set position for player with fewest eligible positions
-        for _ in range(len(players_eligible_positions)):
-            players_eligible_positions.sort(key=lambda p: len(p[1]))
-            player, eligible_positions = players_eligible_positions.pop(0)
+        # Create list of eligible players for each position
+        position_eligible_players = []
+        for position in positions:
+            position_eligible_players.append((position, [player for player in multi_positions_players
+                                                         if list_intersection(player.positions, position.positions)]))
+
+        players_appearance_counter = Counter(chain(*[p[1] for p in position_eligible_players]))
+        # Select position with fewest eligible players and set players with fewest allowed positions to this position
+        for _ in range(len(position_eligible_players)):
+            position_eligible_players.sort(key=lambda p: len(p[1]))
+            selected_position, eligible_players = position_eligible_players.pop(0)
+            eligible_players.sort(key=lambda p: players_appearance_counter[p])
             try:
-                selected_position = eligible_positions[0]
+                player = eligible_players[0]
             except IndexError:
                 raise LineupOptimizerException('Unable to build lineup from optimizer result')
             players_with_position.append(LineupPlayer(player, selected_position.name))
-            # Remove selected positions from eligible positions for other players
-            for _, other_player_positions in players_eligible_positions:
+            # Remove selected player from eligible players for other positions
+            del players_appearance_counter[player]
+            for _, other_player_positions in position_eligible_players:
                 try:
-                    other_player_positions.remove(selected_position)
-                except ValueError: pass
+                    other_player_positions.remove(player)
+                except ValueError:
+                    pass
+            # Decrease players counter for other players that can be set to this position
+            for p in eligible_players[1:]:
+                players_appearance_counter[p] -= 1
         players_with_position.sort(key=lambda p: positions_order.index(p.lineup_position))
         return Lineup(players_with_position)
 
