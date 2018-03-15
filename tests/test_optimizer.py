@@ -322,3 +322,18 @@ class TestLineupOptimizer(unittest.TestCase):
         optimizer._build_lineup(create_players(['PG', 'PG', 'PG', 'SF', 'SF', 'SF', 'SF', 'SF']))
         with self.assertRaises(LineupOptimizerException):
             optimizer._build_lineup(create_players(['PG', 'PG', 'SF', 'SF', 'SF', 'SF', 'SF', 'SF']))
+
+    def test_min_salary_cap(self):
+        player = Player(1, 'p1', 'p1', ['PG'], 'team1', 1, 200)
+        self.lineup_optimizer._players.append(player)
+        lineup = next(self.lineup_optimizer.optimize(1))
+        min_salary_cap = 50000
+        self.assertTrue(lineup.salary_costs < min_salary_cap)
+        self.lineup_optimizer.set_min_salary_cap(min_salary_cap)
+        lineup = next(self.lineup_optimizer.optimize(1))
+        self.assertEqual(lineup.salary_costs, min_salary_cap)
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.add_player_to_lineup(player)
+            next(self.lineup_optimizer.optimize(1))
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.set_min_salary_cap(min_salary_cap * 2)

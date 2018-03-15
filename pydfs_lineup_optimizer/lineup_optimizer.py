@@ -59,6 +59,7 @@ class LineupOptimizer(object):
         self._players_from_one_team = {}
         self._players_with_same_position = {}
         self._positions_from_same_team = []
+        self._min_salary_cap = None
 
     @property
     def lineup(self):
@@ -138,6 +139,11 @@ class LineupOptimizer(object):
         """
         self._min_deviation = min_deviation
         self._max_deviation = max_deviation
+
+    def set_min_salary_cap(self, min_salary):
+        if min_salary > self._budget:
+            raise LineupOptimizerException('Min salary greater than max budget')
+        self._min_salary_cap = min_salary
 
     def reset_lineup(self):
         """
@@ -430,6 +436,7 @@ class LineupOptimizer(object):
         current_max_points = 10000000
         lineup_points = sum(player.fppg for player in self._lineup)
         used_players = defaultdict(int)
+        min_salary_cap = self._min_salary_cap - sum((p.salary for p in self._lineup)) if self._min_salary_cap else None
         for _ in range(n):
             # filter players with exceeded max exposure
             for player, used in used_players.items():
@@ -458,6 +465,8 @@ class LineupOptimizer(object):
                 prob += lpSum([player.fppg * x[player] for player in players])
                 prob += lpSum([player.fppg * x[player] for player in players]) <= current_max_points
             prob += lpSum([player.salary * x[player] for player in players]) <= self._budget
+            if min_salary_cap:
+                prob += lpSum([player.salary * x[player] for player in players]) >= min_salary_cap
             prob += lpSum([x[player] for player in players]) == self._total_players
             if not with_injured:
                 prob += lpSum([x[player] for player in players if not player.is_injured]) == self._total_players

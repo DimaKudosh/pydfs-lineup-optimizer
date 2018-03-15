@@ -9,3 +9,6 @@ All notable changes to this project will be documented in this file.
 
 ## [v1.3]
 - Fixed bug with setting lineup positions
+
+## [v1.4]
+- Added min salary constraint.
