@@ -9,6 +9,7 @@ Constraints
 - Number of players from same team.
 - Positions for same team.
 - Number of specific positions.
+- Minimum salary cap.
 
 For setting number of players from same team constraint you must call `set_players_from_one_team` method of optimizer.
 It accepts dict where key is a team name and value is number of players for this team.
@@ -34,3 +35,9 @@ It accepts dict where key is a position name and value is number of players with
 .. note::
 
    Positions constraint hasn't effect for dfs sites without multi-position slots(G, UTIL, etc.)
+
+You can set minimum salaries cap using `set_min_salary_cap` method. If you set min salary cap greater than maximun budget `LineupOptimizerException` will be raised.
+
+.. code-block:: python
+
+    optimizer.set_min_salary_cap(49000)

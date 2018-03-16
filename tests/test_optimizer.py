@@ -286,3 +286,54 @@ class TestLineupOptimizer(unittest.TestCase):
         self.assertTrue(ratio('griffin', 'Blake Griffin') >= threshold)
         self.assertTrue(ratio('grifin', 'Blake Griffin') >= threshold)
         self.assertFalse(ratio('Hood', 'Blake Griffin') >= threshold)
+
+    def test_lineup_building(self):
+        def create_players(positions_list):
+            players = []
+            for i, positions in enumerate(positions_list):
+                players.append(
+                    Player(player_id=i, first_name=i, last_name=i, positions=positions.split('/'), team=str(i),
+                           salary=10, fppg=10)
+                )
+            return players
+        optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+        optimizer._build_lineup(create_players(['PG', 'SG', 'SF', 'PF', 'C', 'SG', 'SF', 'SF']))
+        optimizer._build_lineup(create_players(['PG/SG', 'SG/SF', 'SF/PF', 'PF/C', 'C/PG', 'SG/SF', 'SF/PF', 'SF/PF']))
+        optimizer._build_lineup(create_players(['PG', 'PG', 'C', 'C', 'SG/SF', 'SF/PF', 'SF/PF', 'PG/SG']))
+        optimizer._build_lineup(create_players(['C', 'SG/SF', 'PG/SG', 'SG/SF', 'SG/SF', 'C', 'SF/PF', 'PG']))
+        optimizer._build_lineup(create_players(['SG', 'PF', 'C', 'C', 'PF', 'PG/SF', 'PG/SG', 'PG/SG']))
+        optimizer._build_lineup(create_players(['PG', 'PG/SG', 'PG/SG/SF', 'PG/SF/PF', 'PG/PF/C', 'PG', 'PG/SF/PF',
+                                                'PG/SG']))
+        with self.assertRaises(LineupOptimizerException):
+            optimizer._build_lineup(create_players(['PG', 'SG', 'SF', 'PF', 'C', 'SG', 'C', 'C']))
+        optimizer = get_optimizer(Site.DRAFTKINGS, Sport.FOOTBALL)
+        optimizer._build_lineup(create_players(['QB', 'WR', 'WR', 'WR', 'WR', 'RB', 'RB', 'TE', 'DST']))
+        with self.assertRaises(LineupOptimizerException):
+            optimizer._build_lineup(create_players(['QB', 'WR', 'WR', 'WR', 'WR', 'WR', 'RB', 'RB', 'TE']))
+        optimizer = get_optimizer(Site.DRAFTKINGS, Sport.HOCKEY)
+        optimizer._build_lineup(create_players(['LW', 'RW', 'LW', 'RW', 'C', 'C', 'D', 'D', 'G']))
+        with self.assertRaises(LineupOptimizerException):
+            optimizer._build_lineup(create_players(['LW', 'RW', 'LW', 'RW', 'LW', 'C', 'D', 'D', 'G']))
+        optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASEBALL)
+        optimizer._build_lineup(create_players(['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF']))
+        with self.assertRaises(LineupOptimizerException):
+            optimizer._build_lineup(create_players(['P', 'C', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF']))
+        optimizer = get_optimizer(Site.FANTASY_DRAFT, Sport.BASKETBALL)
+        optimizer._build_lineup(create_players(['PG', 'PG', 'PG', 'SF', 'SF', 'SF', 'SF', 'SF']))
+        with self.assertRaises(LineupOptimizerException):
+            optimizer._build_lineup(create_players(['PG', 'PG', 'SF', 'SF', 'SF', 'SF', 'SF', 'SF']))
+
+    def test_min_salary_cap(self):
+        player = Player(1, 'p1', 'p1', ['PG'], 'team1', 1, 200)
+        self.lineup_optimizer._players.append(player)
+        lineup = next(self.lineup_optimizer.optimize(1))
+        min_salary_cap = 50000
+        self.assertTrue(lineup.salary_costs < min_salary_cap)
+        self.lineup_optimizer.set_min_salary_cap(min_salary_cap)
+        lineup = next(self.lineup_optimizer.optimize(1))
+        self.assertEqual(lineup.salary_costs, min_salary_cap)
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.add_player_to_lineup(player)
+            next(self.lineup_optimizer.optimize(1))
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.set_min_salary_cap(min_salary_cap * 2)

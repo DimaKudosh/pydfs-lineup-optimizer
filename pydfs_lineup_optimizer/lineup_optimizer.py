@@ -59,6 +59,7 @@ class LineupOptimizer(object):
         self._players_from_one_team = {}
         self._players_with_same_position = {}
         self._positions_from_same_team = []
+        self._min_salary_cap = None
 
     @property
     def lineup(self):
@@ -138,6 +139,11 @@ class LineupOptimizer(object):
         """
         self._min_deviation = min_deviation
         self._max_deviation = max_deviation
+
+    def set_min_salary_cap(self, min_salary):
+        if min_salary > self._budget:
+            raise LineupOptimizerException('Min salary greater than max budget')
+        self._min_salary_cap = min_salary
 
     def reset_lineup(self):
         """
@@ -306,27 +312,53 @@ class LineupOptimizer(object):
         :return: Lineup
         """
         players_with_position = []
-        positions = self._settings.positions
+        positions = self._settings.positions[:]
         positions_order = [pos.name for pos in positions]
-        players.sort(key=lambda p: len(p.positions))
+        single_position_players = []
+        multi_positions_players = []
+        # Split single and multiple positions players
+        for player in players:
+            if len(player.positions) == 1:
+                single_position_players.append(player)
+            else:
+                multi_positions_players.append(player)
+        # Firstly set positions for single position players
+        for player in single_position_players:
+            for position in positions:
+                if list_intersection(player.positions, position.positions):
+                    players_with_position.append(LineupPlayer(player, position.name))
+                    positions.remove(position)
+                    break
+            else:
+                raise LineupOptimizerException('Unable to build lineup from optimizer result')
+        # Set positions for multi-positional players
+        # Create list of eligible players for each position
         position_eligible_players = []
         for position in positions:
-            eligible_players = []
-            for player in players:
-                if list_intersection(position.positions, player.positions):
-                    eligible_players.append(player)
-            position_eligible_players.append([position.name, eligible_players])
-        for _ in positions:
+            position_eligible_players.append((position, [player for player in multi_positions_players
+                                                         if list_intersection(player.positions, position.positions)]))
+
+        players_appearance_counter = Counter(chain(*[p[1] for p in position_eligible_players]))
+        # Select position with fewest eligible players and set players with fewest allowed positions to this position
+        for _ in range(len(position_eligible_players)):
             position_eligible_players.sort(key=lambda p: len(p[1]))
-            position_name, eligible_players = position_eligible_players.pop(0)
+            selected_position, eligible_players = position_eligible_players.pop(0)
+            eligible_players.sort(key=lambda p: players_appearance_counter[p])
             try:
-                selected_player = eligible_players[0]
+                player = eligible_players[0]
             except IndexError:
                 raise LineupOptimizerException('Unable to build lineup from optimizer result')
-            players_with_position.append(LineupPlayer(selected_player, position_name))
-            for _, position_players in position_eligible_players:
-                if selected_player in position_players:
-                    position_players.remove(selected_player)
+            players_with_position.append(LineupPlayer(player, selected_position.name))
+            # Remove selected player from eligible players for other positions
+            del players_appearance_counter[player]
+            for _, other_player_positions in position_eligible_players:
+                try:
+                    other_player_positions.remove(player)
+                except ValueError:
+                    pass
+            # Decrease players counter for other players that can be set to this position
+            for p in eligible_players[1:]:
+                players_appearance_counter[p] -= 1
         players_with_position.sort(key=lambda p: positions_order.index(p.lineup_position))
         return Lineup(players_with_position)
 
@@ -404,6 +436,7 @@ class LineupOptimizer(object):
         current_max_points = 10000000
         lineup_points = sum(player.fppg for player in self._lineup)
         used_players = defaultdict(int)
+        min_salary_cap = self._min_salary_cap - sum((p.salary for p in self._lineup)) if self._min_salary_cap else None
         for _ in range(n):
             # filter players with exceeded max exposure
             for player, used in used_players.items():
@@ -432,6 +465,8 @@ class LineupOptimizer(object):
                 prob += lpSum([player.fppg * x[player] for player in players])
                 prob += lpSum([player.fppg * x[player] for player in players]) <= current_max_points
             prob += lpSum([player.salary * x[player] for player in players]) <= self._budget
+            if min_salary_cap:
+                prob += lpSum([player.salary * x[player] for player in players]) >= min_salary_cap
             prob += lpSum([x[player] for player in players]) == self._total_players
             if not with_injured:
                 prob += lpSum([x[player] for player in players if not player.is_injured]) == self._total_players
