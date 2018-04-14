@@ -315,7 +315,7 @@ class TestLineupOptimizer(unittest.TestCase):
         with self.assertRaises(LineupOptimizerException):
             optimizer._build_lineup(create_players(['LW', 'RW', 'LW', 'RW', 'LW', 'C', 'D', 'D', 'G']))
         optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASEBALL)
-        optimizer._build_lineup(create_players(['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF']))
+        optimizer._build_lineup(create_players(['SP', 'SP', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF']))
         with self.assertRaises(LineupOptimizerException):
             optimizer._build_lineup(create_players(['P', 'C', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF']))
         optimizer = get_optimizer(Site.FANTASY_DRAFT, Sport.BASKETBALL)
