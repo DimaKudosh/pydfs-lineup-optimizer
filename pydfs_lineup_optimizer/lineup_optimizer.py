@@ -474,13 +474,13 @@ class LineupOptimizer(object):
                 extra = 0
                 if len(position) == 1:
                     extra = positions.get(position[0], 0)
-                prob += lpSum([x[player] for player in players if
-                               any([player_position in position for player_position in player.positions])
-                               ]) >= places.min + extra
+                players_with_position = [x[player] for player in players
+                                         if list_intersection(position, player.positions)]
+                prob += lpSum(players_with_position) >= places.min + extra
+                prob += lpSum(players_with_position) <= places.max
             for position, places in self._not_linked_positions.items():
-                prob += lpSum([x[player] for player in players if
-                               any([player_position in position for player_position in player.positions])
-                               ]) >= places.min
+                prob += lpSum([x[player] for player in players
+                               if list_intersection(position, player.positions)]) >= places.min
             if teams is not None:
                 for key, value in teams.items():
                     prob += lpSum([x[player] for player in players if player.team == key]) == value

@@ -219,7 +219,7 @@ class DraftKingsSettings(BaseSettings):  # pragma: no cover
                 max_exposure = row.get('Max Exposure')
                 name = row['Name'].split()
                 player = Player(
-                    '',
+                    row['ID'],
                     name[0],
                     name[1] if len(name) > 1 else '',
                     row['Position'].split('/'),
@@ -281,8 +281,8 @@ class DraftKingsHockeySettings(DraftKingsSettings):
 class DraftKingsBaseballSettings(DraftKingsSettings):
     budget = 50000
     positions = [
-        LineupPosition('P', ('P', )),
-        LineupPosition('P', ('P', )),
+        LineupPosition('P', ('SP', 'RP')),
+        LineupPosition('P', ('SP', 'RP')),
         LineupPosition('C', ('C', )),
         LineupPosition('1B', ('1B', )),
         LineupPosition('2B', ('2B', )),
