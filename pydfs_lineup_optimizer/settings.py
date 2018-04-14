@@ -223,7 +223,7 @@ class DraftKingsSettings(BaseSettings):  # pragma: no cover
                     name[0],
                     name[1] if len(name) > 1 else '',
                     row['Position'].split('/'),
-                    row['teamAbbrev'],
+                    row['TeamAbbrev'],
                     float(row['Salary']),
                     float(row['AvgPointsPerGame']),
                     max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None
