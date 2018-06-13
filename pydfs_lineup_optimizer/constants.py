@@ -10,3 +10,4 @@ class Sport:
     FOOTBALL = 'FOOTBALL'
     HOCKEY = 'HOCKEY'
     BASEBALL = 'BASEBALL'
+    WNBA = 'WNBA'
