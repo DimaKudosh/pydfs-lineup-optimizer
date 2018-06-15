@@ -159,6 +159,19 @@ class FanDuelBasketballSettings(FanDuelSettings):
         LineupPosition('C', ('C', )),
     ]
 
+class FanDuelWnbaSettings(FanDuelSettings):
+    budget = 40000
+    positions = [
+        LineupPosition('G', ('G', )),
+        LineupPosition('G', ('G', )),
+        LineupPosition('G', ('G', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+    ]
+
+
 
 class FanDuelFootballSettings(FanDuelSettings):
     budget = 60000
