@@ -3,5 +3,3 @@ class SolverSign(object):
     NOT_EQ = 'not_eq'
     GTE = 'gte'
     LTE = 'lte'
-    GT = 'gt'
-    LT = 'lt'

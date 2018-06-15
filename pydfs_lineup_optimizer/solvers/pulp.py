@@ -27,10 +27,6 @@ class PuLPSolver(Solver):
             self.prob += lpSum(lhs) >= rhs
         elif sign == SolverSign.LTE:
             self.prob += lpSum(lhs) <= rhs
-        elif sign == SolverSign.GT:
-            self.prob += lpSum(lhs) > rhs
-        elif sign == SolverSign.LT:
-            self.prob += lpSum(lhs) < rhs
         else:
             raise SolverException('Incorrect constraint sign')
 

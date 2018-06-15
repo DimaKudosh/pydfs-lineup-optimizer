@@ -36,6 +36,7 @@ class LineupOptimizer(object):
         self._players_with_same_position = {}
         self._positions_from_same_team = []
         self._min_salary_cap = None
+        self._max_repeating_players = None
         self._solver_class = solver
 
     @property
@@ -112,8 +113,13 @@ class LineupOptimizer(object):
 
     @property
     def min_salary_cap(self):
-        # type: () -> int
+        # type: () -> Optional[int]
         return self._min_salary_cap
+
+    @property
+    def max_repeating_players(self):
+        # type: () -> Optional[int]
+        return self._max_repeating_players
 
     def reset_lineup(self):
         self._lineup = []
@@ -306,6 +312,15 @@ class LineupOptimizer(object):
         else:
             self.remove_rule(FromSameTeamByPositionsRule)
         self._positions_from_same_team = positions or []
+
+    def set_max_repeating_players(self, max_repeating_players):
+        # type: (int) -> None
+        if max_repeating_players >= self.total_players:
+            raise LineupOptimizerException('Maximum repeating players should be smaller than %d' % self.total_players)
+        elif max_repeating_players < 1:
+            raise LineupOptimizerException('Maximum repeating players should be 1 or greater')
+        self._max_repeating_players = max_repeating_players
+        self.add_new_rule(MaxRepeatingPlayersRule)
 
     def optimize(self, n, max_exposure=None, randomness=False, with_injured=False):
         # type: (int, Optional[float], bool, bool) -> Generator[Lineup]

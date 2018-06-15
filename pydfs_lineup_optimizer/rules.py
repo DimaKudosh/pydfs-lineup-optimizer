@@ -1,5 +1,5 @@
 from collections import defaultdict
-from itertools import product
+from itertools import product, combinations
 from random import getrandbits, uniform
 from typing import Dict, Any
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
@@ -169,3 +169,20 @@ class RemoveInjuredRule(OptimizerRule):
         for player, variable in players_dict.items():
             if player.is_injured:
                 solver.add_constraint([variable], [1], SolverSign.EQ, 0)
+
+
+class MaxRepeatingPlayersRule(OptimizerRule):
+    def __init__(self, optimizer, params):
+        super(MaxRepeatingPlayersRule, self).__init__(optimizer, params)
+        self.exclude_combinations = []
+
+    def apply_for_iteration(self, solver, players_dict, result):
+        max_repeating_players = self.optimizer.max_repeating_players
+        if max_repeating_players is None or not result:
+            return
+        for players_combination in combinations(result.players, max_repeating_players + 1):
+            self.exclude_combinations.append([players_dict[player] for player in players_combination])
+        coefficients = [1] * (max_repeating_players + 1)
+        for players_combination in self.exclude_combinations:
+            solver.add_constraint(players_combination, coefficients, SolverSign.LTE, max_repeating_players)
+

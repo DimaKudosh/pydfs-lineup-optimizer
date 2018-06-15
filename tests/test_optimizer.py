@@ -324,3 +324,23 @@ class TestLineupOptimizer(unittest.TestCase):
         self.assertNotIn(cool_player, lineup)
         lineup = next(optimizer.optimize(1, with_injured=True))
         self.assertIn(cool_player, lineup)
+
+    def test_not_repeating_players(self):
+        total_lineups = 5
+        custom_players = create_players(['PG', 'SG', 'SF', 'PF', 'C', 'PG', 'SF'])
+        for player in custom_players:
+            player.fppg = 1000
+        self.lineup_optimizer.extend_players(custom_players)
+        custom_players_in_lineup = []
+        for lineup in self.lineup_optimizer.optimize(total_lineups):
+            custom_players_in_lineup.append(sum(1 for player in lineup.players if player in custom_players))
+        self.assertListEqual(custom_players_in_lineup, [7] * total_lineups)
+        self.lineup_optimizer.set_max_repeating_players(3)
+        custom_players_in_lineup = []
+        for lineup in self.lineup_optimizer.optimize(total_lineups):
+            custom_players_in_lineup.append(sum(1 for player in lineup.players if player in custom_players))
+        self.assertListEqual(custom_players_in_lineup, [7] + [3] * (total_lineups - 1))
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.set_max_repeating_players(8)
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.set_max_repeating_players(0)
