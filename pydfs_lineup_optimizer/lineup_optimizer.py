@@ -3,12 +3,14 @@ from collections import Counter, OrderedDict
 from itertools import chain, combinations, permutations
 from typing import List, FrozenSet, Tuple, Optional, Type, Generator, Set
 import warnings
-from .solvers import PuLPSolver, SolverException
-from .exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, LineupOptimizerIncorrectPositionName
-from .settings import BaseSettings, LineupPosition
-from .player import LineupPlayer
-from .utils import ratio
-from .rules import *
+from pydfs_lineup_optimizer.solvers import PuLPSolver, SolverException
+from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
+    LineupOptimizerIncorrectPositionName
+from pydfs_lineup_optimizer.lineup_importer import CSVImporter
+from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
+from pydfs_lineup_optimizer.player import Player, LineupPlayer
+from pydfs_lineup_optimizer.utils import ratio
+from pydfs_lineup_optimizer.rules import *
 
 
 BASE_CONSTRAINTS = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamRule, LockedPlayersRule,
@@ -16,9 +18,10 @@ BASE_CONSTRAINTS = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOn
 
 
 class LineupOptimizer(object):
-    def __init__(self, settings, solver=PuLPSolver):
-        # type: (Type[BaseSettings], Type[Solver]) -> None
+    def __init__(self, settings, csv_importer, solver=PuLPSolver):
+        # type: (Type[BaseSettings], Type[CSVImporter], Type[Solver]) -> None
         self._settings = settings
+        self._csv_importer = csv_importer
         self._constraints = BASE_CONSTRAINTS.copy()  # type: Set[Type[OptimizerRule]]
         self._players = []
         self._lineup = []
@@ -143,7 +146,7 @@ class LineupOptimizer(object):
         Load player list from CSV file with passed filename.
         Calls load_players_from_CSV method from _settings object.
         """
-        self._players = self._settings.load_players_from_CSV(filename)
+        self._players = self._csv_importer(filename).import_players()
         self._set_available_teams()
 
     def load_players(self, players):
@@ -315,8 +318,7 @@ class LineupOptimizer(object):
         if with_injured:
             rules.remove(RemoveInjuredRule)
         players = [player for player in self._players
-                   if player not in self._removed_players
-                   and isinstance(player, Player) and player.max_exposure != 0.0]
+                   if player not in self._removed_players and player.max_exposure != 0.0]
         base_solver = self._solver_class()
         base_solver.setup_solver()
         players_dict = OrderedDict(

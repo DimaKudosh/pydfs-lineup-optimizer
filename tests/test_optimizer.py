@@ -11,6 +11,7 @@ from pydfs_lineup_optimizer.player import Player
 from pydfs_lineup_optimizer.settings import LineupPosition
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.utils import ratio
+from pydfs_lineup_optimizer.sites.yahoo.settings import YahooFootballSettings
 
 
 def create_players(positions_list):
@@ -40,7 +41,7 @@ class TestLineupOptimizer(unittest.TestCase):
         cls.players = players
 
     def setUp(self):
-        self.lineup_optimizer = LineupOptimizer(settings.DraftKingsBasketballSettings)
+        self.lineup_optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
         self.lineup_optimizer.load_players(self.players[:])
 
     def test_optimizer_positions_processing(self):
@@ -55,7 +56,7 @@ class TestLineupOptimizer(unittest.TestCase):
         ]
         test_settings = type('TestSettings', (settings.BaseSettings, ), {})
         test_settings.positions = positions
-        optimizer = LineupOptimizer(test_settings)
+        optimizer = LineupOptimizer(test_settings, None)
         positions = optimizer.get_positions_for_optimizer()
         self.assertEqual(len(positions), 7)
         self.assertEqual(positions[('1', )], 1)
@@ -257,7 +258,7 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_get_optimizer(self):
         optimizer = get_optimizer(Site.YAHOO, Sport.FOOTBALL)
-        self.assertEqual(optimizer._settings, settings.YahooFootballSettings)
+        self.assertEqual(optimizer._settings, YahooFootballSettings)
         with self.assertRaises(NotImplementedError):
             get_optimizer(Site.DRAFTKINGS, 'Some sport')
 

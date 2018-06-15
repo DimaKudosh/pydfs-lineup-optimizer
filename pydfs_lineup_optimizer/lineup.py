@@ -1,5 +1,5 @@
 from typing import List
-from .player import LineupPlayer
+from pydfs_lineup_optimizer.player import LineupPlayer
 
 
 class Lineup(object):

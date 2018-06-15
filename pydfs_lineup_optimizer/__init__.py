@@ -1,47 +1,18 @@
-__version__ = '1.4.1'
+__version__ = '2.0.0'
 
-from .player import Player
-from .exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
-    LineupOptimizerIncorrectPositionName
-from .lineup_optimizer import LineupOptimizer
-from .lineup import Lineup
-from .settings import YahooBasketballSettings, YahooFootballSettings, YahooHockeySettings, YahooBaseballSettings, \
-    FanDuelBasketballSettings, FanDuelFootballSettings, FanDuelHockeySettings, FanDuelBaseballSettings, \
-    DraftKingsBasketballSettings, DraftKingsFootballSettings, DraftKingsHockeySettings, DraftKingsBaseballSettings, \
-    FantasyDraftBasketballSettings, FantasyDraftFootballSettings, FantasyDraftHockeySettings
-from .constants import Site, Sport
-from .lineup_exporter import CSVLineupExporter
-
-
-settings_mapping = {
-    Site.DRAFTKINGS: {
-        Sport.BASKETBALL: DraftKingsBasketballSettings,
-        Sport.FOOTBALL: DraftKingsFootballSettings,
-        Sport.HOCKEY: DraftKingsHockeySettings,
-        Sport.BASEBALL: DraftKingsBaseballSettings,
-    },
-    Site.FANDUEL: {
-        Sport.BASKETBALL: FanDuelBasketballSettings,
-        Sport.FOOTBALL: FanDuelFootballSettings,
-        Sport.HOCKEY: FanDuelHockeySettings,
-        Sport.BASEBALL: FanDuelBaseballSettings,
-    },
-    Site.YAHOO: {
-        Sport.BASKETBALL: YahooBasketballSettings,
-        Sport.FOOTBALL: YahooFootballSettings,
-        Sport.HOCKEY: YahooHockeySettings,
-        Sport.BASEBALL: YahooBaseballSettings,
-    },
-    Site.FANTASY_DRAFT: {
-        Sport.BASKETBALL: FantasyDraftBasketballSettings,
-        Sport.FOOTBALL: FantasyDraftFootballSettings,
-        Sport.HOCKEY: FantasyDraftHockeySettings,
-    },
-}
+from pydfs_lineup_optimizer.constants import Site, Sport
+from pydfs_lineup_optimizer.player import Player
+from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
+    LineupOptimizerIncorrectPositionName, LineupOptimizerIncorrectCSV
+from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
+from pydfs_lineup_optimizer.lineup import Lineup
+from pydfs_lineup_optimizer.sites import SETTINGS_MAPPING, CSV_IMPORTERS_MAPPING
+from pydfs_lineup_optimizer.lineup_exporter import CSVLineupExporter
 
 
 def get_optimizer(site, sport):
+    # type: (str, str) -> LineupOptimizer
     try:
-        return LineupOptimizer(settings_mapping[site][sport])
+        return LineupOptimizer(SETTINGS_MAPPING[site][sport], CSV_IMPORTERS_MAPPING[site])
     except KeyError:
         raise NotImplementedError

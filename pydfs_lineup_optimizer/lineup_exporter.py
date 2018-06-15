@@ -1,7 +1,7 @@
 import csv
 from typing import Generator, Callable
-from .lineup import Lineup
-from .player import LineupPlayer
+from pydfs_lineup_optimizer.lineup import Lineup
+from pydfs_lineup_optimizer.player import LineupPlayer
 
 
 class LineupExporter(object):
