@@ -16,6 +16,7 @@ NFL | + | + | + | +
 NBA | + | + | + | + 
 NHL | + | + | + | +
 MLB | + | + | + | -
+WNBA | - | + | - | -
 
 ## Documentation
 Documentation is available at https://pydfs-lineup-optimizer.readthedocs.io/en/latest
