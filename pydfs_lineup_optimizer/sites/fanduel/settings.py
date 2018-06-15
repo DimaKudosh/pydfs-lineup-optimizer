@@ -65,9 +65,23 @@ class FanDuelBaseballSettings(FanDuelSettings):
     ]
 
 
+class FanDuelWnbaSettings(FanDuelSettings):
+    budget = 40000
+    positions = [
+        LineupPosition('G', ('G', )),
+        LineupPosition('G', ('G', )),
+        LineupPosition('G', ('G', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+    ]
+
+
 FANDUEL_SETTINGS_MAPPING = {
     Sport.BASKETBALL: FanDuelBasketballSettings,
     Sport.FOOTBALL: FanDuelFootballSettings,
     Sport.HOCKEY: FanDuelHockeySettings,
     Sport.BASEBALL: FanDuelBaseballSettings,
+    Sport.WNBA: FanDuelWnbaSettings,
 }
