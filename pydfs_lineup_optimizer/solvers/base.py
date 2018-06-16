@@ -1,4 +1,4 @@
-class Solver(object):
+class Solver(object):  # pragma: no cover
     def setup_solver(self):
         raise NotImplementedError
 

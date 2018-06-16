@@ -5,8 +5,7 @@ from pydfs_lineup_optimizer.player import Player
 
 
 class FantasyDraftCSVImporter(CSVImporter):
-
-    def import_players(self):
+    def import_players(self):  # pragma: no cover
         players = []
         with open(self.filename, 'r') as csvfile:
             csv_data = csv.DictReader(csvfile, skipinitialspace=True)

@@ -27,7 +27,7 @@ def create_players(positions_list):
 class TestLineupOptimizer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        with open('players.json', 'r') as file:
+        with open('tests/players.json', 'r') as file:
             players_dict = json.loads(file.read())['players']
             players = [Player(
                 p['id'],
@@ -208,7 +208,7 @@ class TestLineupOptimizer(unittest.TestCase):
             Player(3, 'p3', 'p3', ['C'], 'DEN', 10, 200),
         ]
         optimizer.extend_players(players)
-        with mock.patch('__main__.LineupOptimizer.max_from_one_team', new_callable=mock.PropertyMock) \
+        with mock.patch('pydfs_lineup_optimizer.LineupOptimizer.max_from_one_team', new_callable=mock.PropertyMock) \
                 as mock_max_from_one_team:
             mock_max_from_one_team.return_value = max_from_one_team
             lineup = next(optimizer.optimize(1))
