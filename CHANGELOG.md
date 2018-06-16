@@ -15,3 +15,9 @@ All notable changes to this project will be documented in this file.
 
 ## [v1.4.1]
 - Changed settings for DraftKings
+
+## [v2.0.0]
+- Added custom constraints creation
+- Optimized lineup generation speed
+- Added max repeating players constraint
+- Added new sports
