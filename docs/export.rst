@@ -1,11 +1,11 @@
-.. _pydfs-lineup-optimizer-usage:
+.. _pydfs-lineup-optimizer-export:
 
 
 Export lineups
 ==============
 
 You can export lineups into a csv file. **pydfs-lineup-optimizer** has helper class for this called `CSVLineupExporter`.
-You must pass iterable with lineups to constructor and then call `export` method with filename argument.
+You should pass iterable with lineups to constructor and then call `export` method with filename argument.
 
 .. code-block:: python
 

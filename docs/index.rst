@@ -4,32 +4,34 @@
 .. image:: https://coveralls.io/repos/github/DimaKudosh/pydfs-lineup-optimizer/badge.svg?branch=master
     :target: https://coveralls.io/github/DimaKudosh/pydfs-lineup-optimizer?branch=master
 
-.. image:: https://img.shields.io/pypi/dm/Django.svg
-    :target: https://pypi.python.org/pypi/pydfs-lineup-optimizer/
-
-.. image:: https://img.shields.io/pypi/pyversions/Django.svg
-    :target: https://pypi.python.org/pypi/pydfs-lineup-optimizer/
-
-
 =======
 pydfs-lineup-optimizer
 =======
 
 **pydfs-lineup-optimizer** is a tool for creating optimal lineups for daily fantasy sport.
-Currently it's support following dfs sites:
+Currently it supports following dfs sites:
 
-+--------+------------+---------+-------+--------------+
-| League | DraftKings | Fanduel | Yahoo | FantasyDraft |
-+--------+------------+---------+-------+--------------+
-| NFL    | \+         | \+      | \+    | \+           |
-+--------+------------+---------+-------+--------------+
-| NBA    | \+         | \+      | \+    | \+           |
-+--------+------------+---------+-------+--------------+
-| NHL    | \+         | \+      | \+    | \+           |
-+--------+------------+---------+-------+--------------+
-| MLB    | \+         | \+      | \+    | \-           |
-+--------+------------+---------+-------+--------------+
-
++--------+------------+---------+--------------+-------+
+| League | DraftKings | FanDuel | FantasyDraft | Yahoo |
++--------+------------+---------+--------------+-------+
+| NFL    | \+         | \+      | \+           | \+    |
++--------+------------+---------+--------------+-------+
+| NBA    | \+         | \+      | \+           | \+    |
++--------+------------+---------+--------------+-------+
+| NHL    | \+         | \+      | \+           | \+    |
++--------+------------+---------+--------------+-------+
+| MLB    | \+         | \+      | \+           | \+    |
++--------+------------+---------+--------------+-------+
+| WNBA   | \-         | \+      | \-           | \-    |
++--------+------------+---------+--------------+-------+
+| Golf   | \+         | \-      | \+           | \+    |
++--------+------------+---------+--------------+-------+
+| Soccer | \+         | \-      | \-           | \+    |
++--------+------------+---------+--------------+-------+
+| CFL    | \+         | \-      | \-           | \-    |
++--------+------------+---------+--------------+-------+
+| LOL    | \+         | \-      | \-           | \-    |
++--------+------------+---------+--------------+-------+
 
 
 Contents
@@ -42,3 +44,4 @@ Contents
    usage
    constraints
    export
+   performance-and-optimization

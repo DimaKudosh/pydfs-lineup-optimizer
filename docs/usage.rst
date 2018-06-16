@@ -7,7 +7,7 @@ Usage
 Base Usage
 ----------
 Creating optimal lineups with **pydfs-lineup-optimizer** is very simple.
-Firstly you should create optimizer. Preferred way for creating optimizer is using
+Firstly you should create optimizer. You can do this using
 shortcut get_optimizer. You must provide daily fantasy site for it and kind of sport.
 If site doesn't support specified sport you will get NotImplementedError.
 
@@ -18,20 +18,7 @@ If site doesn't support specified sport you will get NotImplementedError.
 
     optimizer = get_optimizer(Site.FANDUEL, Sport.BASKETBALL)
 
-Another way to create optimizer is to use LineupOptimizer class directly.
-LineupOptimizer constructor takes only one argument, it's settings.
-Settings is a class inherited from BaseSettings abstract class, it store all necessary for optimizer data
-like positions, budget etc. Each fantasy sport site and sport have there own settings class.
-For example for FanDuel fantasy football it's FanDuelFootballSettings class.
-
-.. code-block:: python
-
-    from pydfs_lineup_optimizer import LineupOptimizer, FanDuelBasketballSettings
-
-
-    optimizer = LineupOptimizer(FanDuelBasketballSettings)
-
-After that you needed to load players into your optimizer. You have 2 options:
+After that you need to load players into your optimizer. You have 2 options:
 First is to load players from CSV file like this:
 
 .. code-block:: python
@@ -64,15 +51,15 @@ Where n is a number of lineups that you want generate.
 Example of base usage
 ---------------------
 
-Below is an full example of how **pydfs-lineup-optimizer** can be used to generate optimal lineups.
+Below is a full example of how **pydfs-lineup-optimizer** can be used to generate optimal lineups.
 
 .. code-block:: python
 
-    optimizer = LineupOptimizer(settings.YahooBasketballSettings)
+    optimizer = get_optimizer(Site.YAHOO, Sport.BASKETBALL)
     optimizer.load_players_from_CSV("yahoo-NBA.csv")
     for lineup in optimizer.optimize(n=10):
         print(lineup)
-        print(lineup.lineup)  # list of players
+        print(lineup.players)  # list of players
         print(lineup.fantasy_points_projection)
         print(lineup.salary_costs)
 
@@ -93,16 +80,11 @@ Locked players can be unlocked as well:
 
     optimizer.remove_player_from_lineup(player)
 
-Also you can exclude some players from optimizer using this code:
+Also you can exclude some players from optimization process and restore players as well:
 
 .. code-block:: python
 
     optimizer.remove_player(player)
-
-Excluded players can be restored using this code:
-
-.. code-block:: python
-
     optimizer.restore_player(player)
 
 You can specify maximum exposure for some players or for all players, you have several ways how to do this.
@@ -115,15 +97,12 @@ pass max_exposure parameter to optimize method
     player = optimizer.players[0]  # get random player from optimizer players
     player.max_exposure = 0.5  # set 50% exposure
 
-    lineups = optimizer.optimzie(n=10, max_exposure=0.3)  # set 30% exposure for all players
+    lineups = optimizer.optimize(n=10, max_exposure=0.3)  # set 30% exposure for all players
 
 .. note::
 
-    Exposure working with locked players, so if you lock some player and set exposure for 50% percentage
-    this player will appears only in 50% lineups.
-
-.. note::
-
+   Exposure working with locked players, so if you lock some player and set exposure for 50% percentage
+   this player will appears only in 50% lineups.
    Player exposure has higher priority than max_exposure that you pass in optimize method.
    Exposure percentage rounds to ceil.
 
@@ -148,11 +127,11 @@ Below is an full example of how **pydfs-lineup-optimizer** can be used to genera
 
 .. code-block:: python
 
-    optimizer = LineupOptimizer(settings.YahooBasketballSettings)
+    optimizer = get_optimizer(Site.YAHOO, Sport.BASKETBALL)
     optimizer.load_players_from_CSV("yahoo-NBA.csv")
     nets_centers = filter(lambda p: p.team == 'Nets' and 'C' in p.positions, optimizer.players)
     for player in nets_centers:
-        optimzier.remove_player(player)  # Remove all Nets centers from optimizer
+        optimizer.remove_player(player)  # Remove all Nets centers from optimizer
     harden = optimizer.get_player_by_name('Harden')
     westbrook = optimizer.get_player_by_name('Westbrook')  # Get Harden and Westbrook
     harden.max_exposure = 0.6
