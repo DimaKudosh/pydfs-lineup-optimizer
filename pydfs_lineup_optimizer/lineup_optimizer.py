@@ -367,7 +367,7 @@ class LineupOptimizer(object):
         """
         This method tries to set positions for given players, and raise error if can't.
         """
-        positions = self._settings.positions.copy()
+        positions = self._settings.positions[:]
         single_position_players = []
         multi_positions_players = []
         players_with_positions = {}
@@ -387,7 +387,7 @@ class LineupOptimizer(object):
                 raise LineupOptimizerException('Unable to build lineup')
         for players in permutations(multi_positions_players):
             is_correct = True
-            remaining_positions = positions.copy()
+            remaining_positions = positions[:]
             for player in players:
                 for position in remaining_positions:
                     if list_intersection(player.positions, position.positions):

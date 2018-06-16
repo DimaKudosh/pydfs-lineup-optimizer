@@ -1,3 +1,4 @@
+from __future__ import division
 from collections import defaultdict
 from itertools import product, combinations
 from random import getrandbits, uniform

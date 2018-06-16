@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import unittest
-from unittest import mock
+import mock
 import json
 from collections import Counter
 from pydfs_lineup_optimizer import settings

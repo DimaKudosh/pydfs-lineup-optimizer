@@ -1,4 +1,4 @@
-from .pulp import Solver, PuLPSolver
+from .pulp_solver import Solver, PuLPSolver
 from .constants import SolverSign
 from .exceptions import SolverException
 
