@@ -38,7 +38,7 @@ class Player(object):
     @property
     def efficiency(self):
         # type: () -> float
-        return round(self.fppg / self.salary, 2)
+        return round(self.fppg / self.salary, 6)
 
 
 class LineupPlayer(object):
