@@ -1,4 +1,4 @@
-__version__ = '2.0.0'
+__version__ = '2.0.1'
 
 from pydfs_lineup_optimizer.constants import Site, Sport
 from pydfs_lineup_optimizer.player import Player
