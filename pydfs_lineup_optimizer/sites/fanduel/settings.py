@@ -54,14 +54,14 @@ class FanDuelBaseballSettings(FanDuelSettings):
     budget = 35000
     positions = [
         LineupPosition('P', ('P',)),
-        LineupPosition('C', ('C',)),
-        LineupPosition('1B', ('1B',)),
+        LineupPosition('C/1B', ('C', '1B')),
         LineupPosition('2B', ('2B',)),
         LineupPosition('3B', ('3B',)),
         LineupPosition('SS', ('SS',)),
         LineupPosition('OF', ('OF',)),
         LineupPosition('OF', ('OF',)),
         LineupPosition('OF', ('OF',)),
+        LineupPosition('UTIL', ('1B','2B','3B', 'SS','C', 'OF')),
     ]
 
 
