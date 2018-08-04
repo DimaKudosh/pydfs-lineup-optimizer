@@ -1,12 +1,16 @@
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
-from pydfs_lineup_optimizer.constants import Sport
+from pydfs_lineup_optimizer.constants import Sport, Site
+from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 
 
 class DraftKingsSettings(BaseSettings):
+    site = Site.DRAFTKINGS
     budget = 50000
 
 
+@SitesRegistry.register_settings
 class DraftKingsBasketballSettings(DraftKingsSettings):
+    sport = Sport.BASKETBALL
     positions = [
         LineupPosition('PG', ('PG', )),
         LineupPosition('SG', ('SG', )),
@@ -19,7 +23,9 @@ class DraftKingsBasketballSettings(DraftKingsSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class DraftKingsFootballSettings(DraftKingsSettings):
+    sport = Sport.FOOTBALL
     positions = [
         LineupPosition('QB', ('QB',)),
         LineupPosition('WR1', ('WR',)),
@@ -33,7 +39,9 @@ class DraftKingsFootballSettings(DraftKingsSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class DraftKingsHockeySettings(DraftKingsSettings):
+    sport = Sport.HOCKEY
     positions = [
         LineupPosition('W', ('LW', 'RW')),
         LineupPosition('W', ('LW', 'RW')),
@@ -47,7 +55,9 @@ class DraftKingsHockeySettings(DraftKingsSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class DraftKingsBaseballSettings(DraftKingsSettings):
+    sport = Sport.BASEBALL
     max_from_one_team = 5
     positions = [
         LineupPosition('P', ('SP', 'RP')),
@@ -63,7 +73,9 @@ class DraftKingsBaseballSettings(DraftKingsSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class DraftKingsGolfSettings(DraftKingsSettings):
+    sport = Sport.GOLF
     positions = [
         LineupPosition('G', ('G',)),
         LineupPosition('G', ('G',)),
@@ -74,7 +86,9 @@ class DraftKingsGolfSettings(DraftKingsSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class DraftKingsSoccerSettings(DraftKingsSettings):
+    sport = Sport.SOCCER
     positions = [
         LineupPosition('GK', ('GK', )),
         LineupPosition('D', ('D', )),
@@ -87,7 +101,9 @@ class DraftKingsSoccerSettings(DraftKingsSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class DraftKingsCanadianFootballSettings(DraftKingsSettings):
+    sport = Sport.CANADIAN_FOOTBALL
     positions = [
         LineupPosition('QB', ('QB', )),
         LineupPosition('RB', ('RB', )),
@@ -99,7 +115,9 @@ class DraftKingsCanadianFootballSettings(DraftKingsSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class DraftKingsLOLSettings(DraftKingsSettings):
+    sport = Sport.LEAGUE_OF_LEGENDS
     positions = [
         LineupPosition('TOP', ('TOP', )),
         LineupPosition('JNG', ('JNG', )),
@@ -110,15 +128,3 @@ class DraftKingsLOLSettings(DraftKingsSettings):
         LineupPosition('FLEX', ('TOP', 'JNG', 'MID', 'ADC', 'SUP', )),
         LineupPosition('TEAM', ('TEAM', )),
     ]
-
-
-DRAFTKINGS_SETTINGS_MAPPING = {
-    Sport.BASKETBALL: DraftKingsBasketballSettings,
-    Sport.FOOTBALL: DraftKingsFootballSettings,
-    Sport.HOCKEY: DraftKingsHockeySettings,
-    Sport.BASEBALL: DraftKingsBaseballSettings,
-    Sport.GOLF: DraftKingsGolfSettings,
-    Sport.SOCCER: DraftKingsSoccerSettings,
-    Sport.CANADIAN_FOOTBALL: DraftKingsCanadianFootballSettings,
-    Sport.LEAGUE_OF_LEGENDS: DraftKingsLOLSettings,
-}

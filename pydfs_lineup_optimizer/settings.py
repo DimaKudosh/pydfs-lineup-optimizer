@@ -5,6 +5,8 @@ LineupPosition = namedtuple('LineupPosition', ['name', 'positions'])
 
 
 class BaseSettings(object):
+    site = None
+    sport = None
     budget = 0
     positions = []
     max_from_one_team = None

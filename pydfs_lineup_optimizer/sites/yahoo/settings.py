@@ -1,13 +1,17 @@
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
-from pydfs_lineup_optimizer.constants import Sport
+from pydfs_lineup_optimizer.constants import Sport, Site
+from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 
 
 class YahooSettings(BaseSettings):
+    site = Site.YAHOO
     budget = 200
     max_from_one_team = 6
 
 
+@SitesRegistry.register_settings
 class YahooBasketballSettings(YahooSettings):
+    sport = Sport.BASKETBALL
     positions = [
         LineupPosition('PG', ('PG', )),
         LineupPosition('SG', ('SG', )),
@@ -20,7 +24,9 @@ class YahooBasketballSettings(YahooSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class YahooFootballSettings(YahooSettings):
+    sport = Sport.FOOTBALL
     positions = [
         LineupPosition('QB', ('QB', )),
         LineupPosition('WR', ('WR', )),
@@ -34,7 +40,9 @@ class YahooFootballSettings(YahooSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class YahooHockeySettings(YahooSettings):
+    sport = Sport.HOCKEY
     positions = [
         LineupPosition('G', ('G', )),
         LineupPosition('G', ('G', )),
@@ -47,7 +55,9 @@ class YahooHockeySettings(YahooSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class YahooBaseballSettings(YahooSettings):
+    sport = Sport.BASEBALL
     positions = [
         LineupPosition('P', ('P',)),
         LineupPosition('P', ('P',)),
@@ -62,7 +72,9 @@ class YahooBaseballSettings(YahooSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class YahooGolfSettings(YahooSettings):
+    sport = Sport.GOLF
     positions = [
         LineupPosition('G', ('G', )),
         LineupPosition('G', ('G', )),
@@ -73,7 +85,9 @@ class YahooGolfSettings(YahooSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class YahooSoccerSettings(YahooSettings):
+    sport = Sport.SOCCER
     positions = [
         LineupPosition('GK', ('GK', )),
         LineupPosition('D', ('D', )),
@@ -87,13 +101,3 @@ class YahooSoccerSettings(YahooSettings):
         LineupPosition('F', ('F', )),
         LineupPosition('UTIL', ('D', 'M', 'F')),
     ]
-
-
-YAHOO_SETTINGS_MAPPING = {
-    Sport.BASKETBALL: YahooBasketballSettings,
-    Sport.FOOTBALL: YahooFootballSettings,
-    Sport.HOCKEY: YahooHockeySettings,
-    Sport.BASEBALL: YahooBaseballSettings,
-    Sport.GOLF: YahooGolfSettings,
-    Sport.SOCCER: YahooSoccerSettings,
-}

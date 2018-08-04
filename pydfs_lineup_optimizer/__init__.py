@@ -6,13 +6,10 @@ from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOp
     LineupOptimizerIncorrectPositionName, LineupOptimizerIncorrectCSV
 from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 from pydfs_lineup_optimizer.lineup import Lineup
-from pydfs_lineup_optimizer.sites import SETTINGS_MAPPING, CSV_IMPORTERS_MAPPING
+from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_exporter import CSVLineupExporter
 
 
 def get_optimizer(site, sport):
     # type: (str, str) -> LineupOptimizer
-    try:
-        return LineupOptimizer(SETTINGS_MAPPING[site][sport], CSV_IMPORTERS_MAPPING[site])
-    except KeyError:
-        raise NotImplementedError
+    return LineupOptimizer(*SitesRegistry.get_optimizer_args(site, sport))

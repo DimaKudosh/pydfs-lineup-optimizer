@@ -1,13 +1,17 @@
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
-from pydfs_lineup_optimizer.constants import Sport
+from pydfs_lineup_optimizer.constants import Sport, Site
+from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 
 
 class FanDuelSettings(BaseSettings):
+    site = Site.FANDUEL
     budget = 60000
     max_from_one_team = 4
 
 
+@SitesRegistry.register_settings
 class FanDuelBasketballSettings(FanDuelSettings):
+    sport = Sport.BASKETBALL
     positions = [
         LineupPosition('PG', ('PG', )),
         LineupPosition('PG', ('PG', )),
@@ -21,7 +25,9 @@ class FanDuelBasketballSettings(FanDuelSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class FanDuelFootballSettings(FanDuelSettings):
+    sport = Sport.FOOTBALL
     positions = [
         LineupPosition('QB', ('QB', )),
         LineupPosition('RB', ('RB', )),
@@ -35,7 +41,9 @@ class FanDuelFootballSettings(FanDuelSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class FanDuelHockeySettings(FanDuelSettings):
+    sport = Sport.HOCKEY
     budget = 55000
     positions = [
         LineupPosition('C', ('C', )),
@@ -50,7 +58,9 @@ class FanDuelHockeySettings(FanDuelSettings):
     ]
 
 
+@SitesRegistry.register_settings
 class FanDuelBaseballSettings(FanDuelSettings):
+    sport = Sport.BASEBALL
     budget = 35000
     positions = [
         LineupPosition('P', ('P',)),
@@ -61,11 +71,13 @@ class FanDuelBaseballSettings(FanDuelSettings):
         LineupPosition('OF', ('OF',)),
         LineupPosition('OF', ('OF',)),
         LineupPosition('OF', ('OF',)),
-        LineupPosition('UTIL', ('1B','2B','3B', 'SS','C', 'OF')),
+        LineupPosition('UTIL', ('1B', '2B', '3B', 'SS', 'C', 'OF')),
     ]
 
 
+@SitesRegistry.register_settings
 class FanDuelWnbaSettings(FanDuelSettings):
+    sport = Sport.WNBA
     budget = 40000
     positions = [
         LineupPosition('G', ('G', )),
@@ -76,12 +88,3 @@ class FanDuelWnbaSettings(FanDuelSettings):
         LineupPosition('F', ('F', )),
         LineupPosition('F', ('F', )),
     ]
-
-
-FANDUEL_SETTINGS_MAPPING = {
-    Sport.BASKETBALL: FanDuelBasketballSettings,
-    Sport.FOOTBALL: FanDuelFootballSettings,
-    Sport.HOCKEY: FanDuelHockeySettings,
-    Sport.BASEBALL: FanDuelBaseballSettings,
-    Sport.WNBA: FanDuelWnbaSettings,
-}

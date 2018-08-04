@@ -1,2 +1,2 @@
-from .importer import DraftKingsCSVImporter
-from .settings import DRAFTKINGS_SETTINGS_MAPPING
+from .importer import *
+from settings import *

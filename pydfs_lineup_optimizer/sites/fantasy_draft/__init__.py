@@ -1,2 +1,2 @@
-from .importer import FantasyDraftCSVImporter
-from .settings import FANTASY_DRAFT_SETTINGS_MAPPING
+from importer import *
+from settings import *

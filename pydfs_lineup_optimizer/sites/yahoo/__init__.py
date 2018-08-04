@@ -1,2 +1,2 @@
-from .importer import YahooCSVImporter
-from .settings import YAHOO_SETTINGS_MAPPING
+from importer import *
+from settings import *
