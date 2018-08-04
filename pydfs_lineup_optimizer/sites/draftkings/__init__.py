@@ -1,2 +1,2 @@
 from .importer import *
-from settings import *
+from .settings import *
