@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pydfs-lineup-optimizer',
-    version='2.0.2',
+    version='2.0.3',
     packages=find_packages(exclude=['tests*']),
     url='https://github.com/DimaKudosh/pydfs-lineup-optimizer',
     license='MIT',
