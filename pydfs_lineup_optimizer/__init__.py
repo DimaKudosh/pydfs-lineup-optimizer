@@ -12,4 +12,4 @@ from pydfs_lineup_optimizer.lineup_exporter import CSVLineupExporter
 
 def get_optimizer(site, sport):
     # type: (str, str) -> LineupOptimizer
-    return LineupOptimizer(*SitesRegistry.get_optimizer_args(site, sport))
+    return LineupOptimizer(SitesRegistry.get_settings(site, sport))

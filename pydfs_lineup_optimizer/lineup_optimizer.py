@@ -6,6 +6,7 @@ import warnings
 from pydfs_lineup_optimizer.solvers import PuLPSolver, SolverException
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
     LineupOptimizerIncorrectPositionName
+from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.player import Player, LineupPlayer
@@ -18,10 +19,10 @@ BASE_CONSTRAINTS = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOn
 
 
 class LineupOptimizer(object):
-    def __init__(self, settings, csv_importer, solver=PuLPSolver):
-        # type: (Type[BaseSettings], Type[CSVImporter], Type[Solver]) -> None
+    def __init__(self, settings, solver=PuLPSolver):
+        # type: (Type[BaseSettings], Type[Solver]) -> None
         self._settings = settings
-        self._csv_importer = csv_importer
+        self._csv_importer = None
         self._constraints = BASE_CONSTRAINTS.copy()  # type: Set[Type[OptimizerRule]]
         self._players = []
         self._lineup = []
@@ -147,6 +148,10 @@ class LineupOptimizer(object):
         self._min_deviation = min_deviation
         self._max_deviation = max_deviation
 
+    def set_csv_importer(self, csv_importer):
+        # type: (Type[CSVImporter]) -> None
+        self._csv_importer = csv_importer
+
     def get_deviation(self):
         # type: () -> Tuple[float, float]
         return self._min_deviation, self._max_deviation
@@ -162,9 +167,11 @@ class LineupOptimizer(object):
         # type: (str) -> None
         """
         Load player list from CSV file with passed filename.
-        Calls load_players_from_CSV method from _settings object.
         """
-        self._players = self._csv_importer(filename).import_players()
+        csv_importer = self._csv_importer
+        if not csv_importer:
+            csv_importer = SitesRegistry.get_csv_importer(self._settings.site)
+        self._players = csv_importer(filename).import_players()
         self._set_available_teams()
 
     def load_players(self, players):
