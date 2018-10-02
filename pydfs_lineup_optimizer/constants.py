@@ -3,6 +3,7 @@ class Site:
     FANDUEL = 'FANDUEL'
     YAHOO = 'YAHOO'
     FANTASY_DRAFT = 'FANTASY_DRAFT'
+    FANBALL = 'FANBALL'
 
 
 class Sport:
