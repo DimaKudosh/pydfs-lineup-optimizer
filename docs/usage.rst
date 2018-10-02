@@ -28,6 +28,7 @@ First is to load players from CSV file like this:
 .. note::
 
    CSV file must have the same format as export file in specified dfs site, if you have custom CSV file this method will not work.
+   Also this method raises `NotImplementedError` for FanBall site because it hasn't export csv feature.
 
 Or you can load players using load_players method and pass list with players.
 
