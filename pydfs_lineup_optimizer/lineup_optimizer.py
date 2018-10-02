@@ -38,6 +38,8 @@ class LineupOptimizer(object):
         self._min_salary_cap = None
         self._max_repeating_players = None
         self._solver_class = solver
+        self._max_projected_ownership = None
+        self._min_projected_ownership = None
 
     @property
     def budget(self):
@@ -120,6 +122,16 @@ class LineupOptimizer(object):
     def max_repeating_players(self):
         # type: () -> Optional[int]
         return self._max_repeating_players
+
+    @property
+    def max_projected_ownership(self):
+        # type: () -> Optional[float]
+        return self._max_projected_ownership
+
+    @property
+    def min_projected_ownership(self):
+        # type: () -> Optional[float]
+        return self._min_projected_ownership
 
     def reset_lineup(self):
         self._lineup = []
@@ -321,6 +333,19 @@ class LineupOptimizer(object):
             raise LineupOptimizerException('Maximum repeating players should be 1 or greater')
         self._max_repeating_players = max_repeating_players
         self.add_new_rule(MaxRepeatingPlayersRule)
+
+    def set_projected_ownership(self, min_projected_ownership=None, max_projected_ownership=None):
+        # type: (float, float) -> None
+        if min_projected_ownership and max_projected_ownership and min_projected_ownership >= max_projected_ownership:
+            raise LineupOptimizerException('Max projected ownership should be greater than min projected ownership')
+        self._max_projected_ownership = max_projected_ownership / 100 if \
+            max_projected_ownership and max_projected_ownership > 1 else max_projected_ownership
+        self._min_projected_ownership = min_projected_ownership / 100 if \
+            min_projected_ownership and min_projected_ownership > 1 else min_projected_ownership
+        if max_projected_ownership or min_projected_ownership:
+            self.add_new_rule(ProjectedOwnershipRule)
+        else:
+            self.remove_rule(ProjectedOwnershipRule)
 
     def optimize(self, n, max_exposure=None, randomness=False, with_injured=False):
         # type: (int, Optional[float], bool, bool) -> Generator[Lineup]

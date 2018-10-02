@@ -187,3 +187,25 @@ class MaxRepeatingPlayersRule(OptimizerRule):
         for players_combination in self.exclude_combinations:
             solver.add_constraint(players_combination, coefficients, SolverSign.LTE, max_repeating_players)
 
+
+class ProjectedOwnershipRule(OptimizerRule):
+    def apply(self, solver, players_dict):
+        min_variables = []
+        min_coefficients = []
+        max_variables = []
+        max_coefficients = []
+        min_projected_ownership = self.optimizer.min_projected_ownership
+        max_projected_ownership = self.optimizer.max_projected_ownership
+        for player, variable in players_dict.items():
+            if player.projected_ownership is None:
+                continue
+            if min_projected_ownership:
+                min_variables.append(variable)
+                min_coefficients.append(player.projected_ownership - min_projected_ownership)
+            if max_projected_ownership:
+                max_variables.append(variable)
+                max_coefficients.append(player.projected_ownership - max_projected_ownership)
+        if min_variables:
+            solver.add_constraint(min_variables, min_coefficients, SolverSign.GTE, 0)
+        if max_variables:
+            solver.add_constraint(max_variables, max_coefficients, SolverSign.LTE, 0)

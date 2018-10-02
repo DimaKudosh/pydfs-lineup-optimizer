@@ -4,8 +4,8 @@ from typing import List, Optional
 
 class Player(object):
     def __init__(self, player_id,  first_name, last_name, positions, team, salary, fppg, is_injured=False,
-                 max_exposure=None):
-        # type: (int, str, str, List[str], str, float, float, bool, Optional[float]) -> None
+                 max_exposure=None, projected_ownership=None):
+        # type: (int, str, str, List[str], str, float, float, bool, Optional[float], Optional[float]) -> None
         self.id = player_id
         self.first_name = first_name
         self.last_name = last_name
@@ -16,6 +16,8 @@ class Player(object):
         self.is_injured = is_injured
         self._max_exposure = None
         self.max_exposure = max_exposure
+        self._projected_ownership = None
+        self.projected_ownership = projected_ownership
 
     def __repr__(self):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)
@@ -29,6 +31,16 @@ class Player(object):
     def max_exposure(self, max_exposure):
         # type: (float) -> None
         self._max_exposure = max_exposure / 100 if max_exposure and max_exposure > 1 else max_exposure
+
+    @property
+    def projected_ownership(self):
+        # type: () -> float
+        return self._projected_ownership
+
+    @projected_ownership.setter
+    def projected_ownership(self, projected_ownership):
+        self._projected_ownership = projected_ownership / 100 if projected_ownership and projected_ownership > 1 \
+            else projected_ownership
 
     @property
     def full_name(self):
