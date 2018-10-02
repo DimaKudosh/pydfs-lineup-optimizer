@@ -12,7 +12,7 @@ small fppg value and big salary.
 .. code-block:: python
 
     optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASEBALL)
-    optimizer.load_players_from_CSV('dk_mlb.csv')
+    optimizer.load_players_from_csv('dk_mlb.csv')
     for player in optimizer.players:
         if player.efficiency == 0:
             optimizer.remove_player(player)

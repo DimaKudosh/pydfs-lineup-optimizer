@@ -165,6 +165,12 @@ class LineupOptimizer(object):
 
     def load_players_from_CSV(self, filename):
         # type: (str) -> None
+        warnings.warn('"load_players_from_CSV" method will be renamed to "load_players_from_csv" in version 2.2.0.',
+                      DeprecationWarning)
+        self.load_players_from_csv(filename)
+
+    def load_players_from_csv(self, filename):
+        # type: (str) -> None
         """
         Load player list from CSV file with passed filename.
         """
