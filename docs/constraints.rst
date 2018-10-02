@@ -11,6 +11,7 @@ Constraints
 - Number of specific positions.
 - Minimum salary cap.
 - Maximum repeating players.
+- Ownership projection constraint.
 
 Number of players from same team
 --------------------------------
@@ -62,3 +63,19 @@ It accepts only one argument: number of maximum repeating players.
 .. code-block:: python
 
     optimizer.set_max_repeating_players(5)
+
+Ownership projections constraint
+--------------------------------
+If you want to avoid a lot of highly-owned players in your lineups you can use `set_projected_ownership` method.
+This method working with player `projected_ownership` field, so if you want to use this constraint you should set this
+field for players before creating lineups. Optimizer's `set_projected_ownership` method accepts 2 arguments `min_projected_ownership`
+and `max_projected_ownership` that are max/min percent of average ownership in generated lineup.
+
+.. code-block:: python
+
+    for player in optimizer.players:
+        player.projected_ownership = get_projected_ownership(player)  # User defined function for getting ownership percent
+    optimizer.set_projected_ownership(max_projected_ownership=0.6)
+
+If you don't specify `projected_ownership` for some players this players will not used in calculating lineup average
+ownership, but they can appear in result lineup.
