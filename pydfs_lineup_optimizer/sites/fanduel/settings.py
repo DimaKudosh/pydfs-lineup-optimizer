@@ -60,6 +60,7 @@ class FanDuelHockeySettings(FanDuelSettings):
 
 @SitesRegistry.register_settings
 class FanDuelBaseballSettings(FanDuelSettings):
+    max_from_one_team = 5
     sport = Sport.BASEBALL
     budget = 35000
     positions = [
