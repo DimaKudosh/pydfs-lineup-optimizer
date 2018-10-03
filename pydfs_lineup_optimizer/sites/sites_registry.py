@@ -21,9 +21,17 @@ class SitesRegistry(object):
         return importer_cls
 
     @classmethod
-    def get_optimizer_args(cls, site, sport):
-        # type: (str, str) -> Tuple[BaseSettings, CSVImporter]
+    def get_settings(cls, site, sport):
+        # type: (str) -> Type[BaseSettings]
         try:
-            return cls.SETTINGS_MAPPING[site][sport], cls.CSV_IMPORTERS_MAPPING[site]
+            return cls.SETTINGS_MAPPING[site][sport]
+        except KeyError:
+            raise NotImplementedError
+
+    @classmethod
+    def get_csv_importer(cls, site):
+        # type: (str) -> Type[CSVImporter]
+        try:
+            return cls.CSV_IMPORTERS_MAPPING[site]
         except KeyError:
             raise NotImplementedError

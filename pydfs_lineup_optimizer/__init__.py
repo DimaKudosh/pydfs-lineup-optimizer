@@ -1,5 +1,4 @@
-__version__ = '2.0.3'
-
+from pydfs_lineup_optimizer.version import __version__
 from pydfs_lineup_optimizer.constants import Site, Sport
 from pydfs_lineup_optimizer.player import Player
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
@@ -12,4 +11,4 @@ from pydfs_lineup_optimizer.lineup_exporter import CSVLineupExporter
 
 def get_optimizer(site, sport):
     # type: (str, str) -> LineupOptimizer
-    return LineupOptimizer(*SitesRegistry.get_optimizer_args(site, sport))
+    return LineupOptimizer(SitesRegistry.get_settings(site, sport))

@@ -12,7 +12,7 @@ You should pass iterable with lineups to constructor and then call `export` meth
     from pydfs_lineup_optimizer import get_optimizer, Site, Sport, CSVLineupExporter
 
     optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
-    optimizer.load_players_from_CSV("players.csv")
+    optimizer.load_players_from_csv("players.csv")
     exporter = CSVLineupExporter(optimizer.optimize(10))
     exporter.export('result.csv')
 

@@ -23,11 +23,12 @@ First is to load players from CSV file like this:
 
 .. code-block:: python
 
-    optimizer.load_players_from_CSV("path_to_csv")
+    optimizer.load_players_from_csv("path_to_csv")
 
 .. note::
 
    CSV file must have the same format as export file in specified dfs site, if you have custom CSV file this method will not work.
+   Also this method raises `NotImplementedError` for FanBall site because it hasn't export csv feature.
 
 Or you can load players using load_players method and pass list with players.
 
@@ -56,7 +57,7 @@ Below is a full example of how **pydfs-lineup-optimizer** can be used to generat
 .. code-block:: python
 
     optimizer = get_optimizer(Site.YAHOO, Sport.BASKETBALL)
-    optimizer.load_players_from_CSV("yahoo-NBA.csv")
+    optimizer.load_players_from_csv("yahoo-NBA.csv")
     for lineup in optimizer.optimize(n=10):
         print(lineup)
         print(lineup.players)  # list of players
@@ -128,7 +129,7 @@ Below is an full example of how **pydfs-lineup-optimizer** can be used to genera
 .. code-block:: python
 
     optimizer = get_optimizer(Site.YAHOO, Sport.BASKETBALL)
-    optimizer.load_players_from_CSV("yahoo-NBA.csv")
+    optimizer.load_players_from_csv("yahoo-NBA.csv")
     nets_centers = filter(lambda p: p.team == 'Nets' and 'C' in p.positions, optimizer.players)
     for player in nets_centers:
         optimizer.remove_player(player)  # Remove all Nets centers from optimizer

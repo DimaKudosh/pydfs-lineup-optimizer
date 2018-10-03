@@ -6,6 +6,7 @@ import warnings
 from pydfs_lineup_optimizer.solvers import PuLPSolver, SolverException
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
     LineupOptimizerIncorrectPositionName
+from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.player import Player, LineupPlayer
@@ -18,10 +19,10 @@ BASE_CONSTRAINTS = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOn
 
 
 class LineupOptimizer(object):
-    def __init__(self, settings, csv_importer, solver=PuLPSolver):
-        # type: (Type[BaseSettings], Type[CSVImporter], Type[Solver]) -> None
+    def __init__(self, settings, solver=PuLPSolver):
+        # type: (Type[BaseSettings], Type[Solver]) -> None
         self._settings = settings
-        self._csv_importer = csv_importer
+        self._csv_importer = None
         self._constraints = BASE_CONSTRAINTS.copy()  # type: Set[Type[OptimizerRule]]
         self._players = []
         self._lineup = []
@@ -38,6 +39,8 @@ class LineupOptimizer(object):
         self._min_salary_cap = None
         self._max_repeating_players = None
         self._solver_class = solver
+        self._max_projected_ownership = None
+        self._min_projected_ownership = None
 
     @property
     def budget(self):
@@ -105,13 +108,6 @@ class LineupOptimizer(object):
         return self._lineup
 
     @property
-    def lineup(self):
-        # type: () -> List[Player]
-        warnings.warn('"lineup" property will be removed in version 2.1.0. Use "locked_players" instead',
-                      DeprecationWarning)
-        return self.locked_players
-
-    @property
     def min_salary_cap(self):
         # type: () -> Optional[int]
         return self._min_salary_cap
@@ -120,6 +116,16 @@ class LineupOptimizer(object):
     def max_repeating_players(self):
         # type: () -> Optional[int]
         return self._max_repeating_players
+
+    @property
+    def max_projected_ownership(self):
+        # type: () -> Optional[float]
+        return self._max_projected_ownership
+
+    @property
+    def min_projected_ownership(self):
+        # type: () -> Optional[float]
+        return self._min_projected_ownership
 
     def reset_lineup(self):
         self._lineup = []
@@ -135,6 +141,10 @@ class LineupOptimizer(object):
         self._min_deviation = min_deviation
         self._max_deviation = max_deviation
 
+    def set_csv_importer(self, csv_importer):
+        # type: (Type[CSVImporter]) -> None
+        self._csv_importer = csv_importer
+
     def get_deviation(self):
         # type: () -> Tuple[float, float]
         return self._min_deviation, self._max_deviation
@@ -148,11 +158,20 @@ class LineupOptimizer(object):
 
     def load_players_from_CSV(self, filename):
         # type: (str) -> None
+        warnings.simplefilter('always', DeprecationWarning)
+        warnings.warn('"load_players_from_CSV" method will be renamed to "load_players_from_csv" in version 2.2.0.',
+                      DeprecationWarning)
+        self.load_players_from_csv(filename)
+
+    def load_players_from_csv(self, filename):
+        # type: (str) -> None
         """
         Load player list from CSV file with passed filename.
-        Calls load_players_from_CSV method from _settings object.
         """
-        self._players = self._csv_importer(filename).import_players()
+        csv_importer = self._csv_importer
+        if not csv_importer:
+            csv_importer = SitesRegistry.get_csv_importer(self._settings.site)
+        self._players = csv_importer(filename).import_players()
         self._set_available_teams()
 
     def load_players(self, players):
@@ -321,6 +340,19 @@ class LineupOptimizer(object):
             raise LineupOptimizerException('Maximum repeating players should be 1 or greater')
         self._max_repeating_players = max_repeating_players
         self.add_new_rule(MaxRepeatingPlayersRule)
+
+    def set_projected_ownership(self, min_projected_ownership=None, max_projected_ownership=None):
+        # type: (float, float) -> None
+        if min_projected_ownership and max_projected_ownership and min_projected_ownership >= max_projected_ownership:
+            raise LineupOptimizerException('Max projected ownership should be greater than min projected ownership')
+        self._max_projected_ownership = max_projected_ownership / 100 if \
+            max_projected_ownership and max_projected_ownership > 1 else max_projected_ownership
+        self._min_projected_ownership = min_projected_ownership / 100 if \
+            min_projected_ownership and min_projected_ownership > 1 else min_projected_ownership
+        if max_projected_ownership or min_projected_ownership:
+            self.add_new_rule(ProjectedOwnershipRule)
+        else:
+            self.remove_rule(ProjectedOwnershipRule)
 
     def optimize(self, n, max_exposure=None, randomness=False, with_injured=False):
         # type: (int, Optional[float], bool, bool) -> Generator[Lineup]

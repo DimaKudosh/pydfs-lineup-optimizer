@@ -10,17 +10,17 @@ $ pip install pydfs-lineup-optimizer
 ## Support
 Now it supports following dfs sites:
 
-League | DraftKings | FanDuel | FantasyDraft | Yahoo
------- | ---------- | ------- | ------------ | -----
-NFL    | +          | +       | +            | +
-NBA    | +          | +       | +            | +
-NHL    | +          | +       | +            | +
-MLB    | +          | +       | +            | +
-WNBA   | -          | +       | -            | -
-Golf   | +          | -       | +            | +
-Soccer | +          | -       | -            | +
-CFL    | +          | -       | -            | -
-LOL    | +          | -       | -            | -
+League | DraftKings | FanDuel | FantasyDraft | Yahoo | FanBall
+------ | ---------- | ------- | ------------ | ----- | --------
+NFL    | +          | +       | +            | +     | +
+NBA    | +          | +       | +            | +     | -
+NHL    | +          | +       | +            | +     | -
+MLB    | +          | +       | +            | +     | -
+WNBA   | -          | +       | -            | -     | -
+Golf   | +          | -       | +            | +     | -
+Soccer | +          | -       | -            | +     | -
+CFL    | +          | -       | -            | -     | -
+LOL    | +          | -       | -            | -     | -
 
 
 ## Documentation
@@ -33,7 +33,7 @@ from pydfs_lineup_optimizer import Site, Sport, get_optimizer
 
 
 optimizer = get_optimizer(Site.YAHOO, Sport.BASKETBALL)
-optimizer.load_players_from_CSV("yahoo-NBA.csv")
+optimizer.load_players_from_csv("yahoo-NBA.csv")
 lineup_generator = optimizer.optimize(10)
 for lineup in lineup_generator:
     print(lineup)

@@ -1,7 +1,8 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 import unittest
 import mock
 import json
+from copy import deepcopy
 from collections import Counter
 from pydfs_lineup_optimizer import settings
 from pydfs_lineup_optimizer import get_optimizer
@@ -12,6 +13,7 @@ from pydfs_lineup_optimizer.settings import LineupPosition
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.utils import ratio
 from pydfs_lineup_optimizer.sites.yahoo.settings import YahooFootballSettings
+from pydfs_lineup_optimizer.rules import ProjectedOwnershipRule
 
 
 def create_players(positions_list):
@@ -344,3 +346,72 @@ class TestLineupOptimizer(unittest.TestCase):
             self.lineup_optimizer.set_max_repeating_players(8)
         with self.assertRaises(LineupOptimizerException):
             self.lineup_optimizer.set_max_repeating_players(0)
+
+
+class ProjectedOwnershipTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.players = [
+            Player(1, 'Golf Player 1', '', ['G'], '', 5000, 200, projected_ownership=0.95),
+            Player(2, 'Golf Player 2', '', ['G'], '', 5000, 20, projected_ownership=0.7),
+            Player(3, 'Golf Player 3', '', ['G'], '', 5000, 20, projected_ownership=0.7),
+            Player(4, 'Golf Player 4', '', ['G'], '', 5000, 20, projected_ownership=0.7),
+            Player(5, 'Golf Player 5', '', ['G'], '', 5000, 5, projected_ownership=0.5),
+            Player(6, 'Golf Player 6', '', ['G'], '', 5000, 5, projected_ownership=0.5),
+            Player(7, 'Golf Player 7', '', ['G'], '', 5000, 5, projected_ownership=0.5),
+            Player(8, 'Golf Player 8', '', ['G'], '', 5000, 5, projected_ownership=0.5),
+            Player(9, 'Golf Player 9', '', ['G'], '', 5000, 5, projected_ownership=0.5),
+            Player(10, 'Golf Player 10', '', ['G'], '', 5000, 5, projected_ownership=0.5),
+        ]
+
+    def setUp(self):
+        self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.GOLF)
+        self.optimizer.load_players(self.players)
+
+    def test_min_projection_greater_than_max(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_projected_ownership(1, 0.5)
+
+    def test_clear_projected_ownership_rule(self):
+        self.optimizer.set_projected_ownership(0.5, 1)
+        self.optimizer.set_projected_ownership()  # Should remove rule
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.remove_rule(ProjectedOwnershipRule, silent=False)
+
+    def test_min_projected_ownership_constraint(self):
+        min_projected_ownership = 0.6
+        self.optimizer.set_projected_ownership(min_projected_ownership=min_projected_ownership)
+        lineup = next(self.optimizer.optimize(n=1))
+        self.assertGreaterEqual(sum([p.projected_ownership for p in lineup.players]) / len(lineup.players),
+                                min_projected_ownership)
+
+    def test_max_projected_ownership_constraint(self):
+        max_projected_ownership = 0.6
+        self.optimizer.set_projected_ownership(max_projected_ownership=max_projected_ownership)
+        lineup = next(self.optimizer.optimize(n=1))
+        self.assertLessEqual(sum([p.projected_ownership for p in lineup.players]) / len(lineup.players),
+                             max_projected_ownership)
+
+    def test_both_projected_ownership_constraint(self):
+        min_projected_ownership = 0.49
+        max_projected_ownership = 0.51
+        self.optimizer.set_projected_ownership(min_projected_ownership, max_projected_ownership)
+        lineup = next(self.optimizer.optimize(n=1))
+        self.assertTrue(all([p.projected_ownership == 0.5 for p in lineup.players]))
+
+    def test_projected_ownership_for_locked_players(self):
+        max_projected_ownership = 0.59  # ownership for generating best player and 5 worst players
+        self.optimizer.add_player_to_lineup(self.players[1])
+        self.optimizer.set_projected_ownership(max_projected_ownership=max_projected_ownership)
+        lineup = next(self.optimizer.optimize(n=1))
+        self.assertTrue(self.players[0] not in lineup.players)
+
+    def test_projected_ownership_constraint_for_user_without_ownership(self):
+        optimizer = get_optimizer(Site.DRAFTKINGS, Sport.GOLF)
+        players = deepcopy(self.players)
+        for player in players[1:]:
+            player.projected_ownership = None
+        optimizer.load_players(players)
+        optimizer.set_projected_ownership(max_projected_ownership=0.9)
+        lineup = next(optimizer.optimize(n=1))
+        self.assertTrue(self.players[0] not in lineup.players)
