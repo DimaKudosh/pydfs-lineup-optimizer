@@ -108,13 +108,6 @@ class LineupOptimizer(object):
         return self._lineup
 
     @property
-    def lineup(self):
-        # type: () -> List[Player]
-        warnings.warn('"lineup" property will be removed in version 2.1.0. Use "locked_players" instead',
-                      DeprecationWarning)
-        return self.locked_players
-
-    @property
     def min_salary_cap(self):
         # type: () -> Optional[int]
         return self._min_salary_cap
