@@ -29,12 +29,14 @@ class DraftKingsCSVImporter(CSVImporter):
             raise LineupOptimizerIncorrectCSV
         return player
 
-    def import_players(self, from_template=False):  # pragma: no cover
+    def import_players(self):  # pragma: no cover
         with open(self.filename, 'r') as csvfile:
-            if from_template:
+            first_line = csvfile.readline()
+            cvsfile.seek(0)
+            if 'TeamAbbrev' in first_line:
+                csv_data = csv.DictReader(csvfile, skipinitialspace=True)
+            else:
                 csv_data = csv.DictReader(islice(csvfile, 7, None),
                                           skipinitialspace=True)
-            else:
-                csv_data = csv.DictReader(csvfile, skipinitialspace=True)
             players = [self._row_to_player(row) for row in csv_data]
         return players
