@@ -118,6 +118,7 @@ class DraftKingsCanadianFootballSettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsLOLSettings(DraftKingsSettings):
     sport = Sport.LEAGUE_OF_LEGENDS
+    max_from_one_team = 4
     positions = [
         LineupPosition('TOP', ('TOP', )),
         LineupPosition('JNG', ('JNG', )),
