@@ -25,6 +25,10 @@ class OptimizerRule(object):
 
 
 class NormalObjective(OptimizerRule):
+    def __init__(self, optimizer, params):
+        super(NormalObjective, self).__init__(optimizer, params)
+        self.used_combinations = []
+
     def apply(self, solver, players_dict):
         variables = []
         coefficients = []
@@ -36,12 +40,11 @@ class NormalObjective(OptimizerRule):
     def apply_for_iteration(self, solver, players_dict, result):
         if not result:
             return
-        variables = []
-        coefficients = []
-        for player, variable in players_dict.items():
-            variables.append(variable)
-            coefficients.append(player.fppg)
-        solver.add_constraint(variables, coefficients, SolverSign.LTE, result.fantasy_points_projection - 0.001)
+        self.used_combinations.append([players_dict[player] for player in result])
+        total_players = self.optimizer.total_players
+        coefficients = [1] * total_players
+        for variables in self.used_combinations:
+            solver.add_constraint(variables, coefficients, SolverSign.LTE, total_players - 1)
 
 
 class RandomObjective(OptimizerRule):
