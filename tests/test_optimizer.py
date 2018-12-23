@@ -154,10 +154,10 @@ class TestLineupOptimizer(unittest.TestCase):
 
     def test_lineup_with_max_players(self):
         self.lineup_optimizer.reset_lineup()
-        players = [Player(1, 'P', 'P', ['PG'], 'DEN', 10, 2), Player(5, 'P', 'P', ['SG'], 'DEN', 10, 2),
-                   Player(2, 'P', 'P', ['SF'], 'DEN', 10, 2), Player(6, 'P', 'P', ['PF'], 'DEN', 10, 2),
-                   Player(3, 'P', 'P', ['C'], 'DEN', 10, 2), Player(7, 'P', 'P', ['PG'], 'DEN', 10, 2),
-                   Player(4, 'P', 'P', ['PF'], 'DEN', 10, 2), Player(8, 'P', 'P', ['PG'], 'DEN', 10, 2)]
+        players = [Player(1, 'P1', 'P1', ['PG'], 'DEN', 10, 2), Player(5, 'P5', 'P5', ['SG'], 'DEN', 10, 2),
+                   Player(2, 'P2', 'P2', ['SF'], 'DEN', 10, 2), Player(6, 'P6', 'P6', ['PF'], 'DEN', 10, 2),
+                   Player(3, 'P3', 'P3', ['C'], 'DEN', 10, 2), Player(7, 'P7', 'P7', ['PG'], 'DEN', 10, 2),
+                   Player(4, 'P4', 'P4', ['PF'], 'DEN', 10, 2), Player(8, 'P8', 'P8', ['PG'], 'DEN', 10, 2)]
         self.lineup_optimizer.extend_players(players)
         for player in players:
             self.lineup_optimizer.add_player_to_lineup(player)
@@ -346,6 +346,15 @@ class TestLineupOptimizer(unittest.TestCase):
             self.lineup_optimizer.set_max_repeating_players(8)
         with self.assertRaises(LineupOptimizerException):
             self.lineup_optimizer.set_max_repeating_players(0)
+
+    def test_unique_player_rule(self):
+        optimizer = get_optimizer(Site.DRAFTKINGS, Sport.GOLF)
+        players = create_players(['G'] * 10)
+        high_fppg_player = Player(1, 'High FPPG', 'Player', ['G'], '', 50, 200)
+        players.extend([high_fppg_player] * 2)
+        optimizer.load_players(players)
+        lineup = next(optimizer.optimize(1))
+        self.assertEqual(len([p for p in lineup if p == high_fppg_player]), 1)
 
 
 class ProjectedOwnershipTestCase(unittest.TestCase):
