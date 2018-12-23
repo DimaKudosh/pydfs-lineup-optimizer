@@ -32,7 +32,7 @@ class DraftKingsCSVImporter(CSVImporter):
     def import_players(self):  # pragma: no cover
         with open(self.filename, 'r') as csvfile:
             first_line = csvfile.readline()
-            cvsfile.seek(0)
+            csvfile.seek(0)
             if 'TeamAbbrev' in first_line:
                 csv_data = csv.DictReader(csvfile, skipinitialspace=True)
             else:
