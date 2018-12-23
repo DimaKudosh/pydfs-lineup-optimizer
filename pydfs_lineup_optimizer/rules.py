@@ -1,6 +1,6 @@
 from __future__ import division
 from collections import defaultdict
-from itertools import product, combinations
+from itertools import product, combinations, groupby
 from random import getrandbits, uniform
 from typing import Dict, Any
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
@@ -212,3 +212,16 @@ class ProjectedOwnershipRule(OptimizerRule):
             solver.add_constraint(min_variables, min_coefficients, SolverSign.GTE, 0)
         if max_variables:
             solver.add_constraint(max_variables, max_coefficients, SolverSign.LTE, 0)
+
+
+class UniquePlayerRule(OptimizerRule):
+    def apply(self, solver, players_dict):
+        key_func = lambda t: t[0].full_name
+        data = sorted(players_dict.items(), key=key_func)
+        for player_id, group in groupby(data, key=key_func):
+            group = list(group)
+            if len(group) == 1:
+                continue
+            variables = [variable for player, variable in group]
+            coefficients = [1] * len(variables)
+            solver.add_constraint(variables, coefficients, SolverSign.LTE, 1)
