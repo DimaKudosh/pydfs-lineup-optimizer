@@ -1,5 +1,5 @@
 from collections import namedtuple
-from lineup_printer import LineupPrinter
+from pydfs_lineup_optimizer.lineup_printer import LineupPrinter
 
 
 LineupPosition = namedtuple('LineupPosition', ['name', 'positions'])
