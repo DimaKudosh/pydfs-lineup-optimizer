@@ -443,7 +443,7 @@ class LineupOptimizer(object):
             lineup.append(LineupPlayer(player, position.name))
         positions_order = [pos.name for pos in self._settings.positions]
         lineup.sort(key=lambda p: positions_order.index(p.lineup_position))
-        return Lineup(lineup)
+        return Lineup(lineup, self._settings.lineup_printer)
 
     def _set_available_teams(self):
         """
