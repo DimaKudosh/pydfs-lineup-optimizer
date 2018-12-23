@@ -164,34 +164,6 @@ class TestLineupOptimizer(unittest.TestCase):
         gen = self.lineup_optimizer.optimize(10)
         self.assertEqual(len(list(gen)), 1)
 
-    def test_max_exposure(self):
-        optimizer = self.lineup_optimizer
-        players = [
-            Player(1, 'p1', 'p1', ['PG', 'SG'], 'DEN', 10, 200, max_exposure=0.3),
-            Player(2, 'p2', 'p2', ['PF', 'SF'], 'DEN', 10, 200),
-            Player(3, 'p3', 'p3', ['C'], 'DEN', 100, 2, max_exposure=0.35),
-            Player(4, 'p4', 'p4', ['PG'], 'DEN', 100, 2),
-            Player(5, 'p5', 'p5', ['PF'], 'DEN', 100, 2, max_exposure=0),
-            Player(6, 'p6', 'p6', ['SF'], 'DEN', 1, 2001, max_exposure=0),
-        ]
-        optimizer.extend_players(players)
-        optimizer.add_player_to_lineup(players[2])
-        optimizer.add_player_to_lineup(players[3])
-        with self.assertRaises(LineupOptimizerException):
-            optimizer.add_player_to_lineup(players[4])
-        lineups_with_players = [0 for _ in players]
-        for lineup in optimizer.optimize(10, max_exposure=0.5):
-            for i, player in enumerate(players):
-                if player in lineup.players:
-                    lineups_with_players[i] += 1
-        self.assertEqual(lineups_with_players[0], 3)
-        self.assertEqual(lineups_with_players[1], 5)
-        self.assertEqual(lineups_with_players[2], 4)
-        self.assertEqual(lineups_with_players[3], 5)
-        self.assertEqual(lineups_with_players[4], 0)
-        self.assertEqual(lineups_with_players[5], 0)
-        self.assertEqual(optimizer.locked_players, players[2:4])
-
     def test_randomness(self):
         optimized_lineup = next(self.lineup_optimizer.optimize(1))
         random_lineup = next(self.lineup_optimizer.optimize(1, randomness=True))
@@ -424,3 +396,69 @@ class ProjectedOwnershipTestCase(unittest.TestCase):
         optimizer.set_projected_ownership(max_projected_ownership=0.9)
         lineup = next(optimizer.optimize(n=1))
         self.assertTrue(self.players[0] not in lineup.players)
+
+
+class ExposureTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        with open('tests/players.json', 'r') as file:
+            players_dict = json.loads(file.read())['players']
+            players = [Player(
+                p['id'],
+                p['first_name'],
+                p['last_name'],
+                p['positions'],
+                p['team'],
+                p['salary'],
+                p['fppg']
+            ) for p in players_dict]
+        cls.players = players
+
+    def setUp(self):
+        self.lineup_optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+        self.lineup_optimizer.load_players(self.players[:])
+
+    def test_max_exposure(self):
+        optimizer = self.lineup_optimizer
+        players = [
+            Player(1, 'p1', 'p1', ['PG', 'SG'], 'DEN', 10, 200, max_exposure=0.3),
+            Player(2, 'p2', 'p2', ['PF', 'SF'], 'DEN', 10, 200),
+            Player(3, 'p3', 'p3', ['C'], 'DEN', 100, 2, max_exposure=0.35),
+            Player(4, 'p4', 'p4', ['PG'], 'DEN', 100, 2),
+            Player(5, 'p5', 'p5', ['PF'], 'DEN', 100, 2, max_exposure=0),
+            Player(6, 'p6', 'p6', ['SF'], 'DEN', 1, 2001, max_exposure=0),
+        ]
+        optimizer.extend_players(players)
+        optimizer.add_player_to_lineup(players[2])
+        optimizer.add_player_to_lineup(players[3])
+        with self.assertRaises(LineupOptimizerException):
+            optimizer.add_player_to_lineup(players[4])
+        lineups_with_players = [0 for _ in players]
+        for lineup in optimizer.optimize(10, max_exposure=0.5):
+            for i, player in enumerate(players):
+                if player in lineup.players:
+                    lineups_with_players[i] += 1
+        self.assertEqual(lineups_with_players[0], 3)
+        self.assertEqual(lineups_with_players[1], 5)
+        self.assertEqual(lineups_with_players[2], 4)
+        self.assertEqual(lineups_with_players[3], 5)
+        self.assertEqual(lineups_with_players[4], 0)
+        self.assertEqual(lineups_with_players[5], 0)
+        self.assertEqual(optimizer.locked_players, players[2:4])
+
+    def test_min_exposure(self):
+        optimizer = self.lineup_optimizer
+        players = [
+            Player(1, 'p1', 'p1', ['PG', 'SG'], 'DEN', 1000, 0, min_exposure=0.3),
+            Player(2, 'p2', 'p2', ['C'], 'DEN', 1000, 0, min_exposure=0.35),
+            Player(3, 'p3', 'p3', ['C'], 'DEN', 1000, 0, min_exposure=1),
+        ]
+        optimizer.extend_players(players)
+        lineups_with_players = [0 for _ in players]
+        for lineup in optimizer.optimize(10):
+            for i, player in enumerate(players):
+                if player in lineup.players:
+                    lineups_with_players[i] += 1
+        self.assertEqual(lineups_with_players[0], 3)
+        self.assertEqual(lineups_with_players[1], 4)
+        self.assertEqual(lineups_with_players[2], 10)

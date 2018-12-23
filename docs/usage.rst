@@ -88,23 +88,24 @@ Also you can exclude some players from optimization process and restore players 
     optimizer.remove_player(player)
     optimizer.restore_player(player)
 
-You can specify maximum exposure for some players or for all players, you have several ways how to do this.
-You can add "Max Exposure" column with exposure percentage for some players to csv that you will parse when load players.
-Or you can set max_exposure property in Player object. If you want to set fixed exposure for all players you can
+You can specify maximum and minimum exposures for some players or max exposure for all players, you have several ways how to do this.
+You can add "Max Exposure" and "Min Exposure" columns with exposure percentage for some players to csv that will be parsed while players loading.
+Or you can set max_exposure/min_exposure property in Player object. If you want to set fixed max exposure for all players you can
 pass max_exposure parameter to optimize method
 
 .. code-block:: python
 
     player = optimizer.players[0]  # get random player from optimizer players
-    player.max_exposure = 0.5  # set 50% exposure
+    player.max_exposure = 0.5  # set 50% max exposure
+    player.min_exposure = 0.3  # set 30% min exposure
 
     lineups = optimizer.optimize(n=10, max_exposure=0.3)  # set 30% exposure for all players
 
 .. note::
 
-   Exposure working with locked players, so if you lock some player and set exposure for 50% percentage
+   Exposure working with locked players, so if you lock some player and set max exposure to 50% percentage
    this player will appears only in 50% lineups.
-   Player exposure has higher priority than max_exposure that you pass in optimize method.
+   Player max exposure has higher priority than max_exposure passed in optimize method.
    Exposure percentage rounds to ceil.
 
 Optimizer also have randomness feature. It adds some deviation for players projection for

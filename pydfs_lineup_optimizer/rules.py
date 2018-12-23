@@ -1,6 +1,7 @@
 from __future__ import division
 from collections import defaultdict
 from itertools import product, combinations, groupby
+from math import ceil
 from random import getrandbits, uniform
 from typing import Dict, Any
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
@@ -79,8 +80,16 @@ class LockedPlayersRule(OptimizerRule):
     def __init__(self, optimizer, params):
         super(LockedPlayersRule, self).__init__(optimizer, params)
         self.used_players = defaultdict(int)
+        self.total_lineups = params.get('n')
+        self.remaining_iteration = params.get('n') + 1
 
     def apply_for_iteration(self, solver, players_dict, result):
+        self.remaining_iteration -= 1
+        for player, variable in players_dict.items():
+            if not player.min_exposure:
+                continue
+            if ceil(player.min_exposure * self.total_lineups) >= self.remaining_iteration - self.used_players.get(player, 0):
+                solver.add_constraint([variable], [1], SolverSign.EQ, 1)
         if not result:
             # First iteration, locked players must have exposure > 0
             for player in self.optimizer.locked_players:
@@ -90,8 +99,8 @@ class LockedPlayersRule(OptimizerRule):
             self.used_players[player] += 1
         removed_players = []
         for player, used in self.used_players.items():
-            exposure = player.max_exposure if player.max_exposure is not None else self.params.get('max_exposure')
-            if exposure is not None and exposure <= used / self.params.get('n'):
+            max_exposure = player.max_exposure if player.max_exposure is not None else self.params.get('max_exposure')
+            if max_exposure is not None and max_exposure <= used / self.total_lineups:
                 removed_players.append(player)
                 solver.add_constraint([players_dict[player]], [1], SolverSign.EQ, 0)
         for player in self.optimizer.locked_players:
