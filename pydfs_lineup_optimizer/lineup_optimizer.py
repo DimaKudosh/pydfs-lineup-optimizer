@@ -15,7 +15,7 @@ from pydfs_lineup_optimizer.rules import *
 
 
 BASE_CONSTRAINTS = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamRule, LockedPlayersRule,
-                    RemoveInjuredRule}
+                    RemoveInjuredRule, UniquePlayerRule}
 
 
 class LineupOptimizer(object):
@@ -155,13 +155,6 @@ class LineupOptimizer(object):
             raise LineupOptimizerException('Min salary greater than max budget')
         self.add_new_rule(MinSalaryCapRule)
         self._min_salary_cap = min_salary
-
-    def load_players_from_CSV(self, filename):
-        # type: (str) -> None
-        warnings.simplefilter('always', DeprecationWarning)
-        warnings.warn('"load_players_from_CSV" method will be renamed to "load_players_from_csv" in version 2.2.0.',
-                      DeprecationWarning)
-        self.load_players_from_csv(filename)
 
     def load_players_from_csv(self, filename):
         # type: (str) -> None
@@ -443,7 +436,7 @@ class LineupOptimizer(object):
             lineup.append(LineupPlayer(player, position.name))
         positions_order = [pos.name for pos in self._settings.positions]
         lineup.sort(key=lambda p: positions_order.index(p.lineup_position))
-        return Lineup(lineup)
+        return Lineup(lineup, self._settings.lineup_printer)
 
     def _set_available_teams(self):
         """

@@ -1,6 +1,7 @@
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.constants import Sport, Site
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
+from pydfs_lineup_optimizer.lineup_printer import DropLowestLineupPrinter
 
 
 class FanDuelSettings(BaseSettings):
@@ -12,6 +13,7 @@ class FanDuelSettings(BaseSettings):
 @SitesRegistry.register_settings
 class FanDuelBasketballSettings(FanDuelSettings):
     sport = Sport.BASKETBALL
+    lineup_printer = DropLowestLineupPrinter
     positions = [
         LineupPosition('PG', ('PG', )),
         LineupPosition('PG', ('PG', )),

@@ -1,6 +1,7 @@
 from __future__ import division
 from collections import defaultdict
-from itertools import product, combinations
+from itertools import product, combinations, groupby
+from math import ceil
 from random import getrandbits, uniform
 from typing import Dict, Any
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
@@ -25,6 +26,10 @@ class OptimizerRule(object):
 
 
 class NormalObjective(OptimizerRule):
+    def __init__(self, optimizer, params):
+        super(NormalObjective, self).__init__(optimizer, params)
+        self.used_combinations = []
+
     def apply(self, solver, players_dict):
         variables = []
         coefficients = []
@@ -36,12 +41,11 @@ class NormalObjective(OptimizerRule):
     def apply_for_iteration(self, solver, players_dict, result):
         if not result:
             return
-        variables = []
-        coefficients = []
-        for player, variable in players_dict.items():
-            variables.append(variable)
-            coefficients.append(player.fppg)
-        solver.add_constraint(variables, coefficients, SolverSign.LTE, result.fantasy_points_projection - 0.001)
+        self.used_combinations.append([players_dict[player] for player in result])
+        total_players = self.optimizer.total_players
+        coefficients = [1] * total_players
+        for variables in self.used_combinations:
+            solver.add_constraint(variables, coefficients, SolverSign.LTE, total_players - 1)
 
 
 class RandomObjective(OptimizerRule):
@@ -76,8 +80,16 @@ class LockedPlayersRule(OptimizerRule):
     def __init__(self, optimizer, params):
         super(LockedPlayersRule, self).__init__(optimizer, params)
         self.used_players = defaultdict(int)
+        self.total_lineups = params.get('n')
+        self.remaining_iteration = params.get('n') + 1
 
     def apply_for_iteration(self, solver, players_dict, result):
+        self.remaining_iteration -= 1
+        for player, variable in players_dict.items():
+            if not player.min_exposure:
+                continue
+            if ceil(player.min_exposure * self.total_lineups) >= self.remaining_iteration - self.used_players.get(player, 0):
+                solver.add_constraint([variable], [1], SolverSign.EQ, 1)
         if not result:
             # First iteration, locked players must have exposure > 0
             for player in self.optimizer.locked_players:
@@ -87,8 +99,8 @@ class LockedPlayersRule(OptimizerRule):
             self.used_players[player] += 1
         removed_players = []
         for player, used in self.used_players.items():
-            exposure = player.max_exposure if player.max_exposure is not None else self.params.get('max_exposure')
-            if exposure is not None and exposure <= used / self.params.get('n'):
+            max_exposure = player.max_exposure if player.max_exposure is not None else self.params.get('max_exposure')
+            if max_exposure is not None and max_exposure <= used / self.total_lineups:
                 removed_players.append(player)
                 solver.add_constraint([players_dict[player]], [1], SolverSign.EQ, 0)
         for player in self.optimizer.locked_players:
@@ -209,3 +221,16 @@ class ProjectedOwnershipRule(OptimizerRule):
             solver.add_constraint(min_variables, min_coefficients, SolverSign.GTE, 0)
         if max_variables:
             solver.add_constraint(max_variables, max_coefficients, SolverSign.LTE, 0)
+
+
+class UniquePlayerRule(OptimizerRule):
+    def apply(self, solver, players_dict):
+        key_func = lambda t: t[0].full_name
+        data = sorted(players_dict.items(), key=key_func)
+        for player_id, group in groupby(data, key=key_func):
+            group = list(group)
+            if len(group) == 1:
+                continue
+            variables = [variable for player, variable in group]
+            coefficients = [1] * len(variables)
+            solver.add_constraint(variables, coefficients, SolverSign.LTE, 1)
