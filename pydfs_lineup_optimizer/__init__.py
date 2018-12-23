@@ -9,6 +9,6 @@ from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_exporter import CSVLineupExporter
 
 
-def get_optimizer(site, sport):
+def get_optimizer(site, sport, **kwargs):
     # type: (str, str) -> LineupOptimizer
-    return LineupOptimizer(SitesRegistry.get_settings(site, sport))
+    return LineupOptimizer(SitesRegistry.get_settings(site, sport), **kwargs)

@@ -22,7 +22,7 @@ class SitesRegistry(object):
 
     @classmethod
     def get_settings(cls, site, sport):
-        # type: (str) -> Type[BaseSettings]
+        # type: (str, str) -> Type[BaseSettings]
         try:
             return cls.SETTINGS_MAPPING[site][sport]
         except KeyError:
