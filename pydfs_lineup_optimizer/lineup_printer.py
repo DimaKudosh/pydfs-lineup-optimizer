@@ -1,6 +1,13 @@
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from pydfs_lineup_optimizer.lineup import Lineup
+
+
 class BaseLineupPrinter(object):
     def print_lineup(self, lineup):
-        # type: (Lineup) -> str
+        # type: ('Lineup') -> str
         raise NotImplementedError
 
 

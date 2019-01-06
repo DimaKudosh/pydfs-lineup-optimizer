@@ -1,12 +1,19 @@
 language: python
-python:
-  - 2.7
-  - 3.3
-  - 3.5
+
+matrix:
+  include:
+    - python: 2.7
+    - python: 3.5
+    - python: 3.6
+    - python: 3.7
+      dist: xenial
+      sudo: true
+
 install:
-  - pip install -r requirements.txt
-  - pip install coveralls
+  - pip install virtualenv tox-travis coveralls
+
 script:
-  coverage run --source ./pydfs_lineup_optimizer -m unittest discover -s tests/
+  - tox
+
 after_success:
-  coveralls
+  - coveralls

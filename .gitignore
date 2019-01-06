@@ -2,7 +2,11 @@
 *.pyc
 .cache
 .coverage
+.coverage.*
 .idea
+.tox
+.mypy_cache
+.eggs
 csv_examples
 dist
 htmlcov

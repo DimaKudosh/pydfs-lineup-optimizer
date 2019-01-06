@@ -28,7 +28,7 @@ class Lineup(object):
 
     @property
     def fantasy_points_projection(self):
-        # type: () -> int
+        # type: () -> float
         return round(sum(player.fppg for player in self.players), 3)
 
     @property
