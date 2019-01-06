@@ -3,11 +3,15 @@ from collections import defaultdict
 from itertools import product, combinations, groupby
 from math import ceil
 from random import getrandbits, uniform
-from typing import Dict, Any
+from typing import Dict, Any, Optional, TYPE_CHECKING
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
 from pydfs_lineup_optimizer.utils import list_intersection
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import Player
+
+
+if TYPE_CHECKING:
+    from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 
 
 class OptimizerRule(object):
@@ -21,7 +25,7 @@ class OptimizerRule(object):
         pass
 
     def apply_for_iteration(self, solver, players_dict, result):
-        # type: (Solver, Dict[Player, any], Lineup) -> None
+        # type: (Solver, Dict[Player, Any], Optional[Lineup]) -> None
         pass
 
 

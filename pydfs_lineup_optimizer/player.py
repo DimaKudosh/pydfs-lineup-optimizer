@@ -1,5 +1,5 @@
 from __future__ import division
-from typing import List, Optional, NoReturn
+from typing import List, Optional
 
 
 class Player(object):
@@ -16,7 +16,7 @@ class Player(object):
                  min_exposure=None,  # type: Optional[float]
                  projected_ownership=None,  # type: Optional[float]
                  ):
-        # type: (...) -> NoReturn
+        # type: (...) -> None
         self.id = player_id
         self.first_name = first_name
         self.last_name = last_name
@@ -25,11 +25,11 @@ class Player(object):
         self.salary = salary
         self.fppg = fppg
         self.is_injured = is_injured
-        self._max_exposure = None
+        self._max_exposure = None  # type: Optional[float]
         self.max_exposure = max_exposure
-        self._min_exposure = None
+        self._min_exposure = None  # type: Optional[float]
         self.min_exposure = min_exposure
-        self._projected_ownership = None
+        self._projected_ownership = None  # type: Optional[float]
         self.projected_ownership = projected_ownership
 
     def __repr__(self):
@@ -37,32 +37,32 @@ class Player(object):
 
     @property
     def max_exposure(self):
-        # type: () -> float
+        # type: () -> Optional[float]
         return self._max_exposure
 
     @max_exposure.setter
     def max_exposure(self, max_exposure):
-        # type: (float) -> NoReturn
+        # type: (Optional[float]) -> None
         self._max_exposure = max_exposure / 100 if max_exposure and max_exposure > 1 else max_exposure
 
     @property
     def min_exposure(self):
-        # type: () -> float
+        # type: () -> Optional[float]
         return self._min_exposure
 
     @min_exposure.setter
     def min_exposure(self, min_exposure):
-        # type: (float) -> None
+        # type: (Optional[float]) -> None
         self._min_exposure = min_exposure / 100 if min_exposure and min_exposure > 1 else min_exposure
 
     @property
     def projected_ownership(self):
-        # type: () -> float
+        # type: () -> Optional[float]
         return self._projected_ownership
 
     @projected_ownership.setter
     def projected_ownership(self, projected_ownership):
-        # type: (float) -> NoReturn
+        # type: (Optional[float]) -> None
         self._projected_ownership = projected_ownership / 100 if projected_ownership and projected_ownership > 1 \
             else projected_ownership
 
@@ -81,7 +81,7 @@ class LineupPlayer(object):
     __slots__ = ['_player', 'lineup_position']
 
     def __init__(self, player, lineup_position):
-        # type: (Player, str) -> NoReturn
+        # type: (Player, str) -> None
         self._player = player
         self.lineup_position = lineup_position
 
