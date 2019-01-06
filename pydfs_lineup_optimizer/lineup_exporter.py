@@ -6,7 +6,7 @@ from pydfs_lineup_optimizer.player import LineupPlayer
 
 class LineupExporter(object):
     def __init__(self, lineup_generator):
-        # type: (Generator[Lineup]) -> None
+        # type: (Generator[Lineup, None, None]) -> None
         self.lineup_generator = lineup_generator
 
     @staticmethod

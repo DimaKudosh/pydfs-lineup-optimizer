@@ -1,12 +1,12 @@
 from collections import defaultdict
-from typing import Type, Tuple
+from typing import Type, DefaultDict, Dict
 from pydfs_lineup_optimizer.settings import BaseSettings
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 
 
 class SitesRegistry(object):
-    SETTINGS_MAPPING = defaultdict(dict)
-    CSV_IMPORTERS_MAPPING = {}
+    SETTINGS_MAPPING = defaultdict(dict)  # type: DefaultDict[str, Dict[str, Type[BaseSettings]]]
+    CSV_IMPORTERS_MAPPING = {}  # type: Dict[str, Type[CSVImporter]]
 
     @classmethod
     def register_settings(cls, settings_cls):

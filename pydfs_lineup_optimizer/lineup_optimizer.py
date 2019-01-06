@@ -1,15 +1,14 @@
 from __future__ import division
 from collections import Counter, OrderedDict
-from itertools import chain, combinations, permutations
-from typing import List, FrozenSet, Tuple, Optional, Type, Generator, Set
-import warnings
+from itertools import chain, permutations
+from typing import List, FrozenSet, Tuple, Type, Generator, Set
 from pydfs_lineup_optimizer.solvers import PuLPSolver, SolverException
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
     LineupOptimizerIncorrectPositionName
 from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
-from pydfs_lineup_optimizer.player import Player, LineupPlayer
+from pydfs_lineup_optimizer.player import LineupPlayer
 from pydfs_lineup_optimizer.utils import ratio
 from pydfs_lineup_optimizer.rules import *
 
@@ -22,29 +21,29 @@ class LineupOptimizer(object):
     def __init__(self, settings, solver=PuLPSolver):
         # type: (Type[BaseSettings], Type[Solver]) -> None
         self._settings = settings
-        self._csv_importer = None
+        self._csv_importer = None  # type: Optional[Type[CSVImporter]]
         self._constraints = BASE_CONSTRAINTS.copy()  # type: Set[Type[OptimizerRule]]
-        self._players = []
-        self._lineup = []
+        self._players = []  # type: List[Player]
+        self._lineup = []  # type: List[Player]
         self._available_positions = frozenset(chain.from_iterable(
             position.positions for position in self._settings.positions))
-        self._available_teams = frozenset()
-        self._removed_players = []
+        self._available_teams = frozenset()  # type: FrozenSet[str]
+        self._removed_players = []  # type: List[Player]
         self._search_threshold = 0.8
         self._min_deviation = 0.06
         self._max_deviation = 0.12
-        self._players_from_one_team = {}
-        self._players_with_same_position = {}
-        self._positions_from_same_team = []
-        self._min_salary_cap = None
-        self._max_repeating_players = None
+        self._players_from_one_team = {}  # type: Dict[str, int]
+        self._players_with_same_position = {}  # type: Dict[str, int]
+        self._positions_from_same_team = []  # type: List[str]
+        self._min_salary_cap = None  # type: Optional[float]
+        self._max_repeating_players = None  # type: Optional[int]
         self._solver_class = solver
-        self._max_projected_ownership = None
-        self._min_projected_ownership = None
+        self._max_projected_ownership = None  # type: Optional[float]
+        self._min_projected_ownership = None  # type: Optional[float]
 
     @property
     def budget(self):
-        # type: () -> int
+        # type: () -> float
         return self._settings.budget
 
     @property
@@ -54,8 +53,8 @@ class LineupOptimizer(object):
 
     @property
     def remaining_budget(self):
-        # type: () -> int
-        return self.budget - sum([player.salary for player in self.locked_players])
+        # type: () -> float
+        return self.budget - sum(player.salary for player in self.locked_players)
 
     @property
     def remaining_players(self):
@@ -64,7 +63,7 @@ class LineupOptimizer(object):
 
     @property
     def max_from_one_team(self):
-        # type: () -> int
+        # type: () -> Optional[int]
         return self._settings.max_from_one_team
 
     @property
@@ -84,12 +83,12 @@ class LineupOptimizer(object):
 
     @property
     def available_teams(self):
-        # type: () -> FrozenSet
+        # type: () -> FrozenSet[str]
         return self._available_teams
 
     @property
     def available_positions(self):
-        # type: () -> FrozenSet
+        # type: () -> FrozenSet[LineupPosition]
         return self._available_positions
 
     @property
@@ -109,7 +108,7 @@ class LineupOptimizer(object):
 
     @property
     def min_salary_cap(self):
-        # type: () -> Optional[int]
+        # type: () -> Optional[float]
         return self._min_salary_cap
 
     @property
@@ -242,10 +241,9 @@ class LineupOptimizer(object):
         """
         Return list of players with similar name.
         """
-        players = self._players
-        possibilities = [(player, ratio(name, player.full_name)) for player in players]
-        possibilities = filter(lambda pos: pos[1] >= self._search_threshold, possibilities)
-        players = sorted(possibilities, key=lambda pos: -pos[1])
+        possibilities = [(player, ratio(name, player.full_name)) for player in self._players]
+        filtered_possibilities = filter(lambda pos: pos[1] >= self._search_threshold, possibilities)
+        players = sorted(filtered_possibilities, key=lambda pos: -pos[1])
         return list(map(lambda p: p[0], players))
 
     def get_player_by_name(self, name):
@@ -335,7 +333,7 @@ class LineupOptimizer(object):
         self.add_new_rule(MaxRepeatingPlayersRule)
 
     def set_projected_ownership(self, min_projected_ownership=None, max_projected_ownership=None):
-        # type: (float, float) -> None
+        # type: (Optional[float], Optional[float]) -> None
         if min_projected_ownership and max_projected_ownership and min_projected_ownership >= max_projected_ownership:
             raise LineupOptimizerException('Max projected ownership should be greater than min projected ownership')
         self._max_projected_ownership = max_projected_ownership / 100 if \
@@ -348,7 +346,7 @@ class LineupOptimizer(object):
             self.remove_rule(ProjectedOwnershipRule)
 
     def optimize(self, n, max_exposure=None, randomness=False, with_injured=False):
-        # type: (int, Optional[float], bool, bool) -> Generator[Lineup]
+        # type: (int, Optional[float], bool, bool) -> Generator[Lineup, None, None]
         params = locals()
         rules = self._constraints.copy()
         if randomness:
@@ -393,11 +391,10 @@ class LineupOptimizer(object):
         This method tries to set positions for given players, and raise error if can't.
         """
         positions = self._settings.positions[:]
-        single_position_players = []
-        multi_positions_players = []
-        players_with_positions = {}
+        single_position_players = []  # type: List[Player]
+        multi_positions_players = []  # type: List[Player]
+        players_with_positions = {}  # type: Dict[Player, LineupPosition]
         for player in players:
-            players_with_positions[player] = None
             if len(player.positions) == 1:
                 single_position_players.append(player)
             else:
@@ -410,10 +407,10 @@ class LineupOptimizer(object):
                     break
             else:
                 raise LineupOptimizerException('Unable to build lineup')
-        for players in permutations(multi_positions_players):
+        for players_permutation in permutations(multi_positions_players):
             is_correct = True
             remaining_positions = positions[:]
-            for player in players:
+            for player in players_permutation:
                 for position in remaining_positions:
                     if list_intersection(player.positions, position.positions):
                         players_with_positions[player] = position
