@@ -20,10 +20,10 @@ class DraftKingsCSVImporter(CSVImporter):
             return
         if game_info == "In Progress" or game_info == "Final":
             return GameInfo( # No game info provided, just mark game as started
-				home_team='',
-				away_team='',
-				starts_at='',
-				game_started=True)
+                home_team='',
+                away_team='',
+                starts_at='',
+                game_started=True)
         teams, date = game_info.split(' ', 1)
         away_team, home_team = teams.split('@')
         starts_at = datetime.strptime(date.replace(' ET', ''), '%m/%d/%Y %I:%M%p').replace(tzinfo=timezone('EST'))
@@ -31,7 +31,7 @@ class DraftKingsCSVImporter(CSVImporter):
             home_team=home_team,
             away_team=away_team,
             starts_at=starts_at,
-			game_started=False
+            game_started=False
         )
 
     def _row_to_player(self, row):
