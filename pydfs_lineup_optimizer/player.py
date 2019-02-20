@@ -5,7 +5,7 @@ from typing import List, Optional
 from pytz import timezone
 
 
-GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at'])
+GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at', 'game_started'])
 
 
 class Player(object):
@@ -90,8 +90,11 @@ class Player(object):
     @property
     def is_game_started(self):
         # type: () -> bool
-        if self.game_info and self.game_info.starts_at:
-            return datetime.now(timezone('EST')) > self.game_info.starts_at
+        if self.game_info:
+            if self.game_info.game_started:
+                return True
+            if self.game_info.starts_at and datetime.now(timezone('EST')) > self.game_info.starts_at:
+                return True
         return False
 
 
