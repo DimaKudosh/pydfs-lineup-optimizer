@@ -113,19 +113,3 @@ class DraftKingsCanadianFootballSettings(DraftKingsSettings):
         LineupPosition('FLEX', ('RB', 'WR', )),
         LineupPosition('DST', ('DST', )),
     ]
-
-
-@SitesRegistry.register_settings
-class DraftKingsLOLSettings(DraftKingsSettings):
-    sport = Sport.LEAGUE_OF_LEGENDS
-    max_from_one_team = 4
-    positions = [
-        LineupPosition('TOP', ('TOP', )),
-        LineupPosition('JNG', ('JNG', )),
-        LineupPosition('MID', ('MID', )),
-        LineupPosition('ADC', ('ADC', )),
-        LineupPosition('SUP', ('SUP', )),
-        LineupPosition('FLEX', ('TOP', 'JNG', 'MID', 'ADC', 'SUP', )),
-        LineupPosition('FLEX', ('TOP', 'JNG', 'MID', 'ADC', 'SUP', )),
-        LineupPosition('TEAM', ('TEAM', )),
-    ]

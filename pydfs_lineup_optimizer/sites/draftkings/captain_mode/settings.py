@@ -32,3 +32,18 @@ class DraftKingsCaptainModeBasketballSettings(DraftKingsCaptainModeSettings):
         LineupPosition('UTIL', ('UTIL', )),
         LineupPosition('UTIL', ('UTIL', )),
     ]
+
+
+@SitesRegistry.register_settings
+class DraftKingsLOLSettings(DraftKingsCaptainModeSettings):
+    sport = Sport.LEAGUE_OF_LEGENDS
+    max_from_one_team = 4
+    positions = [
+        LineupPosition('CPT', ('CPT', )),
+        LineupPosition('TOP', ('TOP', )),
+        LineupPosition('JNG', ('JNG', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('ADC', ('ADC', )),
+        LineupPosition('SUP', ('SUP', )),
+        LineupPosition('TEAM', ('TEAM', )),
+    ]
