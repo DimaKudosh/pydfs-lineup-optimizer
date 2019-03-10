@@ -64,6 +64,8 @@ class DraftKingsCSVImporter(CSVImporter):
                         skipinitialspace=True)
                     players = [self._row_to_player(row) for row in csv_data]
                     break
+                elif line == '':
+                    break
                 else:
                     start_line += 1
         return players
@@ -87,8 +89,7 @@ class DraftKingsCSVImporter(CSVImporter):
                 for index, position in zip(range(start_column, end_column), position_names):
                     try:
                         player_data = line[index]
-                        if player_data.find('(LOCKED)') >= 0: # Remove possible '(LOCKED)' substring
-                            player_data = player_data.split(')')[0] + ')'
+                        player_data = player_data.replace('(LOCKED)', '') # Remove possible '(LOCKED)' substring
                         player_id = player_data.split('(')[1][:-1]
                     except IndexError:
                         raise LineupOptimizerIncorrectCSV
