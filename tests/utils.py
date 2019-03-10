@@ -17,11 +17,16 @@ def load_players():
     return players
 
 
-def create_players(positions_list):
+def create_players(positions_list, **kwargs):
+    params = {
+        'salary': 10,
+        'fppg': 10
+    }
+    params.update(kwargs)
     players = []
     for i, positions in enumerate(positions_list):
         players.append(
             Player(player_id=i, first_name=str(i), last_name=str(i), positions=positions.split('/'), team=str(i),
-                   salary=10, fppg=10)
+                   **params)
         )
     return players
