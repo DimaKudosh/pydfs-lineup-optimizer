@@ -12,9 +12,9 @@ from utils import create_players, load_players
 
 class LateSwapTestCase(unittest.TestCase):
     def setUp(self):
-        self.future_game_info = GameInfo(home_team='H', away_team='A',
+        self.future_game_info = GameInfo(home_team='H', away_team='A', game_started=False,
                                          starts_at=datetime.now(timezone('EST')) + timedelta(days=1))
-        self.finished_game_info = GameInfo(home_team='H', away_team='A',
+        self.finished_game_info = GameInfo(home_team='H', away_team='A', game_started=False,
                                            starts_at=datetime.now(timezone('EST')) - timedelta(days=1))
         self.lineup_optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
         positions = ['PG', 'SG', 'SF', 'PF', 'C', 'PG/SG', 'SF/PF', 'C']
