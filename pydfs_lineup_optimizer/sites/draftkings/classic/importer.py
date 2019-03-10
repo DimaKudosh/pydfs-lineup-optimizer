@@ -18,6 +18,12 @@ class DraftKingsCSVImporter(CSVImporter):
         game_info = row.get('Game Info')
         if not game_info:
             return
+        if game_info == "In Progress" or game_info == "Final":
+            return GameInfo( # No game info provided, just mark game as started
+                home_team='',
+                away_team='',
+                starts_at='',
+                game_started=True)
         teams, date = game_info.split(' ', 1)
         away_team, home_team = teams.split('@')
         starts_at = datetime.strptime(date.replace(' ET', ''), '%m/%d/%Y %I:%M%p').replace(tzinfo=timezone('EST'))
@@ -25,6 +31,7 @@ class DraftKingsCSVImporter(CSVImporter):
             home_team=home_team,
             away_team=away_team,
             starts_at=starts_at,
+            game_started=False
         )
 
     def _row_to_player(self, row):
@@ -48,14 +55,19 @@ class DraftKingsCSVImporter(CSVImporter):
 
     def import_players(self):  # pragma: no cover
         with open(self.filename, 'r') as csv_file:
-            first_line = csv_file.readline()
-            csv_file.seek(0)
-            if 'TeamAbbrev' in first_line:
-                csv_data = csv.DictReader(csv_file, skipinitialspace=True)
-            else:
-                csv_data = csv.DictReader(islice(csv_file, 7, None),
-                                          skipinitialspace=True)
-            players = [self._row_to_player(row) for row in csv_data]
+            start_line = 0 # Find line with 'TeamAbbrev', that's where players data starts
+            while True:
+                line = csv_file.readline()
+                if 'TeamAbbrev' in line:
+                    csv_file.seek(0)
+                    csv_data = csv.DictReader(islice(csv_file, start_line, None),
+                        skipinitialspace=True)
+                    players = [self._row_to_player(row) for row in csv_data]
+                    break
+                elif line == '':
+                    break
+                else:
+                    start_line += 1
         return players
 
     def import_lineups(self, players):
@@ -77,6 +89,7 @@ class DraftKingsCSVImporter(CSVImporter):
                 for index, position in zip(range(start_column, end_column), position_names):
                     try:
                         player_data = line[index]
+                        player_data = player_data.replace('(LOCKED)', '') # Remove possible '(LOCKED)' substring
                         player_id = player_data.split('(')[1][:-1]
                     except IndexError:
                         raise LineupOptimizerIncorrectCSV
