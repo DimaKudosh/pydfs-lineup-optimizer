@@ -1,6 +1,7 @@
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.constants import Sport, Site
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
+from pydfs_lineup_optimizer.lineup_printer import IndividualSportLineupPrinter
 
 
 class DraftKingsSettings(BaseSettings):
@@ -76,6 +77,7 @@ class DraftKingsBaseballSettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsGolfSettings(DraftKingsSettings):
     sport = Sport.GOLF
+    lineup_printer = IndividualSportLineupPrinter
     positions = [
         LineupPosition('G', ('G',)),
         LineupPosition('G', ('G',)),
@@ -116,16 +118,14 @@ class DraftKingsCanadianFootballSettings(DraftKingsSettings):
 
 
 @SitesRegistry.register_settings
-class DraftKingsLOLSettings(DraftKingsSettings):
-    sport = Sport.LEAGUE_OF_LEGENDS
-    max_from_one_team = 4
+class DraftKingsMMA(DraftKingsSettings):
+    sport = Sport.MMA
+    lineup_printer = IndividualSportLineupPrinter
     positions = [
-        LineupPosition('TOP', ('TOP', )),
-        LineupPosition('JNG', ('JNG', )),
-        LineupPosition('MID', ('MID', )),
-        LineupPosition('ADC', ('ADC', )),
-        LineupPosition('SUP', ('SUP', )),
-        LineupPosition('FLEX', ('TOP', 'JNG', 'MID', 'ADC', 'SUP', )),
-        LineupPosition('FLEX', ('TOP', 'JNG', 'MID', 'ADC', 'SUP', )),
-        LineupPosition('TEAM', ('TEAM', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
     ]

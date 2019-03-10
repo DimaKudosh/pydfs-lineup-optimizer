@@ -3,9 +3,9 @@ from collections import defaultdict
 from itertools import product, combinations, groupby
 from math import ceil
 from random import getrandbits, uniform
-from typing import Dict, Any, Optional, TYPE_CHECKING
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
-from pydfs_lineup_optimizer.utils import list_intersection
+from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import Player
 
@@ -115,7 +115,7 @@ class LockedPlayersRule(OptimizerRule):
 class PositionsRule(OptimizerRule):
     def apply(self, solver, players_dict):
         extra_positions = self.optimizer.players_with_same_position
-        positions = self.optimizer.get_positions_for_optimizer()
+        positions = get_positions_for_optimizer(self.optimizer._settings.positions)
         for position, places in positions.items():
             extra = 0
             if len(position) == 1:
@@ -238,3 +238,35 @@ class UniquePlayerRule(OptimizerRule):
             variables = [variable for player, variable in group]
             coefficients = [1] * len(variables)
             solver.add_constraint(variables, coefficients, SolverSign.LTE, 1)
+
+
+class LateSwapRule(OptimizerRule):
+    def __init__(self, optimizer, params):
+        super(LateSwapRule, self).__init__(optimizer, params)
+        self.current_iteration = 0
+        self.lineups = params.get('lineups')  # type: List[Lineup]
+
+    def apply_for_iteration(self, solver, players_dict, result):
+        current_lineup = self.lineups[self.current_iteration]
+        unswappable_players = current_lineup.get_unswappable_players()
+        positions = self.optimizer.settings.positions[:]
+        # lock selected players
+        for player in unswappable_players:
+            for position in positions:
+                if position.name == player.lineup_position:
+                    positions.remove(position)
+                    break
+            solver.add_constraint([players_dict[player]], [1], SolverSign.EQ, 1)
+        # set remaining positions
+        positions = get_positions_for_optimizer(positions)
+        for position, places in positions.items():
+            players_with_position = [variable for player, variable in players_dict.items()
+                                     if list_intersection(position, player.positions) and
+                                     player not in unswappable_players]
+            coefficients = [1] * len(players_with_position)
+            solver.add_constraint(players_with_position, coefficients, SolverSign.GTE, places)
+        # Exclude players with active games
+        for player, variable in players_dict.items():
+            if player not in unswappable_players and player.is_game_started:
+                solver.add_constraint([players_dict[player]], [1], SolverSign.EQ, 0)
+        self.current_iteration += 1

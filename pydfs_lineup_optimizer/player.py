@@ -1,5 +1,11 @@
 from __future__ import division
+from collections import namedtuple
+from datetime import datetime
 from typing import List, Optional
+from pytz import timezone
+
+
+GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at', 'game_started'])
 
 
 class Player(object):
@@ -15,6 +21,7 @@ class Player(object):
                  max_exposure=None,  # type: Optional[float]
                  min_exposure=None,  # type: Optional[float]
                  projected_ownership=None,  # type: Optional[float]
+                 game_info=None,  # type: Optional[GameInfo]
                  ):
         # type: (...) -> None
         self.id = player_id
@@ -25,6 +32,7 @@ class Player(object):
         self.salary = salary
         self.fppg = fppg
         self.is_injured = is_injured
+        self.game_info = game_info
         self._max_exposure = None  # type: Optional[float]
         self.max_exposure = max_exposure
         self._min_exposure = None  # type: Optional[float]
@@ -34,6 +42,9 @@ class Player(object):
 
     def __repr__(self):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)
+
+    def __hash__(self):
+        return hash((self.id, ))
 
     @property
     def max_exposure(self):
@@ -75,6 +86,16 @@ class Player(object):
     def efficiency(self):
         # type: () -> float
         return round(self.fppg / self.salary, 6)
+
+    @property
+    def is_game_started(self):
+        # type: () -> bool
+        if self.game_info:
+            if self.game_info.game_started:
+                return True
+            if self.game_info.starts_at and datetime.now(timezone('EST')) > self.game_info.starts_at:
+                return True
+        return False
 
 
 class LineupPlayer(object):

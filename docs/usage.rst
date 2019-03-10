@@ -142,3 +142,20 @@ Below is an full example of how **pydfs-lineup-optimizer** can be used to genera
     optimizer.add_player_to_lineup(westbrook)  # Lock Harden and Westbrook
     for lineup in optimizer.optimize(n=10, max_exposure=0.3):
         print(lineup)
+
+DraftKings Late-Swap
+--------------------
+
+Optimizer provides additional functionality for DK that allows to re-optimize existed lineups.
+For this you should load lineups, you can do it from csv file generated in DK lobby for specific contest.
+Then you should pass loaded lineups to `optimize_lineups` method.
+Players with started game will be locked on specific positions and optimizer will change only players with upcoming game.
+
+.. code-block:: python
+
+    csv_filename = "dk_nba.csv"
+    optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+    optimizer.load_players_from_csv(csv_filename)
+    lineups = optimizer.load_lineups_from_csv(csv_filename)
+    for lineup in optimizer.optimize_lineups(lineups):
+        print(lineup)

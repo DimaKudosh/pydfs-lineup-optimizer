@@ -9,7 +9,7 @@ from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.player import LineupPlayer
-from pydfs_lineup_optimizer.utils import ratio
+from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions
 from pydfs_lineup_optimizer.rules import *
 
 
@@ -126,6 +126,11 @@ class LineupOptimizer(object):
         # type: () -> Optional[float]
         return self._min_projected_ownership
 
+    @property
+    def settings(self):
+        # type: () -> Type[BaseSettings]
+        return self._settings
+
     def reset_lineup(self):
         self._lineup = []
         self._players_with_same_position = {}
@@ -165,6 +170,13 @@ class LineupOptimizer(object):
             csv_importer = SitesRegistry.get_csv_importer(self._settings.site)
         self._players = csv_importer(filename).import_players()
         self._set_available_teams()
+
+    def load_lineups_from_csv(self, filename):
+        # type: (str) -> List[Lineup]
+        csv_importer = self._csv_importer
+        if not csv_importer:
+            csv_importer = SitesRegistry.get_csv_importer(self._settings.site)
+        return csv_importer(filename).import_lineups(self.players)
 
     def load_players(self, players):
         # type: (List[Player]) -> None
@@ -275,7 +287,7 @@ class LineupOptimizer(object):
                 raise LineupOptimizerException('You can\'t set more than %s players from one team.' %
                                                self.max_from_one_team)
         try:
-            self._link_players_with_positions(self.locked_players + [player])
+            link_players_with_positions(self.locked_players + [player], self._settings.positions)
         except LineupOptimizerException:
             raise LineupOptimizerException('You\'re already select all %s\'s' % '/'.join(player.positions))
         self._lineup.append(player)
@@ -355,8 +367,7 @@ class LineupOptimizer(object):
             rules.add(NormalObjective)
         if with_injured:
             rules.remove(RemoveInjuredRule)
-        players = [player for player in self._players
-                   if player not in self._removed_players and player.max_exposure != 0.0]
+        players = [player for player in self.players if player.max_exposure is None or player.max_exposure > 0]
         base_solver = self._solver_class()
         base_solver.setup_solver()
         players_dict = OrderedDict(
@@ -385,50 +396,55 @@ class LineupOptimizer(object):
             except SolverException:
                 raise LineupOptimizerException('Can\'t generate lineups')
 
-    def _link_players_with_positions(self, players):
-        # type: (List[Player]) -> Dict[Player, LineupPosition]
-        """
-        This method tries to set positions for given players, and raise error if can't.
-        """
-        positions = self._settings.positions[:]
-        single_position_players = []  # type: List[Player]
-        multi_positions_players = []  # type: List[Player]
-        players_with_positions = {}  # type: Dict[Player, LineupPosition]
-        for player in players:
-            if len(player.positions) == 1:
-                single_position_players.append(player)
-            else:
-                multi_positions_players.append(player)
-        for player in single_position_players:
-            for position in positions:
-                if player.positions[0] in position.positions:
-                    players_with_positions[player] = position
-                    positions.remove(position)
-                    break
-            else:
-                raise LineupOptimizerException('Unable to build lineup')
-        for players_permutation in permutations(multi_positions_players):
-            is_correct = True
-            remaining_positions = positions[:]
-            for player in players_permutation:
-                for position in remaining_positions:
-                    if list_intersection(player.positions, position.positions):
-                        players_with_positions[player] = position
-                        remaining_positions.remove(position)
-                        break
-                else:
-                    is_correct = False
-                    break
-            if is_correct:
-                break
-        else:
-            raise LineupOptimizerException('Unable to build lineup')
-        return players_with_positions
+    def optimize_lineups(self, lineups):
+        params = {
+            'n': len(lineups),
+            'lineups': lineups,
+        }
+        rules = self._constraints.copy()
+        rules.add(NormalObjective)
+        rules.add(LateSwapRule)
+        rules.remove(PositionsRule)
+        players = [player for player in self.players if player.max_exposure is None or player.max_exposure > 0]
+        base_solver = self._solver_class()
+        base_solver.setup_solver()
+        players_dict = OrderedDict(
+            [(player, base_solver.add_variable('Player_%d' % i, 0, 1)) for i, player in enumerate(players)])
+        variables_dict = {v: k for k, v in players_dict.items()}
+        constraints = [constraint(self, params) for constraint in rules]
+        for constraint in constraints:
+            constraint.apply(base_solver, players_dict)
+        previous_lineup = None
+        for lineup in lineups:
+            solver = base_solver.copy()
+            for constraint in constraints:
+                constraint.apply_for_iteration(solver, players_dict, previous_lineup)
+            try:
+                solved_variables = solver.solve()
+                unswappable_players = lineup.get_unswappable_players()
+                lineup_players = []
+                for solved_variable in solved_variables:
+                    player = variables_dict.get(solved_variable)
+                    if player:
+                        lineup_players.append(player)
+                generated_lineup = self._build_lineup(lineup_players, unswappable_players)
+                previous_lineup = generated_lineup
+                yield generated_lineup
+                if len(self.locked_players) == self.total_players:
+                    return
+            except SolverException:
+                raise LineupOptimizerException('Can\'t generate lineups')
 
-    def _build_lineup(self, players):
-        # type: (List[Player]) -> Lineup
-        players_with_positions = self._link_players_with_positions(players)
+    def _build_lineup(self, players, unswappable_players=None):
+        # type: (List[Player], Optional[List[LineupPlayer]]) -> Lineup
         lineup = []
+        positions = self._settings.positions[:]
+        if unswappable_players:
+            locked_positions = [player.lineup_position for player in unswappable_players]
+            players = [player for player in players if player not in unswappable_players]
+            positions = [position for position in positions if position.name not in locked_positions]
+            lineup.extend(unswappable_players)
+        players_with_positions = link_players_with_positions(players, positions)
         for player, position in players_with_positions.items():
             lineup.append(LineupPlayer(player, position.name))
         positions_order = [pos.name for pos in self._settings.positions]

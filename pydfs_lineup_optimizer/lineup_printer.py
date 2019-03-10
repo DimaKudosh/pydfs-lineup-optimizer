@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from pydfs_lineup_optimizer.lineup import Lineup
+    from pydfs_lineup_optimizer.lineup import Lineup, LineupPlayer
 
 
 class BaseLineupPrinter(object):
@@ -12,18 +12,22 @@ class BaseLineupPrinter(object):
 
 
 class LineupPrinter(BaseLineupPrinter):
+    def _print_player(self, index, player):
+        # type: (int, 'LineupPlayer') -> str
+        return '{0:>2}. {1:<5} {2:<30}{3:<6}{4:<15}{5:<8}{6:<10}\n'.format(
+            index,
+            player.lineup_position,
+            player.full_name,
+            '/'.join(player.positions),
+            player.team,
+            round(player.fppg, 3),
+            str(player.salary) + '$',
+        )
+
     def print_lineup(self, lineup):
         res = ''
         for index, player in enumerate(lineup.players, start=1):
-            res += '{0:>2}. {1:<5} {2:<30}{3:<6}{4:<15}{5:<8}{6:<10}\n'.format(
-                index,
-                player.lineup_position,
-                player.full_name,
-                '/'.join(player.positions),
-                player.team,
-                round(player.fppg, 3),
-                str(player.salary) + '$',
-            )
+            res += self._print_player(index, player)
         res += '\nFantasy Points %.2f' % lineup.fantasy_points_projection
         res += '\nSalary %.2f\n' % lineup.salary_costs
         return res
@@ -48,3 +52,14 @@ class DropLowestLineupPrinter(BaseLineupPrinter):
                (lineup.fantasy_points_projection - lowest_fppg_player.fppg)
         res += '\nSalary %.2f\n' % lineup.salary_costs
         return res
+
+
+class IndividualSportLineupPrinter(LineupPrinter):
+    def _print_player(self, index, player):
+        return '{0:>2}. {1:<5} {2:<30}{3:<8}{4:<10}\n'.format(
+            index,
+            player.lineup_position,
+            player.full_name,
+            round(player.fppg, 3),
+            str(player.salary) + '$',
+        )
