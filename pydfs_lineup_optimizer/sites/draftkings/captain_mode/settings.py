@@ -6,6 +6,7 @@ from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 class DraftKingsCaptainModeSettings(BaseSettings):
     site = Site.DRAFTKINGS_CAPTAIN_MODE
     budget = 50000
+    max_from_one_team = 5
 
 
 @SitesRegistry.register_settings
