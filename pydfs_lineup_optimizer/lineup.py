@@ -35,3 +35,7 @@ class Lineup(object):
     def salary_costs(self):
         # type: () -> int
         return sum(player.salary for player in self.players)
+
+    def get_unswappable_players(self):
+        # type: () -> List[LineupPlayer]
+        return [player for player in self.players if player.is_game_started]
