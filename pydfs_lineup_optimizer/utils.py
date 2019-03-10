@@ -52,7 +52,7 @@ def link_players_with_positions(players, positions):
     """
     This method tries to set positions for given players, and raise error if can't.
     """
-    positions = positions.copy()
+    positions = positions[:]
     single_position_players = []  # type: List[Player]
     multi_positions_players = []  # type: List[Player]
     players_with_positions = {}  # type: Dict[Player, LineupPosition]

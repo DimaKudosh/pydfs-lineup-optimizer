@@ -242,7 +242,7 @@ class UniquePlayerRule(OptimizerRule):
 
 class LateSwapRule(OptimizerRule):
     def __init__(self, optimizer, params):
-        super().__init__(optimizer, params)
+        super(LateSwapRule, self).__init__(optimizer, params)
         self.current_iteration = 0
         self.lineups = params.get('lineups')  # type: List[Lineup]
 

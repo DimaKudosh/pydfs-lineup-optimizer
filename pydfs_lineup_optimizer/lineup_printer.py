@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from pydfs_lineup_optimizer.lineup import Lineup
+    from pydfs_lineup_optimizer.lineup import Lineup, LineupPlayer
 
 
 class BaseLineupPrinter(object):
@@ -13,7 +13,7 @@ class BaseLineupPrinter(object):
 
 class LineupPrinter(BaseLineupPrinter):
     def _print_player(self, index, player):
-        # type: (int, 'Player') -> str
+        # type: (int, 'LineupPlayer') -> str
         return '{0:>2}. {1:<5} {2:<30}{3:<6}{4:<15}{5:<8}{6:<10}\n'.format(
             index,
             player.lineup_position,
