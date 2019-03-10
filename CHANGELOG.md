@@ -21,3 +21,31 @@ All notable changes to this project will be documented in this file.
 - Optimized lineup generation speed
 - Added max repeating players constraint
 - Added new sports
+
+## [v2.0.2]
+- Fixed FanDuel mlb settings
+
+## [v2.0.3]
+- Fixed FanDuel nfl settings
+
+## [v2.1.0]
+- Added projected ownership feature
+- Added FanBall football
+- Fixed FanDuel MLB max player from one team constraint
+
+## [v2.2.0]
+- Added DK captain mode
+- Added minimum exposure
+- Improved normal objective optimization
+- Added DK template file format
+- Fixed DK LOL settings
+
+## [v2.2.1]
+- Fixed import error for optimizer running on python 3.6
+
+## [v2.3.0]
+- Added DK late-swap
+- Added DK MMA
+- Fixed DK LOL settings
+- Fixed FantasyDraft Golf settings
+- Fixed DK captain mode settings
