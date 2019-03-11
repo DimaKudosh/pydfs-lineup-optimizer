@@ -26,7 +26,7 @@ class DraftKingsCSVImporter(CSVImporter):
                 game_started=True)
         teams, date = game_info.split(' ', 1)
         away_team, home_team = teams.split('@')
-        starts_at = datetime.strptime(date.replace(' ET', ''), '%m/%d/%Y %I:%M%p').replace(tzinfo=timezone('EST'))
+        starts_at = datetime.strptime(date.replace(' ET', ''), '%m/%d/%Y %I:%M%p').replace(tzinfo=timezone('US/Eastern'))
         return GameInfo(
             home_team=home_team,
             away_team=away_team,
