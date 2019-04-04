@@ -15,7 +15,7 @@ League | DraftKings | FanDuel | FantasyDraft | Yahoo | FanBall | DraftKing Capta
 NFL    | +          | +       | +            | +     | +       | +                      |
 NBA    | +          | +       | +            | +     | -       | +                      |
 NHL    | +          | +       | +            | +     | -       | -                      |
-MLB    | +          | +       | +            | +     | -       | -                      |
+MLB    | +          | +       | +            | +     | -       | +                      |
 WNBA   | -          | +       | -            | -     | -       | -                      |
 Golf   | +          | -       | +            | +     | -       | -                      |
 Soccer | +          | -       | -            | +     | -       | -                      |
