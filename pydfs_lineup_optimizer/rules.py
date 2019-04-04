@@ -5,7 +5,7 @@ from math import ceil
 from random import getrandbits, uniform
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
-from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer
+from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer, get_remaining_positions
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import Player
 
@@ -249,13 +249,9 @@ class LateSwapRule(OptimizerRule):
     def apply_for_iteration(self, solver, players_dict, result):
         current_lineup = self.lineups[self.current_iteration]
         unswappable_players = current_lineup.get_unswappable_players()
-        positions = self.optimizer.settings.positions[:]
+        positions = get_remaining_positions(self.optimizer.settings.positions, unswappable_players)
         # lock selected players
         for player in unswappable_players:
-            for position in positions:
-                if position.name == player.lineup_position:
-                    positions.remove(position)
-                    break
             solver.add_constraint([players_dict[player]], [1], SolverSign.EQ, 1)
         # set remaining positions
         positions = get_positions_for_optimizer(positions)

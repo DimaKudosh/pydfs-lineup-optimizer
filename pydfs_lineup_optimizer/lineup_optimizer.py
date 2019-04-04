@@ -1,7 +1,7 @@
 from __future__ import division
 from collections import Counter, OrderedDict
-from itertools import chain, permutations
-from typing import List, FrozenSet, Tuple, Type, Generator, Set
+from itertools import chain
+from typing import FrozenSet, Tuple, Type, Generator, Set
 from pydfs_lineup_optimizer.solvers import PuLPSolver, SolverException
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
     LineupOptimizerIncorrectPositionName
@@ -9,7 +9,7 @@ from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.player import LineupPlayer
-from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions
+from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions, get_remaining_positions
 from pydfs_lineup_optimizer.rules import *
 
 
@@ -440,9 +440,8 @@ class LineupOptimizer(object):
         lineup = []
         positions = self._settings.positions[:]
         if unswappable_players:
-            locked_positions = [player.lineup_position for player in unswappable_players]
             players = [player for player in players if player not in unswappable_players]
-            positions = [position for position in positions if position.name not in locked_positions]
+            positions = get_remaining_positions(positions, unswappable_players)
             lineup.extend(unswappable_players)
         players_with_positions = link_players_with_positions(players, positions)
         for player, position in players_with_positions.items():

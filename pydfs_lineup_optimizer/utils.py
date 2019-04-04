@@ -2,7 +2,7 @@ from typing import Dict, Tuple, List
 from collections import Counter
 from difflib import SequenceMatcher
 from itertools import combinations, chain, permutations
-from pydfs_lineup_optimizer.player import Player
+from pydfs_lineup_optimizer.player import Player, LineupPlayer
 from pydfs_lineup_optimizer.settings import LineupPosition
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 
@@ -86,3 +86,17 @@ def link_players_with_positions(players, positions):
     else:
         raise LineupOptimizerException('Unable to build lineup')
     return players_with_positions
+
+
+def get_remaining_positions(positions, unswappable_players):
+    # type: (List[LineupPosition], List[LineupPlayer]) -> List[LineupPosition]
+    """
+    Remove unswappable players positions from positions list
+    """
+    positions = positions[:]
+    for player in unswappable_players:
+        for position in positions:
+            if position.name == player.lineup_position:
+                positions.remove(position)
+                break
+    return positions
