@@ -1,10 +1,14 @@
+import multiprocessing
 from pulp import LpProblem, LpMaximize, LpVariable, LpInteger, lpSum, LpStatusOptimal
+from pulp.solvers import PULP_CBC_CMD
 from .base import Solver
 from .constants import SolverSign
 from .exceptions import SolverException
 
 
 class PuLPSolver(Solver):
+    LP_SOLVER = PULP_CBC_CMD(threads=multiprocessing.cpu_count())
+
     def __init__(self):
         self.prob = None
 
@@ -36,7 +40,7 @@ class PuLPSolver(Solver):
         return new_solver
 
     def solve(self):
-        self.prob.solve()
+        self.prob.solve(self.LP_SOLVER)
         if self.prob.status == LpStatusOptimal:
             result = []
             for variable in self.prob.variables():

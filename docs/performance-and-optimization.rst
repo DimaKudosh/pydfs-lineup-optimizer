@@ -18,3 +18,27 @@ small fppg value and big salary.
             optimizer.remove_player(player)
     for lineup in optimizer.optimize(10):
         print(lineup)
+
+Optimizer parameters tuning
+---------------------------
+
+For some special cases with a lot of different constraints you can try to tune solver parameters.
+`pydfs-lineup-optimizer` uses `PuLP` library for solving optimization problem, by default it uses CBC solver so you can
+try to change default parameters. You can find list of available parameters `here
+<https://www.gams.com/latest/docs/S_CBC.html>`_.
+This is example of tuning parameters:
+
+.. code-block:: python
+
+    from pulp.solvers import PULP_CBC_CMD
+    from pydfs_lineup_optimizer import get_optimizer, Site, Sport
+    from pydfs_lineup_optimizer.solvers.pulp_solver import PuLPSolver
+
+
+    class CustomPuLPSolver(PuLPSolver):
+        LP_SOLVER = PULP_CBC_CMD(threads=8, options=['preprocess off'])
+
+
+    optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASEBALL, solver=CustomPuLPSolver)
+
+You can try to change solver as well for any solver that `PuLP` support: glpk, cplex, gurobi etc.
