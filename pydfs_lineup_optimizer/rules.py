@@ -266,3 +266,28 @@ class LateSwapRule(OptimizerRule):
             if player not in unswappable_players and player.is_game_started:
                 solver.add_constraint([players_dict[player]], [1], SolverSign.EQ, 0)
         self.current_iteration += 1
+
+
+class TeamStacksRule(OptimizerRule):
+    def apply(self, solver, players_dict):
+        stacks = self.optimizer.team_stacks
+        players_by_teams = {
+            team: [player for player in players_dict.keys() if player.team == team]
+            for team in self.optimizer.available_teams
+        }
+
+        stacks_dict = {}
+        for i, stack in enumerate(sorted(stacks, reverse=True), start=1):
+            stacks_dict[stack] = i
+
+        for stack, total in stacks_dict.items():
+            combinations_variables = []
+
+            for team, players in players_by_teams.items():
+                solver_variable = solver.add_variable('teams_stack_%d_%s' % (stack, team), 0, 1)
+                combinations_variables.append(solver_variable)
+                variables = [players_dict[player] for player in players]
+                coefficients = [1] * len(variables)
+                solver.add_constraint(variables, coefficients, SolverSign.GTE,
+                                      stack * solver_variable)
+            solver.add_constraint(combinations_variables, [1] * len(combinations_variables), SolverSign.GTE, total)

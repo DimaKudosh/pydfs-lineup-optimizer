@@ -79,3 +79,12 @@ and `max_projected_ownership` that are max/min percent of average ownership in g
 
 If you don't specify `projected_ownership` for some players this players will not used in calculating lineup average
 ownership, but they can appear in result lineup.
+
+Teams stacking
+--------------
+You can set how many players from same team will be in lineup, for this you can use `set_team_stacking` method.
+It accepts list with integers, each integer represents minimum number of players from same team, so you can stack multiple teams if you want.
+
+.. code-block:: python
+
+    optimizer.set_team_stacking([3, 3])

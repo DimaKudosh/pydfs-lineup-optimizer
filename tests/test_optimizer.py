@@ -8,7 +8,7 @@ from pydfs_lineup_optimizer.settings import LineupPosition
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.utils import ratio
 from pydfs_lineup_optimizer.sites.yahoo.settings import YahooFootballSettings
-from utils import create_players, load_players
+from .utils import create_players, load_players
 
 
 class OptimizerMethodsTestCase(unittest.TestCase):

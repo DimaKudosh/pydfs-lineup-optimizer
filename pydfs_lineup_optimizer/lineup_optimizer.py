@@ -40,6 +40,7 @@ class LineupOptimizer(object):
         self._solver_class = solver
         self._max_projected_ownership = None  # type: Optional[float]
         self._min_projected_ownership = None  # type: Optional[float]
+        self._team_stacks = None  # type: Optional[List[int]]
 
     @property
     def budget(self):
@@ -130,6 +131,11 @@ class LineupOptimizer(object):
     def settings(self):
         # type: () -> Type[BaseSettings]
         return self._settings
+
+    @property
+    def team_stacks(self):
+        # type: () -> Optional[List[int]]
+        return self._team_stacks
 
     def reset_lineup(self):
         self._lineup = []
@@ -356,6 +362,20 @@ class LineupOptimizer(object):
             self.add_new_rule(ProjectedOwnershipRule)
         else:
             self.remove_rule(ProjectedOwnershipRule)
+
+    def set_team_stacking(self, stacks):
+        # type: (Optional[List[int]]) -> None
+        if stacks:
+            if sum(stacks) > self.settings.get_total_players():
+                raise LineupOptimizerException('Sum of stacks should be less than %d' % self.total_players)
+            max_from_one_team = self.settings.max_from_one_team
+            if max_from_one_team and any([stack > max_from_one_team for stack in stacks]):
+                raise LineupOptimizerException('Stacks should be smaller than max players from one team (%d)' %
+                                               self.total_players)
+            self.add_new_rule(TeamStacksRule)
+        else:
+            self.remove_rule(TeamStacksRule)
+        self._team_stacks = stacks
 
     def optimize(self, n, max_exposure=None, randomness=False, with_injured=False):
         # type: (int, Optional[float], bool, bool) -> Generator[Lineup, None, None]

@@ -8,7 +8,7 @@ from pydfs_lineup_optimizer.constants import Site, Sport
 from pydfs_lineup_optimizer.player import Player
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.rules import ProjectedOwnershipRule
-from utils import create_players, load_players
+from .utils import create_players, load_players
 
 
 class OptimizerRulesTestCase(unittest.TestCase):
@@ -274,3 +274,32 @@ class ProjectedOwnershipTestCase(unittest.TestCase):
         optimizer.set_projected_ownership(max_projected_ownership=0.9)
         lineup = next(optimizer.optimize(n=1))
         self.assertTrue(self.players[0] not in lineup.players)
+
+
+class StacksRuleTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.players = load_players()
+
+    def setUp(self):
+        self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+        self.optimizer.settings.max_from_one_team = 4
+        self.optimizer.load_players(self.players[:])
+
+    def test_stacks_correctness(self):
+        stacks = [4, 2]
+        self.optimizer.set_team_stacking(stacks)
+        self.optimizer.set_positions_for_same_team(['PG', 'SG', 'SF', 'PF'])
+        lineup = next(self.optimizer.optimize(n=1))
+        teams = Counter([player.team for player in lineup])
+        self.assertListEqual(stacks, [stack[1] for stack in Counter(teams).most_common(len(stacks))])
+
+    def test_stacks_greater_than_total_players(self):
+        stacks = [3, 3, 3]
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_team_stacking(stacks)
+
+    def test_stack_greater_than_max_from_one_team(self):
+        stacks = [5]
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_team_stacking(stacks)
