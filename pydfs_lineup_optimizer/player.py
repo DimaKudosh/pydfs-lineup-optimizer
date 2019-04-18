@@ -10,7 +10,7 @@ GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at', 'game_
 
 class Player(object):
     def __init__(self,
-                 player_id,  # type: int
+                 player_id,  # type: str
                  first_name,  # type: str
                  last_name,  # type: str
                  positions,  # type: List[str]

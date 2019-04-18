@@ -3,7 +3,7 @@ from collections import defaultdict
 from itertools import product, combinations, groupby, permutations
 from math import ceil
 from random import getrandbits, uniform
-from typing import List, Dict, Any, Optional, TYPE_CHECKING
+from typing import List, Dict, DefaultDict, Any, Optional, TYPE_CHECKING
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
 from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer, get_remaining_positions
 from pydfs_lineup_optimizer.lineup import Lineup
@@ -32,7 +32,7 @@ class OptimizerRule(object):
 class NormalObjective(OptimizerRule):
     def __init__(self, optimizer, params):
         super(NormalObjective, self).__init__(optimizer, params)
-        self.used_combinations = []
+        self.used_combinations = []  # type: List[Any]
 
     def apply(self, solver, players_dict):
         variables = []
@@ -83,7 +83,7 @@ class LineupBudgetRule(OptimizerRule):
 class LockedPlayersRule(OptimizerRule):
     def __init__(self, optimizer, params):
         super(LockedPlayersRule, self).__init__(optimizer, params)
-        self.used_players = defaultdict(int)
+        self.used_players = defaultdict(int)  # type: DefaultDict[Player, int]
         self.total_lineups = params.get('n')
         self.remaining_iteration = params.get('n') + 1
 
@@ -92,7 +92,8 @@ class LockedPlayersRule(OptimizerRule):
         for player, variable in players_dict.items():
             if not player.min_exposure:
                 continue
-            if ceil(player.min_exposure * self.total_lineups) >= self.remaining_iteration - self.used_players.get(player, 0):
+            if ceil(player.min_exposure * self.total_lineups) >= \
+                    self.remaining_iteration - self.used_players.get(player, 0):
                 solver.add_constraint([variable], [1], SolverSign.EQ, 1)
         if not result:
             # First iteration, locked players must have exposure > 0
@@ -115,7 +116,7 @@ class LockedPlayersRule(OptimizerRule):
 class PositionsRule(OptimizerRule):
     def apply(self, solver, players_dict):
         extra_positions = self.optimizer.players_with_same_position
-        positions = get_positions_for_optimizer(self.optimizer._settings.positions)
+        positions = get_positions_for_optimizer(self.optimizer.settings.positions)
         for position, places in positions.items():
             extra = 0
             if len(position) == 1:
@@ -191,7 +192,7 @@ class RemoveInjuredRule(OptimizerRule):
 class MaxRepeatingPlayersRule(OptimizerRule):
     def __init__(self, optimizer, params):
         super(MaxRepeatingPlayersRule, self).__init__(optimizer, params)
-        self.exclude_combinations = []
+        self.exclude_combinations = []  # type: List[Any]
 
     def apply_for_iteration(self, solver, players_dict, result):
         max_repeating_players = self.optimizer.max_repeating_players
@@ -231,8 +232,8 @@ class UniquePlayerRule(OptimizerRule):
     def apply(self, solver, players_dict):
         key_func = lambda t: t[0].full_name
         data = sorted(players_dict.items(), key=key_func)
-        for player_id, group in groupby(data, key=key_func):
-            group = list(group)
+        for player_id, group_iterator in groupby(data, key=key_func):
+            group = list(group_iterator)
             if len(group) == 1:
                 continue
             variables = [variable for player, variable in group]
@@ -249,12 +250,12 @@ class LateSwapRule(OptimizerRule):
     def apply_for_iteration(self, solver, players_dict, result):
         current_lineup = self.lineups[self.current_iteration]
         unswappable_players = current_lineup.get_unswappable_players()
-        positions = get_remaining_positions(self.optimizer.settings.positions, unswappable_players)
+        remaining_positions = get_remaining_positions(self.optimizer.settings.positions, unswappable_players)
         # lock selected players
         for player in unswappable_players:
             solver.add_constraint([players_dict[player]], [1], SolverSign.EQ, 1)
         # set remaining positions
-        positions = get_positions_for_optimizer(positions)
+        positions = get_positions_for_optimizer(remaining_positions)
         for position, places in positions.items():
             players_with_position = [variable for player, variable in players_dict.items()
                                      if list_intersection(position, player.positions) and

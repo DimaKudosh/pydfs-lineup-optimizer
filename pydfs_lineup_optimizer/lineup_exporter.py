@@ -12,7 +12,7 @@ class LineupExporter(object):
     @staticmethod
     def render_player(player):
         # type: (LineupPlayer) -> str
-        result = player.full_name
+        result = player.full_name  # type: str
         if player.id:
             result += '(%s)' % player.id
         return result

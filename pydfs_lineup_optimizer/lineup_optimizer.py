@@ -416,7 +416,7 @@ class LineupOptimizer(object):
             constraint.apply(base_solver, players_dict)
         previous_lineup = None
         for _ in range(n):
-            solver = base_solver.copy()
+            solver = base_solver.copy()  # type: Solver
             for constraint in constraints:
                 constraint.apply_for_iteration(solver, players_dict, previous_lineup)
             try:
@@ -489,6 +489,7 @@ class LineupOptimizer(object):
         return Lineup(lineup, self._settings.lineup_printer)
 
     def _set_available_teams(self):
+        # type: () -> None
         """
         Evaluate all available teams.
         """

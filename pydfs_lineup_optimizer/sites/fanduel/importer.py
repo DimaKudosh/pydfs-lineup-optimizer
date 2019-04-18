@@ -15,11 +15,12 @@ class FanDuelCSVImporter(CSVImporter):
         with open(self.filename, 'r') as csvfile:
             csv_data = csv.DictReader(csvfile, skipinitialspace=True)
             for row in csv_data:
+                game_info = None
                 try:
-                    away_team, home_team = row.get('Game').split('@')
+                    away_team, home_team = row.get('Game', '').split('@')
                     game_info = GameInfo(home_team, away_team, None, False)
                 except ValueError:
-                    game_info = None
+                    pass
                 try:
                     max_exposure = row.get('Max Exposure')
                     player = Player(

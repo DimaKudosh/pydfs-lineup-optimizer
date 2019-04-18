@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Iterable, Any
 from collections import Counter
 from difflib import SequenceMatcher
 from itertools import combinations, chain, permutations
@@ -8,10 +8,15 @@ from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 
 
 def list_intersection(first_list, second_list):
-    return set(first_list).intersection(set(second_list))
+    # type: (Iterable[Any], Iterable[Any]) -> bool
+    for el in first_list:
+        if el in second_list:
+            return True
+    return False
 
 
 def ratio(search_string, possible_match):
+    # type: (str, str) -> float
     search_string = search_string.lower()
     possible_match = possible_match.lower()
     if len(search_string) >= len(possible_match):
