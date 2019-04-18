@@ -71,7 +71,7 @@ class DraftKingsCSVImporter(CSVImporter):
                 else:
                     start_line += 1
 
-    def import_lineups(self, players):
+    def import_lineups(self, players):  # pragma: no cover
         with open(self.filename, 'r') as csv_file:
             lines = csv.reader(csv_file)
             try:

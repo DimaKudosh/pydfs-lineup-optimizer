@@ -3,11 +3,13 @@ import unittest
 import mock
 from copy import deepcopy
 from collections import Counter
+from datetime import datetime
 from pydfs_lineup_optimizer import get_optimizer
 from pydfs_lineup_optimizer.constants import Site, Sport
-from pydfs_lineup_optimizer.player import Player
+from pydfs_lineup_optimizer.player import Player, GameInfo
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.rules import ProjectedOwnershipRule
+from pydfs_lineup_optimizer.utils import list_intersection
 from .utils import create_players, load_players
 
 
@@ -303,3 +305,42 @@ class StacksRuleTestCase(unittest.TestCase):
         stacks = [5]
         with self.assertRaises(LineupOptimizerException):
             self.optimizer.set_team_stacking(stacks)
+
+
+class PositionsForOpposingTeamTestCase(unittest.TestCase):
+    def setUp(self):
+        first_game_info = GameInfo('HOU', 'BOS', datetime.now(), False)
+        second_game_info = GameInfo('CHI', 'NY', datetime.now(), False)
+        self.players = [
+            Player(1, '1', '1', ['SP', 'RP'], 'HOU', 3000, 15, game_info=first_game_info),
+            Player(2, '2', '2', ['SP', 'RP'], 'BOS', 3000, 15, game_info=first_game_info),
+            Player(3, '3', '3', ['C'], 'HOU', 3000, 15, game_info=first_game_info),
+            Player(4, '4', '4', ['1B'], 'BOS', 3000, 15, game_info=first_game_info),
+            Player(5, '5', '5', ['2B'], 'HOU', 3000, 15, game_info=first_game_info),
+            Player(6, '6', '6', ['3B'], 'BOS', 3000, 15, game_info=first_game_info),
+            Player(7, '7', '7', ['SS'], 'HOU', 3000, 15, game_info=first_game_info),
+            Player(8, '8', '8', ['OF'], 'BOS', 3000, 15, game_info=first_game_info),
+            Player(9, '9', '9', ['OF'], 'HOU', 3000, 15, game_info=first_game_info),
+            Player(10, '10', '10', ['OF'], 'BOS', 3000, 15, game_info=first_game_info),
+            Player(11, '11', '11', ['SP', 'RP'], 'CHI', 3000, 5, game_info=second_game_info),
+            Player(12, '12', '12', ['SP', 'RP'], 'NY', 3000, 5, game_info=second_game_info),
+        ]
+        self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASEBALL)
+        self.optimizer.load_players(self.players)
+
+    def test_restrict_positions_for_opposing_team_correctness(self):
+        first_team_positions = ['SP', 'RP']
+        second_team_positions = ['1B', '2B', '3B']
+        self.optimizer.restrict_positions_for_opposing_team(first_team_positions, second_team_positions)
+        lineup = next(self.optimizer.optimize(1))
+        pitcher_games = {player.game_info for player in lineup
+                         if list_intersection(player.positions, first_team_positions)}
+        hitters_games = {player.game_info for player in lineup
+                         if list_intersection(player.positions, second_team_positions)}
+        self.assertFalse(pitcher_games.intersection(hitters_games))
+
+    def test_restrict_positions_if_game_not_specified(self):
+        for player in self.players:
+            player.game_info = None
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.restrict_positions_for_opposing_team(['SP', 'RP'], ['1B'])

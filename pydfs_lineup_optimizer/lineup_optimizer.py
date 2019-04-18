@@ -8,7 +8,7 @@ from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOp
 from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
-from pydfs_lineup_optimizer.player import LineupPlayer
+from pydfs_lineup_optimizer.player import LineupPlayer, GameInfo
 from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions, get_remaining_positions
 from pydfs_lineup_optimizer.rules import *
 
@@ -41,6 +41,7 @@ class LineupOptimizer(object):
         self._max_projected_ownership = None  # type: Optional[float]
         self._min_projected_ownership = None  # type: Optional[float]
         self._team_stacks = None  # type: Optional[List[int]]
+        self._opposing_teams_position_restriction = None  # type: Optional[Tuple[List[str], List[str]]]
 
     @property
     def budget(self):
@@ -136,6 +137,16 @@ class LineupOptimizer(object):
     def team_stacks(self):
         # type: () -> Optional[List[int]]
         return self._team_stacks
+
+    @property
+    def opposing_teams_position_restriction(self):
+        # type: () -> Optional[Tuple[List[str], List[str]]]
+        return self._opposing_teams_position_restriction
+
+    @property
+    def games(self):
+        # type: () -> FrozenSet[GameInfo]
+        return frozenset(player.game_info for player in self.players if player.game_info)
 
     def reset_lineup(self):
         self._lineup = []
@@ -376,6 +387,13 @@ class LineupOptimizer(object):
         else:
             self.remove_rule(TeamStacksRule)
         self._team_stacks = stacks
+
+    def restrict_positions_for_opposing_team(self, first_team_positions, second_team_positions):
+        # type: (List[str], List[str]) -> None
+        if not self.games:
+            raise LineupOptimizerException('Game Info isn\'t specified for players')
+        self._opposing_teams_position_restriction = (first_team_positions, second_team_positions)
+        self.add_new_rule(RestrictPositionsForOpposingTeams)
 
     def optimize(self, n, max_exposure=None, randomness=False, with_injured=False):
         # type: (int, Optional[float], bool, bool) -> Generator[Lineup, None, None]

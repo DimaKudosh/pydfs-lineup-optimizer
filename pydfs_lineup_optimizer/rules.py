@@ -1,6 +1,6 @@
 from __future__ import division
 from collections import defaultdict
-from itertools import product, combinations, groupby
+from itertools import product, combinations, groupby, permutations
 from math import ceil
 from random import getrandbits, uniform
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
@@ -291,3 +291,22 @@ class TeamStacksRule(OptimizerRule):
                 solver.add_constraint(variables, coefficients, SolverSign.GTE,
                                       stack * solver_variable)
             solver.add_constraint(combinations_variables, [1] * len(combinations_variables), SolverSign.GTE, total)
+
+
+class RestrictPositionsForOpposingTeams(OptimizerRule):
+    def apply(self, solver, players_dict):
+        if not self.optimizer.opposing_teams_position_restriction:
+            return
+        for game in self.optimizer.games:
+            first_team_players = {player: variable for player, variable in players_dict.items()
+                                  if player.team == game.home_team}
+            second_team_players = {player: variable for player, variable in players_dict.items()
+                                   if player.team == game.away_team}
+            for first_team_positions, second_team_positions in \
+                    permutations(self.optimizer.opposing_teams_position_restriction, 2):
+                first_team_variables = [variable for player, variable in first_team_players.items()
+                                        if list_intersection(player.positions, first_team_positions)]
+                second_team_variables = [variable for player, variable in second_team_players.items()
+                                         if list_intersection(player.positions, second_team_positions)]
+                for variables in product(first_team_variables, second_team_variables):
+                    solver.add_constraint(variables, [1, 1], SolverSign.LTE, 1)
