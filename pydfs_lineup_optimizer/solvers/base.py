@@ -1,4 +1,4 @@
-from typing import TypeVar, Any, List, Iterable
+from typing import TypeVar, Any, List, Iterable, Optional
 
 
 Self = TypeVar('Self', bound='Solver')
@@ -13,12 +13,12 @@ class Solver(object):  # pragma: no cover
         # type: (Iterable[Any], Iterable[float]) -> None
         raise NotImplementedError
 
-    def add_variable(self, name, low_bound, up_bound):
-        # type: (str, int, int) -> Any
+    def add_variable(self, name):
+        # type: (str) -> Any
         raise NotImplementedError
 
     def add_constraint(self, variables, coefficients, sense, rhs):
-        # type: (Iterable[Any], Iterable[float], str, float) -> None
+        # type: (Iterable[Any], Optional[Iterable[float]], str, float) -> None
         raise NotImplementedError
 
     def solve(self):

@@ -1,13 +1,13 @@
 import csv
-from typing import Generator, Callable
+from typing import Iterable, Callable
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import LineupPlayer
 
 
 class LineupExporter(object):
-    def __init__(self, lineup_generator):
-        # type: (Generator[Lineup, None, None]) -> None
-        self.lineup_generator = lineup_generator
+    def __init__(self, lineups):
+        # type: (Iterable[Lineup]) -> None
+        self.lineups = lineups
 
     @staticmethod
     def render_player(player):
@@ -27,7 +27,7 @@ class CSVLineupExporter(LineupExporter):
         # type: (str, Callable[[LineupPlayer], str]) -> None
         with open(filename, 'w') as csvfile:
             lineup_writer = csv.writer(csvfile, delimiter=',')
-            for index, lineup in enumerate(self.lineup_generator):
+            for index, lineup in enumerate(self.lineups):
                 if index == 0:
                     header = [player.lineup_position for player in lineup.lineup]
                     header.extend(('Budget', 'FPPG'))

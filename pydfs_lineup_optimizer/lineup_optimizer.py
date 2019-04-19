@@ -27,7 +27,6 @@ class LineupOptimizer(object):
         self._lineup = []  # type: List[Player]
         self._available_positions = frozenset(chain.from_iterable(
             position.positions for position in self._settings.positions))
-        self._available_teams = frozenset()  # type: FrozenSet[str]
         self._removed_players = []  # type: List[Player]
         self._search_threshold = 0.8
         self._min_deviation = 0.06
@@ -86,7 +85,7 @@ class LineupOptimizer(object):
     @property
     def available_teams(self):
         # type: () -> FrozenSet[str]
-        return self._available_teams
+        return frozenset([p.team for p in self._players])
 
     @property
     def available_positions(self):
@@ -186,7 +185,6 @@ class LineupOptimizer(object):
         if not csv_importer:
             csv_importer = SitesRegistry.get_csv_importer(self._settings.site)
         self._players = csv_importer(filename).import_players()
-        self._set_available_teams()
 
     def load_lineups_from_csv(self, filename):
         # type: (str) -> List[Lineup]
@@ -201,7 +199,6 @@ class LineupOptimizer(object):
         Manually loads player to optimizer
         """
         self._players = players
-        self._set_available_teams()
 
     def extend_players(self, players):
         # type: (List[Player]) -> None
@@ -209,32 +206,6 @@ class LineupOptimizer(object):
         Add more players for current optimizer players
         """
         self._players.extend(players)
-        self._set_available_teams()
-
-    def get_positions_for_optimizer(self):
-        # type: () -> Dict[Tuple[str, ...], int]
-        """
-        Convert positions list into dict for using in optimizer.
-        """
-        positions_list = self._settings.positions
-        positions = {}
-        positions_counter = Counter([tuple(sorted(p.positions)) for p in positions_list])
-        for key in positions_counter.keys():
-            min_value = positions_counter[key] + len(list(filter(
-                lambda p: len(p.positions) < len(key) and list_intersection(key, p.positions), positions_list
-            )))
-            positions[key] = min_value
-        for i in range(2, len(positions)):
-            for positions_tuple in combinations(positions_counter.keys(), i):
-                flatten_positions = tuple(sorted(chain.from_iterable(positions_tuple)))
-                if len(flatten_positions) != len(set(flatten_positions)):
-                    continue
-                if flatten_positions in positions:
-                    continue
-                min_value = sum(positions[pos] for pos in positions_tuple)
-                positions[flatten_positions] = min_value
-        positions = OrderedDict(sorted(positions.items(), key=lambda item: len(item[0])))
-        return positions
 
     def add_new_rule(self, rule):
         # type: (Type[OptimizerRule]) -> None
@@ -409,7 +380,7 @@ class LineupOptimizer(object):
         base_solver = self._solver_class()
         base_solver.setup_solver()
         players_dict = OrderedDict(
-            [(player, base_solver.add_variable('Player_%d' % i, 0, 1)) for i, player in enumerate(players)])
+            [(player, base_solver.add_variable('Player_%d' % i)) for i, player in enumerate(players)])
         variables_dict = {v: k for k, v in players_dict.items()}
         constraints = [constraint(self, params) for constraint in rules]
         for constraint in constraints:
@@ -447,7 +418,7 @@ class LineupOptimizer(object):
         base_solver = self._solver_class()
         base_solver.setup_solver()
         players_dict = OrderedDict(
-            [(player, base_solver.add_variable('Player_%d' % i, 0, 1)) for i, player in enumerate(players)])
+            [(player, base_solver.add_variable('Player_%d' % i)) for i, player in enumerate(players)])
         variables_dict = {v: k for k, v in players_dict.items()}
         constraints = [constraint(self, params) for constraint in rules]
         for constraint in constraints:
@@ -487,13 +458,6 @@ class LineupOptimizer(object):
         positions_order = [pos.name for pos in self._settings.positions]
         lineup.sort(key=lambda p: positions_order.index(p.lineup_position))
         return Lineup(lineup, self._settings.lineup_printer)
-
-    def _set_available_teams(self):
-        # type: () -> None
-        """
-        Evaluate all available teams.
-        """
-        self._available_teams = frozenset([p.team for p in self._players])
 
     def _check_team_constraint(self, team, num_of_players):
         # type: (str, int) -> None

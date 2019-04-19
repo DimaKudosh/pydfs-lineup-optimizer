@@ -44,7 +44,7 @@ class Player(object):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)
 
     def __hash__(self):
-        return hash((self.id, ))
+        return hash(self.id)
 
     @property
     def max_exposure(self):
