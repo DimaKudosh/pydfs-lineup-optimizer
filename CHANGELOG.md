@@ -49,3 +49,12 @@ All notable changes to this project will be documented in this file.
 - Fixed DK LOL settings
 - Fixed FantasyDraft Golf settings
 - Fixed DK captain mode settings
+
+## [v2.4.0]
+- Added DK MLB captain mode
+- Added teams stacking
+- Added constraint for restricting players from opposing teams
+- Fixed bug with duplicated positions in DK MLB late-swap
+- Fixed default timezone for DK late-swap
+- Improved performance for solver setup
+- Added ability to change solver in PuLP
