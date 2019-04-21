@@ -93,7 +93,8 @@ class Player(object):
         if self.game_info:
             if self.game_info.game_started:
                 return True
-            if self.game_info.starts_at and datetime.now(timezone('EST')) > self.game_info.starts_at:
+            starts_at = self.game_info.starts_at
+            if starts_at and datetime.now(starts_at.tzinfo) > starts_at:
                 return True
         return False
 
