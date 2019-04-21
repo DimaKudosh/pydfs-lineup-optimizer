@@ -11,7 +11,7 @@ from pydfs_lineup_optimizer.constants import Site
 
 
 @SitesRegistry.register_csv_importer
-class DraftKingsCSVImporter(CSVImporter):
+class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
     site = Site.DRAFTKINGS
     DEFAULT_TIMEZONE = 'US/Eastern'
 
@@ -58,7 +58,7 @@ class DraftKingsCSVImporter(CSVImporter):
             raise LineupOptimizerIncorrectCSV
         return player
 
-    def import_players(self):  # pragma: no cover
+    def import_players(self):
         with open(self.filename, 'r') as csv_file:
             start_line = 0  # Find line with 'TeamAbbrev', that's where players data starts
             while True:
@@ -73,7 +73,7 @@ class DraftKingsCSVImporter(CSVImporter):
                 else:
                     start_line += 1
 
-    def import_lineups(self, players):  # pragma: no cover
+    def import_lineups(self, players):
         with open(self.filename, 'r') as csv_file:
             lines = csv.reader(csv_file)
             try:

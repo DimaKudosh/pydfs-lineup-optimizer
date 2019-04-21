@@ -7,10 +7,10 @@ from pydfs_lineup_optimizer.constants import Site
 
 
 @SitesRegistry.register_csv_importer
-class YahooCSVImporter(CSVImporter):
+class YahooCSVImporter(CSVImporter):  # pragma: nocover
     site = Site.YAHOO
 
-    def import_players(self):  # pragma: no cover
+    def import_players(self):
         players = []
         with open(self.filename, 'r') as csvfile:
             csv_data = csv.DictReader(csvfile, skipinitialspace=True)
