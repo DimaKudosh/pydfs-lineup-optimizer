@@ -7,7 +7,7 @@ from pydfs_lineup_optimizer import get_optimizer
 from pydfs_lineup_optimizer.constants import Site, Sport
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import LineupPlayer, GameInfo
-from utils import create_players, load_players
+from .utils import create_players
 
 
 class LateSwapTestCase(unittest.TestCase):

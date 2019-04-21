@@ -7,10 +7,10 @@ from pydfs_lineup_optimizer.constants import Site
 
 
 @SitesRegistry.register_csv_importer
-class FantasyDraftCSVImporter(CSVImporter):
+class FantasyDraftCSVImporter(CSVImporter):  # pragma: nocover
     site = Site.FANTASY_DRAFT
 
-    def import_players(self):  # pragma: no cover
+    def import_players(self):
         players = []
         with open(self.filename, 'r') as csvfile:
             csv_data = csv.DictReader(csvfile, skipinitialspace=True)
@@ -22,11 +22,11 @@ class FantasyDraftCSVImporter(CSVImporter):
                     if not fppg:
                         raise LineupOptimizerIncorrectCSV
                     player = Player(
-                        i,
+                        str(i),
                         name[0],
                         name[1] if len(name) > 1 else '',
                         row['Position'].split('/'),
-                        row.get('Team') or row.get('Game', ''),
+                        row.get('Team', row.get('Game', '')),
                         float(row['Salary'].replace('$', '').replace(',', '')),
                         float(fppg),
                         max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None

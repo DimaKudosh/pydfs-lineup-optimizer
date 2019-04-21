@@ -1,17 +1,22 @@
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Iterable, Any
 from collections import Counter
 from difflib import SequenceMatcher
 from itertools import combinations, chain, permutations
-from pydfs_lineup_optimizer.player import Player
+from pydfs_lineup_optimizer.player import Player, LineupPlayer
 from pydfs_lineup_optimizer.settings import LineupPosition
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 
 
 def list_intersection(first_list, second_list):
-    return set(first_list).intersection(set(second_list))
+    # type: (Iterable[Any], Iterable[Any]) -> bool
+    for el in first_list:
+        if el in second_list:
+            return True
+    return False
 
 
 def ratio(search_string, possible_match):
+    # type: (str, str) -> float
     search_string = search_string.lower()
     possible_match = possible_match.lower()
     if len(search_string) >= len(possible_match):
@@ -86,3 +91,17 @@ def link_players_with_positions(players, positions):
     else:
         raise LineupOptimizerException('Unable to build lineup')
     return players_with_positions
+
+
+def get_remaining_positions(positions, unswappable_players):
+    # type: (List[LineupPosition], List[LineupPlayer]) -> List[LineupPosition]
+    """
+    Remove unswappable players positions from positions list
+    """
+    positions = positions[:]
+    for player in unswappable_players:
+        for position in positions:
+            if position.name == player.lineup_position:
+                positions.remove(position)
+                break
+    return positions

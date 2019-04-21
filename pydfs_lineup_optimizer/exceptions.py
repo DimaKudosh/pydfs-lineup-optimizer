@@ -17,4 +17,5 @@ class LineupOptimizerIncorrectPositionName(LineupOptimizerException):
 
 class LineupOptimizerIncorrectCSV(LineupOptimizerException):
     def __init__(self, message='Incorrect csv format!'):
+        # type: (str) -> None
         super(LineupOptimizerIncorrectCSV, self).__init__(message)

@@ -7,7 +7,7 @@ from pydfs_lineup_optimizer.sites.draftkings.classic.importer import DraftKingsC
 
 
 @SitesRegistry.register_csv_importer
-class DraftKingsCaptainModeCSVImporter(DraftKingsCSVImporter):
+class DraftKingsCaptainModeCSVImporter(DraftKingsCSVImporter):  # pragma: nocover
     site = Site.DRAFTKINGS_CAPTAIN_MODE
 
     def _row_to_player(self, row):

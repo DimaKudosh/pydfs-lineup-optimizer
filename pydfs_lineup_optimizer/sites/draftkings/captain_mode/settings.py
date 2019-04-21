@@ -48,3 +48,16 @@ class DraftKingsLOLSettings(DraftKingsCaptainModeSettings):
         LineupPosition('SUP', ('SUP', )),
         LineupPosition('TEAM', ('TEAM', )),
     ]
+
+
+@SitesRegistry.register_settings
+class DraftKingsCaptainModeBaseballSettings(DraftKingsCaptainModeSettings):
+    sport = Sport.BASEBALL
+    positions = [
+        LineupPosition('CPT', ('CPT', )),
+        LineupPosition('UTIL', ('UTIL', )),
+        LineupPosition('UTIL', ('UTIL', )),
+        LineupPosition('UTIL', ('UTIL', )),
+        LineupPosition('UTIL', ('UTIL', )),
+        LineupPosition('UTIL', ('UTIL', )),
+    ]

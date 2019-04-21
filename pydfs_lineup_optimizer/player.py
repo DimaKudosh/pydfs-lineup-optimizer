@@ -10,7 +10,7 @@ GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at', 'game_
 
 class Player(object):
     def __init__(self,
-                 player_id,  # type: int
+                 player_id,  # type: str
                  first_name,  # type: str
                  last_name,  # type: str
                  positions,  # type: List[str]
@@ -44,7 +44,7 @@ class Player(object):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)
 
     def __hash__(self):
-        return hash((self.id, ))
+        return hash(self.id)
 
     @property
     def max_exposure(self):
@@ -93,7 +93,8 @@ class Player(object):
         if self.game_info:
             if self.game_info.game_started:
                 return True
-            if self.game_info.starts_at and datetime.now(timezone('EST')) > self.game_info.starts_at:
+            starts_at = self.game_info.starts_at
+            if starts_at and datetime.now(starts_at.tzinfo) > starts_at:
                 return True
         return False
 

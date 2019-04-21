@@ -16,4 +16,5 @@ class BaseSettings(object):
 
     @classmethod
     def get_total_players(cls):
+        # type: () -> int
         return len(cls.positions)

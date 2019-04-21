@@ -12,6 +12,8 @@ Constraints
 - Minimum salary cap.
 - Maximum repeating players.
 - Ownership projection constraint.
+- Team stacking
+- Restricting players from opposing teams
 
 Number of players from same team
 --------------------------------
@@ -79,3 +81,29 @@ and `max_projected_ownership` that are max/min percent of average ownership in g
 
 If you don't specify `projected_ownership` for some players this players will not used in calculating lineup average
 ownership, but they can appear in result lineup.
+
+Teams stacking
+--------------
+You can set how many players from same team will be in lineup, for this you can use `set_team_stacking` method.
+It accepts list with integers, each integer represents minimum number of players from same team, so you can stack multiple teams if you want.
+
+.. code-block:: python
+
+    optimizer.set_team_stacking([3, 3])
+
+Restrict players from opposing team
+-----------------------------------
+In some cases you would want to restrict creating of lineup with players from opposing teams,
+for example prevent of pitchers and hitters from same game. For this you can use `restrict_positions_for_opposing_team`
+method of optimizer, it accepts 2 arguments with list of positions for one team and list of positions for another.
+
+.. code-block:: python
+
+    optimizer.restrict_positions_for_opposing_team(['P'], ['1B', '2B', '3B'])
+
+.. note::
+
+    This constraint works only when players has information about upcoming game and their opponents,
+    in other case `LineupOptimizerException` will be raised. So it will not work in FantasyDraft
+    (because they doesn't provide information about opponents) and if you write your custom players importer and
+    don't pass `game_info` parameter in players constructors.
