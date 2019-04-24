@@ -1,13 +1,11 @@
-import multiprocessing
 from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatusOptimal, LpBinary
-from pulp.solvers import PULP_CBC_CMD
 from .base import Solver
 from .constants import SolverSign
 from .exceptions import SolverException
 
 
 class PuLPSolver(Solver):
-    LP_SOLVER = PULP_CBC_CMD(threads=multiprocessing.cpu_count())
+    LP_SOLVER = None
 
     def __init__(self):
         self.prob = None
