@@ -58,3 +58,6 @@ All notable changes to this project will be documented in this file.
 - Fixed default timezone for DK late-swap
 - Improved performance for solver setup
 - Added ability to change solver in PuLP
+
+## [v2.4.1]
+- Fixed solver freezes on windows
