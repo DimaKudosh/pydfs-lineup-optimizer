@@ -10,7 +10,7 @@ from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import Player
 
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 
 
@@ -114,9 +114,10 @@ class LockedPlayersRule(OptimizerRule):
 
 class PositionsRule(OptimizerRule):
     def apply(self, solver, players_dict):
-        extra_positions = self.optimizer.players_with_same_position
-        positions = get_positions_for_optimizer(self.optimizer.settings.positions)
-        unique_positions = self.optimizer.available_positions
+        optimizer = self.optimizer
+        extra_positions = optimizer.players_with_same_position
+        positions = get_positions_for_optimizer(optimizer.settings.positions, optimizer.has_multi_positional_players)
+        unique_positions = optimizer.available_positions
         players_by_positions = {
             position: {variable for player, variable in players_dict.items()
                        if position in player.positions} for position in unique_positions
@@ -228,10 +229,13 @@ class ProjectedOwnershipRule(OptimizerRule):
 
 
 class UniquePlayerRule(OptimizerRule):
+    @staticmethod
+    def sort_players(player_tuple):
+        return player_tuple[0].full_name
+
     def apply(self, solver, players_dict):
-        key_func = lambda t: t[0].full_name
-        data = sorted(players_dict.items(), key=key_func)
-        for player_id, group_iterator in groupby(data, key=key_func):
+        data = sorted(players_dict.items(), key=self.sort_players)
+        for player_id, group_iterator in groupby(data, key=self.sort_players):
             group = list(group_iterator)
             if len(group) == 1:
                 continue
@@ -253,7 +257,7 @@ class LateSwapRule(OptimizerRule):
         for player in unswappable_players:
             solver.add_constraint([players_dict[player]], None, SolverSign.EQ, 1)
         # set remaining positions
-        positions = get_positions_for_optimizer(remaining_positions)
+        positions = get_positions_for_optimizer(remaining_positions, self.optimizer.has_multi_positional_players)
         for position, places in positions.items():
             players_with_position = [variable for player, variable in players_dict.items()
                                      if list_intersection(position, player.positions) and

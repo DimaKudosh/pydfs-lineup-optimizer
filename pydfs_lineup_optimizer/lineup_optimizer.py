@@ -147,6 +147,11 @@ class LineupOptimizer(object):
         # type: () -> FrozenSet[GameInfo]
         return frozenset(player.game_info for player in self.players if player.game_info)
 
+    @property
+    def has_multi_positional_players(self):
+        # type: () -> bool
+        return any([len(player.positions) > 1 for player in self.players])
+
     def reset_lineup(self):
         self._lineup = []
         self._players_with_same_position = {}

@@ -28,8 +28,8 @@ def ratio(search_string, possible_match):
     return max([SequenceMatcher(None, search_string, part).ratio() for part in parts])
 
 
-def get_positions_for_optimizer(positions_list):
-    # type: (List[LineupPosition]) -> Dict[Tuple[str, ...], int]
+def get_positions_for_optimizer(positions_list, has_multi_positional_players=True):
+    # type: (List[LineupPosition], bool) -> Dict[Tuple[str, ...], int]
     """
     Convert positions list into dict for using in optimizer.
     """
@@ -40,6 +40,8 @@ def get_positions_for_optimizer(positions_list):
             lambda p: len(p.positions) < len(key) and list_intersection(key, p.positions), positions_list
         )))
         positions[key] = min_value
+    if not has_multi_positional_players:
+        return positions
     for i in range(2, len(positions)):
         for positions_tuple in combinations(positions_counter.keys(), i):
             flatten_positions = tuple(sorted(chain.from_iterable(positions_tuple)))
