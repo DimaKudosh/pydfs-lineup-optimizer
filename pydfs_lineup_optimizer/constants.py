@@ -18,3 +18,4 @@ class Sport:
     LEAGUE_OF_LEGENDS = 'LEAGUE_OF_LEGENDS'
     WNBA = 'WNBA'
     MMA = 'MMA'
+    NASCAR = 'NASCAR'

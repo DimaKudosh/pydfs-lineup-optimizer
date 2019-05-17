@@ -129,3 +129,17 @@ class DraftKingsMMA(DraftKingsSettings):
         LineupPosition('F', ('F', )),
         LineupPosition('F', ('F', )),
     ]
+
+
+@SitesRegistry.register_settings
+class DraftKingsNascarSettings(DraftKingsSettings):
+    sport = Sport.NASCAR
+    lineup_printer = IndividualSportLineupPrinter
+    positions = [
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+    ]
