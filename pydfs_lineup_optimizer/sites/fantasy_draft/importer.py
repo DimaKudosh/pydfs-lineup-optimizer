@@ -17,7 +17,6 @@ class FantasyDraftCSVImporter(CSVImporter):  # pragma: nocover
             for i, row in enumerate(csv_data):
                 try:
                     name = row['Name'].split()
-                    max_exposure = row.get('Max Exposure')
                     fppg = row.get('Avg FPPG') or row.get('Avg FPPT')
                     if not fppg:
                         raise LineupOptimizerIncorrectCSV
@@ -29,7 +28,7 @@ class FantasyDraftCSVImporter(CSVImporter):  # pragma: nocover
                         row.get('Team', row.get('Game', '')),
                         float(row['Salary'].replace('$', '').replace(',', '')),
                         float(fppg),
-                        max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None
+                        **self.get_player_extra(row),
                     )
                 except KeyError:
                     raise LineupOptimizerIncorrectCSV

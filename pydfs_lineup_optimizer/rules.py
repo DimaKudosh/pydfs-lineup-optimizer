@@ -1,6 +1,6 @@
 from __future__ import division
 from collections import defaultdict
-from itertools import product, combinations, groupby, permutations
+from itertools import product, combinations, groupby, permutations, chain
 from math import ceil
 from random import getrandbits, uniform
 from typing import List, Dict, DefaultDict, Any, Optional, TYPE_CHECKING
@@ -311,3 +311,34 @@ class RestrictPositionsForOpposingTeams(OptimizerRule):
                                          if list_intersection(player.positions, second_team_positions)]
                 for variables in product(first_team_variables, second_team_variables):
                     solver.add_constraint(variables, None, SolverSign.LTE, 1)
+
+
+class RosterSpacingRule(OptimizerRule):
+    @staticmethod
+    def sort_players(player_tuple):
+        return player_tuple[0].roster_order
+
+    def apply(self, solver, players_dict):
+        optimizer = self.optimizer
+        positions, spacing = optimizer.spacing_positions, optimizer.spacing
+        if not spacing or not positions:
+            return
+        available_players = sorted([
+                (player, variable) for player, variable in players_dict.items()
+                if player.roster_order is not None and list_intersection(player.positions, positions)
+            ],
+            key=self.sort_players,
+        )
+        players_by_roster_positions = {players_spacing: list(players) for players_spacing, players in
+                                       groupby(available_players, key=self.sort_players)}
+        for roster_position, players in players_by_roster_positions.items():
+            next_restricted_roster_position = roster_position + spacing
+            restricted_players = chain.from_iterable(
+                players for players_spacing, players in players_by_roster_positions.items()
+                if players_spacing >= next_restricted_roster_position
+            )
+            for first_player, first_variable in players:
+                for second_player, second_variable in restricted_players:
+                    if first_player.team != second_player.team:
+                        continue
+                    solver.add_constraint([first_variable, second_variable], None, SolverSign.LTE, 1)

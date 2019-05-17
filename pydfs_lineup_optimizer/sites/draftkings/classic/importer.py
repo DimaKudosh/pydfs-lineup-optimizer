@@ -41,7 +41,6 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
 
     def _row_to_player(self, row):
         try:
-            max_exposure = row.get('Max Exposure', '').replace('%', '')
             name = row['Name'].split()
             player = Player(
                 row['ID'],
@@ -51,8 +50,8 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
                 row['TeamAbbrev'],
                 float(row['Salary']),
                 float(row['AvgPointsPerGame']),
-                max_exposure=float(max_exposure) if max_exposure else None,
                 game_info=self._parse_game_info(row),
+                **self.get_player_extra(row),
             )
         except KeyError:
             raise LineupOptimizerIncorrectCSV

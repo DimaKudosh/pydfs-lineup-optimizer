@@ -22,6 +22,7 @@ class Player(object):
                  min_exposure=None,  # type: Optional[float]
                  projected_ownership=None,  # type: Optional[float]
                  game_info=None,  # type: Optional[GameInfo]
+                 roster_order=None,  # type: Optional[int]
                  ):
         # type: (...) -> None
         self.id = player_id
@@ -39,6 +40,7 @@ class Player(object):
         self.min_exposure = min_exposure
         self._projected_ownership = None  # type: Optional[float]
         self.projected_ownership = projected_ownership
+        self.roster_order = roster_order
 
     def __repr__(self):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)

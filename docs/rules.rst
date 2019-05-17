@@ -1,10 +1,10 @@
 .. _pydfs-lineup-optimizer-constraints:
 
 
-Constraints
-===========
+Rules
+=====
 
-**pydfs-lineup-optimizer** has ability to set custom constraints for optimizer. It has following constraints:
+**pydfs-lineup-optimizer** has ability to set custom rules for optimizer. It has following constraints:
 
 - Number of players from same team.
 - Positions for same team.
@@ -14,10 +14,11 @@ Constraints
 - Ownership projection constraint.
 - Team stacking
 - Restricting players from opposing teams
+- Spacing for positions
 
 Number of players from same team
 --------------------------------
-For setting number of players from same team constraint you should call `set_players_from_one_team` method of optimizer.
+For setting number of players from same team rule you should call `set_players_from_one_team` method of optimizer.
 It accepts dict where key is a team name and value is number of players for this team.
 
 .. code-block:: python
@@ -45,7 +46,7 @@ It accepts dict where key is a position name and value is number of players with
 
 .. note::
 
-   Positions constraint hasn't effect for dfs sites without multi-position slots(G, UTIL, etc.)
+   Positions rule hasn't effect for dfs sites without multi-position slots(G, UTIL, etc.)
 
 
 Minimum salary cap
@@ -69,7 +70,7 @@ It accepts only one argument: number of maximum repeating players.
 Ownership projections constraint
 --------------------------------
 If you want to avoid a lot of highly-owned players in your lineups you can use `set_projected_ownership` method.
-This method working with player `projected_ownership` field, so if you want to use this constraint you should set this
+This method working with player `projected_ownership` field, so if you want to use this rule you should set this
 field for players before creating lineups. Optimizer's `set_projected_ownership` method accepts 2 arguments `min_projected_ownership`
 and `max_projected_ownership` that are max/min percent of average ownership in generated lineup.
 
@@ -107,3 +108,19 @@ method of optimizer, it accepts 2 arguments with list of positions for one team 
     in other case `LineupOptimizerException` will be raised. So it will not work in FantasyDraft
     (because they doesn't provide information about opponents) and if you write your custom players importer and
     don't pass `game_info` parameter in players constructors.
+
+Spacing for positions
+---------------------
+
+For some sports like baseball it can be useful to select players based on lineup ordering (batters hit order).
+This rule allow you to select players close to each other according to lineup order.
+For example if you want to restrict optimizer to select players within specific range.
+
+.. code-block:: python
+
+    optimizer.set_spacing_for_positions(['1B', '2B', '3B'], 3)  # This will select players close to each other in range of 3 spots. 1-3, 2-4, 3-5 etc.
+
+.. note::
+
+    Because dfs sites doesn't provide information about batters hit order you should add additional column "Roster Order" where you can set this order,
+    or specify it in Player objects using roster_order attribute. In other case this rule will be ignored.

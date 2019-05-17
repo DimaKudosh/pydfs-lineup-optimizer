@@ -41,6 +41,8 @@ class LineupOptimizer(object):
         self._min_projected_ownership = None  # type: Optional[float]
         self._team_stacks = None  # type: Optional[List[int]]
         self._opposing_teams_position_restriction = None  # type: Optional[Tuple[List[str], List[str]]]
+        self.spacing_positions = None  # type: Optional[List[str]]
+        self.spacing = None  # type: Optional[int]
 
     @property
     def budget(self):
@@ -370,6 +372,17 @@ class LineupOptimizer(object):
             raise LineupOptimizerException('Game Info isn\'t specified for players')
         self._opposing_teams_position_restriction = (first_team_positions, second_team_positions)
         self.add_new_rule(RestrictPositionsForOpposingTeams)
+
+    def set_spacing_for_positions(self, positions, spacing):
+        # type: (List[str], int) -> None
+        if spacing < 1:
+            raise LineupOptimizerException('Spacing must be 1 or greater')
+        available_positions = self.available_positions
+        if any(position not in available_positions for position in positions):
+            raise LineupOptimizerException('Incorrect positions. Choices are: %s' % available_positions)
+        self.spacing_positions = positions
+        self.spacing = spacing
+        self.add_new_rule(RosterSpacingRule)
 
     def optimize(self, n, max_exposure=None, randomness=False, with_injured=False):
         # type: (int, Optional[float], bool, bool) -> Generator[Lineup, None, None]

@@ -362,3 +362,51 @@ class PositionsForOpposingTeamTestCase(unittest.TestCase):
             player.game_info = None
         with self.assertRaises(LineupOptimizerException):
             self.optimizer.restrict_positions_for_opposing_team(['SP', 'RP'], ['1B'])
+
+
+class RosterSpacingTestCase(unittest.TestCase):
+    def setUp(self):
+        self.players = [
+            Player('1', '1', '1', ['SP', 'RP'], 'HOU', 3000, 15, ),
+            Player('2', '2', '2', ['SP', 'RP'], 'HOU', 3000, 15, ),
+            Player('3', '3', '3', ['C'], 'HOU', 3000, 15, ),
+            Player('4', '4', '4', ['SS'], 'HOU', 3000, 15, ),
+            Player('5', '5', '5', ['OF'], 'MIL', 3000, 15, ),
+            Player('6', '6', '6', ['OF'], 'MIL', 3000, 15, ),
+            Player('7', '7', '7', ['OF'], 'MIL', 3000, 15, ),
+            Player('8', '8', '8', ['1B'], 'BOS', 3000, 15, roster_order=1),
+            Player('9', '9', '9', ['2B'], 'BOS', 3000, 20, roster_order=2),
+            Player('10', '10', '10', ['3B'], 'BOS', 3000, 25, roster_order=3),
+            Player('11', '11', '11', ['1B'], 'NY', 3000, 30, roster_order=4),
+            Player('12', '12', '12', ['2B'], 'NY', 3000, 35, roster_order=5),
+            Player('13', '13', '13', ['3B'], 'NY', 3000, 40, roster_order=6),
+        ]
+        self.players_dict = {player.id: player for player in self.players}
+        self.positions = ['1B', '2B', '3B']
+        self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASEBALL)
+        self.optimizer.load_players(self.players)
+
+    def test_roster_spacing_correctness(self):
+        self.optimizer.set_spacing_for_positions(self.positions, 2)
+        lineup = next(self.optimizer.optimize(1))
+        self.assertIn(self.players_dict['8'], lineup)
+        self.assertIn(self.players_dict['12'], lineup)
+        self.assertIn(self.players_dict['13'], lineup)
+        self.optimizer.set_spacing_for_positions(self.positions, 3)
+        lineup = next(self.optimizer.optimize(1))
+        self.assertIn(self.players_dict['11'], lineup)
+        self.assertIn(self.players_dict['12'], lineup)
+        self.assertIn(self.players_dict['13'], lineup)
+
+    def test_error_with_one_spacing_when_total_teams_not_enough(self):
+        self.optimizer.set_spacing_for_positions(self.positions, 1)
+        with self.assertRaises(LineupOptimizerException):
+            next(self.optimizer.optimize(1))
+
+    def test_passing_incorrect_positions(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_spacing_for_positions(['QB', 'WR'], 2)
+
+    def test_passing_incorrect_spacing(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_spacing_for_positions(self.positions, 0)
