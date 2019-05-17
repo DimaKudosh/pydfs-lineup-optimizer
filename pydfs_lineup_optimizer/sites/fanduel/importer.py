@@ -32,7 +32,7 @@ class FanDuelCSVImporter(CSVImporter):  # pragma: nocover
                         float(row['FPPG']),
                         True if row['Injury Indicator'].strip() else False,
                         game_info=game_info,
-                        **self.get_player_extra(row),
+                        **self.get_player_extra(row)
                     )
                 except KeyError:
                     raise LineupOptimizerIncorrectCSV

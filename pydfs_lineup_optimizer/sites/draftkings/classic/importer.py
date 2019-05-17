@@ -51,7 +51,7 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
                 float(row['Salary']),
                 float(row['AvgPointsPerGame']),
                 game_info=self._parse_game_info(row),
-                **self.get_player_extra(row),
+                **self.get_player_extra(row)
             )
         except KeyError:
             raise LineupOptimizerIncorrectCSV

@@ -21,7 +21,7 @@ class DraftKingsCaptainModeCSVImporter(DraftKingsCSVImporter):  # pragma: nocove
                 row['TeamAbbrev'],
                 float(row['Salary']),
                 float(row['AvgPointsPerGame']) * fppg_multiplier,
-                **self.get_player_extra(row),
+                **self.get_player_extra(row)
             )
         except KeyError:
             raise LineupOptimizerIncorrectCSV

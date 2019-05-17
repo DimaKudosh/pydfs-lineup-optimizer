@@ -28,7 +28,7 @@ class FantasyDraftCSVImporter(CSVImporter):  # pragma: nocover
                         row.get('Team', row.get('Game', '')),
                         float(row['Salary'].replace('$', '').replace(',', '')),
                         float(fppg),
-                        **self.get_player_extra(row),
+                        **self.get_player_extra(row)
                     )
                 except KeyError:
                     raise LineupOptimizerIncorrectCSV
