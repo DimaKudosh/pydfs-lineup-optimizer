@@ -258,11 +258,15 @@ class LateSwapRule(OptimizerRule):
             solver.add_constraint([players_dict[player]], None, SolverSign.EQ, 1)
         # set remaining positions
         positions = get_positions_for_optimizer(remaining_positions, self.optimizer.has_multi_positional_players)
+        players_for_optimization = set()
         for position, places in positions.items():
             players_with_position = [variable for player, variable in players_dict.items()
                                      if list_intersection(position, player.positions) and
                                      player not in unswappable_players]
+            players_for_optimization.update(players_with_position)
             solver.add_constraint(players_with_position, None, SolverSign.GTE, places)
+        # Set total players for optimization
+        solver.add_constraint(players_for_optimization, None, SolverSign.EQ, len(remaining_positions))
         # Exclude players with active games
         for player, variable in players_dict.items():
             if player not in unswappable_players and player.is_game_started:
