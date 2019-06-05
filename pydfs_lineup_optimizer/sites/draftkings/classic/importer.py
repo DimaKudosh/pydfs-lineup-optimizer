@@ -26,9 +26,9 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
                 starts_at='',
                 game_started=True)
         try:
-            teams, date = game_info.split(' ', 1)
-            away_team, home_team = teams.split('@')
-            starts_at = datetime.strptime(date.replace(' ET', ''), '%m/%d/%Y %I:%M%p').\
+            teams, date, time, tz = game_info.rsplit(' ', 3)
+            away_team, home_team = teams.upper().split('@')
+            starts_at = datetime.strptime(date + time, '%m/%d/%Y%I:%M%p').\
                 replace(tzinfo=timezone(self.DEFAULT_TIMEZONE))
             return GameInfo(
                 home_team=home_team,
