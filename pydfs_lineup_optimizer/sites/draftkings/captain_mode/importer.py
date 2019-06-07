@@ -21,6 +21,7 @@ class DraftKingsCaptainModeCSVImporter(DraftKingsCSVImporter):  # pragma: nocove
                 row['TeamAbbrev'],
                 float(row['Salary']),
                 float(row['AvgPointsPerGame']) * fppg_multiplier,
+                game_info=self._parse_game_info(row),
                 **self.get_player_extra(row)
             )
         except KeyError:
