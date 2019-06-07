@@ -346,3 +346,15 @@ class RosterSpacingRule(OptimizerRule):
                     if first_player.team != second_player.team:
                         continue
                     solver.add_constraint([first_variable, second_variable], None, SolverSign.LTE, 1)
+
+
+class FanduelBaseballRosterRule(OptimizerRule):
+    HITTERS = ('1B', '2B', '3B', 'SS', 'C', 'OF')
+    MAXIMUM_HITTERS_FROM_ONE_TEAM = 4
+
+    def apply(self, solver, players_dict):
+        players_dict = {player: variable for player, variable in players_dict.items() if
+                        list_intersection(player.positions, self.HITTERS)}
+        for team in self.optimizer.available_teams:
+            players_from_team = [variable for player, variable in players_dict.items() if player.team == team]
+            solver.add_constraint(players_from_team, None, SolverSign.LTE, self.MAXIMUM_HITTERS_FROM_ONE_TEAM)

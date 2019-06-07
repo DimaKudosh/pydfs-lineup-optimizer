@@ -410,3 +410,35 @@ class RosterSpacingTestCase(unittest.TestCase):
     def test_passing_incorrect_spacing(self):
         with self.assertRaises(LineupOptimizerException):
             self.optimizer.set_spacing_for_positions(self.positions, 0)
+
+
+class TestFanduelMaxFromOneTeamTestCase(unittest.TestCase):
+    def setUp(self):
+        self.players = [
+            Player('1', '1', '1', ['P'], 'HOU', 3000, 10),
+            Player('2', '2', '2', ['P'], 'NY', 3000, 20),
+            Player('3', '3', '3', ['C'], 'BOS', 3000, 30),
+            Player('4', '4', '4', ['SS'], 'HOU', 3000, 30),
+            Player('5', '5', '5', ['OF'], 'HOU', 3000, 30),
+            Player('6', '6', '6', ['OF'], 'HOU', 3000, 30),
+            Player('7', '7', '7', ['OF'], 'HOU', 3000, 30),
+            Player('8', '8', '8', ['1B'], 'HOU', 3000, 30),
+            Player('9', '9', '9', ['2B'], 'MIA', 3000, 5),
+            Player('10', '10', '10', ['3B'], 'ARI', 3000, 5),
+            Player('11', '11', '11', ['1B'], 'ARI', 3000, 5),
+        ]
+        self.optimizer = get_optimizer(Site.FANDUEL, Sport.BASEBALL)
+        self.optimizer.load_players(self.players)
+
+    def test_max_hitters_from_one_team(self):
+        lineup = next(self.optimizer.optimize(1))
+        hou_players_positions = [player.lineup_position for player in lineup if player.team == 'HOU']
+        self.assertEqual(len(hou_players_positions), 4)
+        self.assertNotIn('P', hou_players_positions)
+
+    def test_max_hitters_from_one_team_with_stacking(self):
+        self.optimizer.set_team_stacking([5])
+        lineup = next(self.optimizer.optimize(1))
+        hou_players_positions = [player.lineup_position for player in lineup if player.team == 'HOU']
+        self.assertEqual(len(hou_players_positions), 5)
+        self.assertIn('P', hou_players_positions)
