@@ -260,6 +260,12 @@ class LineupOptimizer(object):
         players = self.find_players(name)
         return players[0] if players else None
 
+    def get_player_by_id(self, player_id):
+        # type: (str) -> Optional[Player]
+        for player in self._players:
+            if player.id == player_id:
+                return player
+
     def add_player_to_lineup(self, player):
         # type: (Player) -> None
         """
