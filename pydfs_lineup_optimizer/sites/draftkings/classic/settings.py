@@ -23,6 +23,17 @@ class DraftKingsBasketballSettings(DraftKingsSettings):
         LineupPosition('UTIL', ('PG', 'SG', 'PF', 'SF', 'C'))
     ]
 
+@SitesRegistry.register_settings
+class DraftKingsBasketballSettings(DraftKingsSettings):
+    sport = Sport.WNBA
+    positions = [
+        LineupPosition('G', ('PG', 'SG')),
+        LineupPosition('G', ('PG', 'SG')),
+        LineupPosition('F', ('SF', 'PF')),
+        LineupPosition('F', ('SF', 'PF')),
+        LineupPosition('F', ('SF', 'PF')),
+        LineupPosition('UTIL', ('PG', 'SG', 'PF', 'SF', 'C'))
+    ]    
 
 @SitesRegistry.register_settings
 class DraftKingsFootballSettings(DraftKingsSettings):
