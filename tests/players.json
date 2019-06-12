@@ -1,7 +1,7 @@
 {
   "players": [
     {
-      "id": "",
+      "id": "0000001",
       "first_name": "Russel",
       "last_name": "Westbrook",
       "positions": ["PG"],
@@ -10,7 +10,7 @@
       "fppg": 58
     },
     {
-      "id": "",
+      "id": "0000002",
       "first_name": "Steven",
       "last_name": "Adams",
       "positions": ["C"],
@@ -19,16 +19,16 @@
       "fppg": 20
     },
     {
-      "id": "",
+      "id": "0000003",
       "first_name": "Victor",
-      "last_name": "Aladipo",
+      "last_name": "Oladipo",
       "positions": ["PG", "SG"],
       "team": "OKC",
       "salary": 5600,
       "fppg": 32
     },
     {
-      "id": "",
+      "id": "0000004",
       "first_name": "Giannis",
       "last_name": "Antetokounmpo",
       "positions": ["PG", "SG", "SF"],
@@ -37,7 +37,7 @@
       "fppg": 50
     },
     {
-      "id": "",
+      "id": "0000005",
       "first_name": "Andrew",
       "last_name": "Wiggins",
       "positions": ["SG", "SF"],
@@ -46,7 +46,7 @@
       "fppg": 37
     },
     {
-      "id": "",
+      "id": "0000006",
       "first_name": "Ricky",
       "last_name": "Rubio",
       "positions": ["PG"],
@@ -55,7 +55,7 @@
       "fppg": 34
     },
     {
-      "id": "",
+      "id": "0000007",
       "first_name": "Karl-Anthony",
       "last_name": "Towns",
       "positions": ["PF", "C"],
@@ -64,7 +64,7 @@
       "fppg": 48
     },
     {
-      "id": "",
+      "id": "0000008",
       "first_name": "Jimmy",
       "last_name": "Batler",
       "positions": ["SG", "SF"],
@@ -73,7 +73,7 @@
       "fppg": 38
     },
     {
-      "id": "",
+      "id": "0000009",
       "first_name": "Andrew",
       "last_name": "Drummond",
       "positions": ["C"],
@@ -82,7 +82,7 @@
       "fppg": 38.5
     },
     {
-      "id": "",
+      "id": "0000010",
       "first_name": "Reggie",
       "last_name": "Jackson",
       "positions": ["PG", "SG"],
@@ -91,7 +91,7 @@
       "fppg": 36
     },
     {
-      "id": "",
+      "id": "0000011",
       "first_name": "Steph",
       "last_name": "Curry",
       "positions": ["PG"],
@@ -100,7 +100,7 @@
       "fppg": 42
     },
     {
-      "id": "",
+      "id": "0000012",
       "first_name": "Klay",
       "last_name": "Thompson",
       "positions": ["SG"],
@@ -109,7 +109,7 @@
       "fppg": 33
     },
     {
-      "id": "",
+      "id": "0000013",
       "first_name": "Kevin",
       "last_name": "Durant",
       "positions": ["SF", "PF"],
@@ -118,7 +118,7 @@
       "fppg": 48
     },
     {
-      "id": "",
+      "id": "0000014",
       "first_name": "Draymond",
       "last_name": "Green",
       "positions": ["PF", "C"],
@@ -127,7 +127,7 @@
       "fppg": 41
     },
     {
-      "id": "",
+      "id": "0000015",
       "first_name": "Brook",
       "last_name": "Lopez",
       "positions": ["PF", "C"],
@@ -136,7 +136,7 @@
       "fppg": 40.5
     },
     {
-      "id": "",
+      "id": "0000016",
       "first_name": "Trevor",
       "last_name": "Booker",
       "positions": ["PF"],
@@ -145,7 +145,7 @@
       "fppg": 23
     },
     {
-      "id": "",
+      "id": "0000017",
       "first_name": "John",
       "last_name": "Wall",
       "positions": ["PG"],
@@ -154,7 +154,7 @@
       "fppg": 46.5
     },
     {
-      "id": "",
+      "id": "0000018",
       "first_name": "Bradly",
       "last_name": "Beal",
       "positions": ["SG"],
@@ -163,7 +163,7 @@
       "fppg": 35
     },
     {
-      "id": "",
+      "id": "0000019",
       "first_name": "Otto",
       "last_name": "Porter",
       "positions": ["SG", "SF"],
@@ -172,7 +172,7 @@
       "fppg": 26
     },
     {
-      "id": "",
+      "id": "0000020",
       "first_name": "Marcin",
       "last_name": "Gortat",
       "positions": ["C"],
@@ -181,7 +181,7 @@
       "fppg": 33
     },
     {
-      "id": "",
+      "id": "0000021",
       "first_name": "LeBron",
       "last_name": "James",
       "positions": ["SF", "PF"],
@@ -190,7 +190,7 @@
       "fppg": 49.5
     },
     {
-      "id": "",
+      "id": "0000022",
       "first_name": "Kevin",
       "last_name": "Love",
       "positions": ["PF", "C"],
@@ -199,7 +199,7 @@
       "fppg": 36
     },
     {
-      "id": "",
+      "id": "0000023",
       "first_name": "Kyrie",
       "last_name": "Irving",
       "positions": ["PG"],
@@ -208,7 +208,7 @@
       "fppg": 31
     },
     {
-      "id": "",
+      "id": "0000024",
       "first_name": "Tristan",
       "last_name": "Thompson",
       "positions": ["PF", "C"],
@@ -217,7 +217,7 @@
       "fppg": 21
     },
     {
-      "id": "",
+      "id": "0000025",
       "first_name": "JR",
       "last_name": "Smith",
       "positions": ["SG"],
@@ -226,7 +226,7 @@
       "fppg": 23
     },
     {
-      "id": "",
+      "id": "0000026",
       "first_name": "Andrew",
       "last_name": "Bogut",
       "positions": ["C"],
@@ -235,7 +235,7 @@
       "fppg": 18
     },
     {
-      "id": "",
+      "id": "0000027",
       "first_name": "Paul",
       "last_name": "Millsap",
       "positions": ["PF"],
@@ -244,7 +244,7 @@
       "fppg": 36
     },
     {
-      "id": "",
+      "id": "0000028",
       "first_name": "Tim",
       "last_name": "Hardway Jr.",
       "positions": ["SG", "SF"],
@@ -253,7 +253,7 @@
       "fppg": 24
     },
     {
-      "id": "",
+      "id": "0000029",
       "first_name": "Denis",
       "last_name": "Schrouder",
       "positions": ["PG"],
@@ -262,7 +262,7 @@
       "fppg": 28
     },
     {
-      "id": "",
+      "id": "0000030",
       "first_name": "Chris",
       "last_name": "Paul",
       "positions": ["PG"],
@@ -271,7 +271,7 @@
       "fppg": 45
     },
     {
-      "id": "",
+      "id": "0000031",
       "first_name": "Blake",
       "last_name": "Griffin",
       "positions": ["PF", "C"],
@@ -280,7 +280,7 @@
       "fppg": 41
     },
     {
-      "id": "",
+      "id": "0000032",
       "first_name": "DeAndre",
       "last_name": "Jordan",
       "positions": ["C"],
@@ -289,7 +289,7 @@
       "fppg": 34.5
     },
     {
-      "id": "",
+      "id": "0000033",
       "first_name": "Wesley",
       "last_name": "Johnson",
       "positions": ["SF"],
@@ -298,7 +298,7 @@
       "fppg": 17
     },
     {
-      "id": "",
+      "id": "0000034",
       "first_name": "Raymond",
       "last_name": "Felton",
       "positions": ["PG", "SG"],
@@ -307,7 +307,7 @@
       "fppg": 13
     },
     {
-      "id": "",
+      "id": "0000035",
       "first_name": "Austin",
       "last_name": "Rivers",
       "positions": ["PG", "SG"],
@@ -316,7 +316,7 @@
       "fppg": 18
     },
     {
-      "id": "",
+      "id": "0000036",
       "first_name": "Mareese",
       "last_name": "Speights",
       "positions": ["PF", "C"],

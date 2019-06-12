@@ -1,4 +1,3 @@
-import csv
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerIncorrectCSV
 from pydfs_lineup_optimizer.player import Player
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
@@ -13,7 +12,6 @@ class DraftKingsCaptainModeCSVImporter(DraftKingsCSVImporter):  # pragma: nocove
     def _row_to_player(self, row):
         try:
             fppg_multiplier = 1.5 if row['Roster Position'] == 'CPT' else 1
-            max_exposure = row.get('Max Exposure', '').replace('%', '')
             name = row['Name'].split()
             player = Player(
                 row['ID'],
@@ -23,7 +21,8 @@ class DraftKingsCaptainModeCSVImporter(DraftKingsCSVImporter):  # pragma: nocove
                 row['TeamAbbrev'],
                 float(row['Salary']),
                 float(row['AvgPointsPerGame']) * fppg_multiplier,
-                max_exposure=float(max_exposure) if max_exposure else None
+                game_info=self._parse_game_info(row),
+                **self.get_player_extra(row)
             )
         except KeyError:
             raise LineupOptimizerIncorrectCSV

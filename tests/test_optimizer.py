@@ -1,12 +1,8 @@
 from __future__ import absolute_import, division
 import unittest
-from pydfs_lineup_optimizer import settings, Player
-from pydfs_lineup_optimizer import get_optimizer
+from pydfs_lineup_optimizer import get_optimizer, Player
 from pydfs_lineup_optimizer.constants import Site, Sport
-from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
-from pydfs_lineup_optimizer.settings import LineupPosition
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
-from pydfs_lineup_optimizer.utils import get_positions_for_optimizer
 from pydfs_lineup_optimizer.sites.yahoo.settings import YahooFootballSettings
 from .utils import create_players, load_players
 
@@ -86,3 +82,12 @@ class OptimizerMethodsTestCase(unittest.TestCase):
         self.assertEqual(optimizer._settings, YahooFootballSettings)
         with self.assertRaises(NotImplementedError):
             get_optimizer(Site.DRAFTKINGS, 'Some sport')
+
+    def test_get_player_by_id(self):
+        player = self.lineup_optimizer.get_player_by_id('0000001')
+        self.assertIsNotNone(player)
+        self.assertEqual(player.last_name, 'Westbrook')
+
+    def test_get_player_by_incorrect_id(self):
+        player = self.lineup_optimizer.get_player_by_id('incorrect_id')
+        self.assertIsNone(player)

@@ -22,7 +22,6 @@ class FanDuelCSVImporter(CSVImporter):  # pragma: nocover
                 except ValueError:
                     pass
                 try:
-                    max_exposure = row.get('Max Exposure')
                     player = Player(
                         row['Id'],
                         row['First Name'],
@@ -32,8 +31,8 @@ class FanDuelCSVImporter(CSVImporter):  # pragma: nocover
                         float(row['Salary']),
                         float(row['FPPG']),
                         True if row['Injury Indicator'].strip() else False,
-                        max_exposure=float(max_exposure.replace('%', '')) if max_exposure else None,
                         game_info=game_info,
+                        **self.get_player_extra(row)
                     )
                 except KeyError:
                     raise LineupOptimizerIncorrectCSV

@@ -1,6 +1,6 @@
 from __future__ import division
 from collections import defaultdict
-from itertools import product, combinations, groupby, permutations
+from itertools import product, combinations, groupby, permutations, chain
 from math import ceil
 from random import getrandbits, uniform
 from typing import List, Dict, DefaultDict, Any, Optional, TYPE_CHECKING
@@ -10,7 +10,7 @@ from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import Player
 
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 
 
@@ -114,9 +114,10 @@ class LockedPlayersRule(OptimizerRule):
 
 class PositionsRule(OptimizerRule):
     def apply(self, solver, players_dict):
-        extra_positions = self.optimizer.players_with_same_position
-        positions = get_positions_for_optimizer(self.optimizer.settings.positions)
-        unique_positions = self.optimizer.available_positions
+        optimizer = self.optimizer
+        extra_positions = optimizer.players_with_same_position
+        positions = get_positions_for_optimizer(optimizer.settings.positions, optimizer.has_multi_positional_players)
+        unique_positions = optimizer.available_positions
         players_by_positions = {
             position: {variable for player, variable in players_dict.items()
                        if position in player.positions} for position in unique_positions
@@ -228,10 +229,13 @@ class ProjectedOwnershipRule(OptimizerRule):
 
 
 class UniquePlayerRule(OptimizerRule):
+    @staticmethod
+    def sort_players(player_tuple):
+        return player_tuple[0].full_name
+
     def apply(self, solver, players_dict):
-        key_func = lambda t: t[0].full_name
-        data = sorted(players_dict.items(), key=key_func)
-        for player_id, group_iterator in groupby(data, key=key_func):
+        data = sorted(players_dict.items(), key=self.sort_players)
+        for player_id, group_iterator in groupby(data, key=self.sort_players):
             group = list(group_iterator)
             if len(group) == 1:
                 continue
@@ -253,12 +257,16 @@ class LateSwapRule(OptimizerRule):
         for player in unswappable_players:
             solver.add_constraint([players_dict[player]], None, SolverSign.EQ, 1)
         # set remaining positions
-        positions = get_positions_for_optimizer(remaining_positions)
+        positions = get_positions_for_optimizer(remaining_positions, self.optimizer.has_multi_positional_players)
+        players_for_optimization = set()
         for position, places in positions.items():
             players_with_position = [variable for player, variable in players_dict.items()
                                      if list_intersection(position, player.positions) and
                                      player not in unswappable_players]
+            players_for_optimization.update(players_with_position)
             solver.add_constraint(players_with_position, None, SolverSign.GTE, places)
+        # Set total players for optimization
+        solver.add_constraint(players_for_optimization, None, SolverSign.EQ, len(remaining_positions))
         # Exclude players with active games
         for player, variable in players_dict.items():
             if player not in unswappable_players and player.is_game_started:
@@ -307,3 +315,46 @@ class RestrictPositionsForOpposingTeams(OptimizerRule):
                                          if list_intersection(player.positions, second_team_positions)]
                 for variables in product(first_team_variables, second_team_variables):
                     solver.add_constraint(variables, None, SolverSign.LTE, 1)
+
+
+class RosterSpacingRule(OptimizerRule):
+    @staticmethod
+    def sort_players(player_tuple):
+        return player_tuple[0].roster_order
+
+    def apply(self, solver, players_dict):
+        optimizer = self.optimizer
+        positions, spacing = optimizer.spacing_positions, optimizer.spacing
+        if not spacing or not positions:
+            return
+        available_players = sorted([
+                (player, variable) for player, variable in players_dict.items()
+                if player.roster_order is not None and list_intersection(player.positions, positions)
+            ],
+            key=self.sort_players,
+        )
+        players_by_roster_positions = {players_spacing: list(players) for players_spacing, players in
+                                       groupby(available_players, key=self.sort_players)}
+        for roster_position, players in players_by_roster_positions.items():
+            next_restricted_roster_position = roster_position + spacing
+            restricted_players = chain.from_iterable(
+                players for players_spacing, players in players_by_roster_positions.items()
+                if players_spacing >= next_restricted_roster_position
+            )
+            for first_player, first_variable in players:
+                for second_player, second_variable in restricted_players:
+                    if first_player.team != second_player.team:
+                        continue
+                    solver.add_constraint([first_variable, second_variable], None, SolverSign.LTE, 1)
+
+
+class FanduelBaseballRosterRule(OptimizerRule):
+    HITTERS = ('1B', '2B', '3B', 'SS', 'C', 'OF')
+    MAXIMUM_HITTERS_FROM_ONE_TEAM = 4
+
+    def apply(self, solver, players_dict):
+        players_dict = {player: variable for player, variable in players_dict.items() if
+                        list_intersection(player.positions, self.HITTERS)}
+        for team in self.optimizer.available_teams:
+            players_from_team = [variable for player, variable in players_dict.items() if player.team == team]
+            solver.add_constraint(players_from_team, None, SolverSign.LTE, self.MAXIMUM_HITTERS_FROM_ONE_TEAM)

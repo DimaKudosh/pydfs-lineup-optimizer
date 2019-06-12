@@ -4,9 +4,9 @@
 .. image:: https://coveralls.io/repos/github/DimaKudosh/pydfs-lineup-optimizer/badge.svg?branch=master
     :target: https://coveralls.io/github/DimaKudosh/pydfs-lineup-optimizer?branch=master
 
-=======
+======================
 pydfs-lineup-optimizer
-=======
+======================
 
 **pydfs-lineup-optimizer** is a tool for creating optimal lineups for daily fantasy sport.
 Currently it supports following dfs sites:
@@ -22,7 +22,7 @@ Currently it supports following dfs sites:
 +--------+------------+---------+--------------+-------+---------+-------------------------+
 | MLB    | \+         | \+      | \+           | \+    | \-      | \+                      |
 +--------+------------+---------+--------------+-------+---------+-------------------------+
-| WNBA   | \-         | \+      | \-           | \-    | \-      | \-                      |
+| WNBA   | \+         | \+      | \-           | \-    | \-      | \+                      |
 +--------+------------+---------+--------------+-------+---------+-------------------------+
 | Golf   | \+         | \-      | \+           | \+    | \-      | \-                      |
 +--------+------------+---------+--------------+-------+---------+-------------------------+
@@ -34,6 +34,11 @@ Currently it supports following dfs sites:
 +--------+------------+---------+--------------+-------+---------+-------------------------+
 | MMA    | \+         | \-      | \-           | \-    | \-      | \-                      |
 +--------+------------+---------+--------------+-------+---------+-------------------------+
+| NASCAR | \+         | \-      | \-           | \-    | \-      | \-                      |
++--------+------------+---------+--------------+-------+---------+-------------------------+
+| Tennis | \+         | \-      | \-           | \-    | \-      | \-                      |
++--------+------------+---------+--------------+-------+---------+-------------------------+
+
 
 
 Contents
@@ -44,6 +49,6 @@ Contents
 
    installation
    usage
-   constraints
+   rules
    export
    performance-and-optimization

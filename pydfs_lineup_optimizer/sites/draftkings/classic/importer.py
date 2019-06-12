@@ -26,9 +26,9 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
                 starts_at='',
                 game_started=True)
         try:
-            teams, date = game_info.split(' ', 1)
-            away_team, home_team = teams.split('@')
-            starts_at = datetime.strptime(date.replace(' ET', ''), '%m/%d/%Y %I:%M%p').\
+            teams, date, time, tz = game_info.rsplit(' ', 3)
+            away_team, home_team = teams.upper().split('@')
+            starts_at = datetime.strptime(date + time, '%m/%d/%Y%I:%M%p').\
                 replace(tzinfo=timezone(self.DEFAULT_TIMEZONE))
             return GameInfo(
                 home_team=home_team,
@@ -41,7 +41,6 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
 
     def _row_to_player(self, row):
         try:
-            max_exposure = row.get('Max Exposure', '').replace('%', '')
             name = row['Name'].split()
             player = Player(
                 row['ID'],
@@ -51,8 +50,8 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
                 row['TeamAbbrev'],
                 float(row['Salary']),
                 float(row['AvgPointsPerGame']),
-                max_exposure=float(max_exposure) if max_exposure else None,
                 game_info=self._parse_game_info(row),
+                **self.get_player_extra(row)
             )
         except KeyError:
             raise LineupOptimizerIncorrectCSV

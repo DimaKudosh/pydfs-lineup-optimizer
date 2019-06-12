@@ -15,7 +15,7 @@ class PlayersLoader:
         with open('tests/players.json', 'r') as file:
             players_dict = json.loads(file.read())['players']
         players = [Player(
-            'JSON_%d' % i,
+            p['id'],
             p['first_name'],
             p['last_name'],
             p['positions'],

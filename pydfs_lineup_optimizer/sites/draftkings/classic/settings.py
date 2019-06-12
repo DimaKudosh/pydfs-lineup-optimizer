@@ -25,6 +25,19 @@ class DraftKingsBasketballSettings(DraftKingsSettings):
 
 
 @SitesRegistry.register_settings
+class DraftKingsWNBASettings(DraftKingsSettings):
+    sport = Sport.WNBA
+    positions = [
+        LineupPosition('G', ('PG', 'SG')),
+        LineupPosition('G', ('PG', 'SG')),
+        LineupPosition('F', ('SF', 'PF')),
+        LineupPosition('F', ('SF', 'PF')),
+        LineupPosition('F', ('SF', 'PF')),
+        LineupPosition('UTIL', ('PG', 'SG', 'PF', 'SF', 'C'))
+    ]    
+
+
+@SitesRegistry.register_settings
 class DraftKingsFootballSettings(DraftKingsSettings):
     sport = Sport.FOOTBALL
     positions = [
@@ -128,4 +141,32 @@ class DraftKingsMMA(DraftKingsSettings):
         LineupPosition('F', ('F', )),
         LineupPosition('F', ('F', )),
         LineupPosition('F', ('F', )),
+    ]
+
+
+@SitesRegistry.register_settings
+class DraftKingsNascarSettings(DraftKingsSettings):
+    sport = Sport.NASCAR
+    lineup_printer = IndividualSportLineupPrinter
+    positions = [
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+    ]
+
+
+@SitesRegistry.register_settings
+class DraftKingsTennisSettings(DraftKingsSettings):
+    sport = Sport.TENNIS
+    lineup_printer = IndividualSportLineupPrinter
+    positions = [
+        LineupPosition('P', ('P',)),
+        LineupPosition('P', ('P',)),
+        LineupPosition('P', ('P',)),
+        LineupPosition('P', ('P',)),
+        LineupPosition('P', ('P',)),
+        LineupPosition('P', ('P',)),
     ]

@@ -7,6 +7,14 @@ class DraftKingsCaptainModeSettings(BaseSettings):
     site = Site.DRAFTKINGS_CAPTAIN_MODE
     budget = 50000
     max_from_one_team = 5
+    positions = [
+        LineupPosition('CPT', ('CPT',)),
+        LineupPosition('UTIL', ('UTIL',)),
+        LineupPosition('UTIL', ('UTIL',)),
+        LineupPosition('UTIL', ('UTIL',)),
+        LineupPosition('UTIL', ('UTIL',)),
+        LineupPosition('UTIL', ('UTIL',)),
+    ]
 
 
 @SitesRegistry.register_settings
@@ -25,14 +33,6 @@ class DraftKingsCaptainModeFootballSettings(DraftKingsCaptainModeSettings):
 @SitesRegistry.register_settings
 class DraftKingsCaptainModeBasketballSettings(DraftKingsCaptainModeSettings):
     sport = Sport.BASKETBALL
-    positions = [
-        LineupPosition('CPT', ('CPT', )),
-        LineupPosition('UTIL', ('UTIL', )),
-        LineupPosition('UTIL', ('UTIL', )),
-        LineupPosition('UTIL', ('UTIL', )),
-        LineupPosition('UTIL', ('UTIL', )),
-        LineupPosition('UTIL', ('UTIL', )),
-    ]
 
 
 @SitesRegistry.register_settings
@@ -53,11 +53,8 @@ class DraftKingsLOLSettings(DraftKingsCaptainModeSettings):
 @SitesRegistry.register_settings
 class DraftKingsCaptainModeBaseballSettings(DraftKingsCaptainModeSettings):
     sport = Sport.BASEBALL
-    positions = [
-        LineupPosition('CPT', ('CPT', )),
-        LineupPosition('UTIL', ('UTIL', )),
-        LineupPosition('UTIL', ('UTIL', )),
-        LineupPosition('UTIL', ('UTIL', )),
-        LineupPosition('UTIL', ('UTIL', )),
-        LineupPosition('UTIL', ('UTIL', )),
-    ]
+
+
+@SitesRegistry.register_settings
+class DraftKingsCaptainModeWNBASettings(DraftKingsCaptainModeSettings):
+    sport = Sport.WNBA

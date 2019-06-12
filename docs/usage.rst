@@ -73,7 +73,9 @@ You can do this using following code:
 .. code-block:: python
 
     player = optimizer.get_player_by_name('Rodney Hood') # find player with specified name in your optimizer
+    second_player = optimizer.get_player_by_id('ID00001')  # find player with player id
     optimizer.add_player_to_lineup(player) # lock this player in lineup
+    optimizer.add_player_to_lineup(second_player)
 
 Locked players can be unlocked as well:
 
