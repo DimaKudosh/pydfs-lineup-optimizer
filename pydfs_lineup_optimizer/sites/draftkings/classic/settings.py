@@ -143,3 +143,17 @@ class DraftKingsNascarSettings(DraftKingsSettings):
         LineupPosition('D', ('D', )),
         LineupPosition('D', ('D', )),
     ]
+
+
+@SitesRegistry.register_settings
+class DraftKingsTennisSettings(DraftKingsSettings):
+    sport = Sport.TENNIS
+    lineup_printer = IndividualSportLineupPrinter
+    positions = [
+        LineupPosition('P', ('P',)),
+        LineupPosition('P', ('P',)),
+        LineupPosition('P', ('P',)),
+        LineupPosition('P', ('P',)),
+        LineupPosition('P', ('P',)),
+        LineupPosition('P', ('P',)),
+    ]

@@ -19,3 +19,4 @@ class Sport:
     WNBA = 'WNBA'
     MMA = 'MMA'
     NASCAR = 'NASCAR'
+    TENNIS = 'TENNIS'
