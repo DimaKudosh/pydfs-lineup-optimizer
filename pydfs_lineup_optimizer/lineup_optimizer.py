@@ -265,6 +265,7 @@ class LineupOptimizer(object):
         for player in self._players:
             if player.id == player_id:
                 return player
+        return None
 
     def add_player_to_lineup(self, player):
         # type: (Player) -> None
@@ -364,8 +365,9 @@ class LineupOptimizer(object):
                 raise LineupOptimizerException('Sum of stacks should be less than %d' % self.total_players)
             max_from_one_team = self.settings.max_from_one_team
             if max_from_one_team and any([stack > max_from_one_team for stack in stacks]):
-                raise LineupOptimizerException('Stacks should be smaller than max players from one team (%d)' %
-                                               self.settings.max_from_one_team)
+                raise LineupOptimizerException(
+                    'Stacks should be smaller than max players from one team (%d)' %
+                    self.settings.max_from_one_team)   # type: ignore
             self.add_new_rule(TeamStacksRule)
         else:
             self.remove_rule(TeamStacksRule)
