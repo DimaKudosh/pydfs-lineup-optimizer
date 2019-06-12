@@ -21,7 +21,7 @@ class CSVImporter(object):
     @staticmethod
     def get_player_extra(row):
         # type: (Dict[str, str]) -> Dict[str, Any]
-        max_exposure = row.get('Max Exposure', '').replace('%', '')
+        max_exposure = (row.get('Max Exposure') or '').replace('%', '')
         roster_order = row.get('Roster Order')
         return {
             'max_exposure': float(max_exposure) if max_exposure else None,
