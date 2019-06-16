@@ -30,10 +30,6 @@ class OptimizerRule(object):
 
 
 class NormalObjective(OptimizerRule):
-    def __init__(self, optimizer, params):
-        super(NormalObjective, self).__init__(optimizer, params)
-        self.used_combinations = []  # type: List[Any]
-
     def apply(self, solver, players_dict):
         variables = []
         coefficients = []
@@ -41,14 +37,6 @@ class NormalObjective(OptimizerRule):
             variables.append(variable)
             coefficients.append(player.fppg)
         solver.set_objective(variables, coefficients)
-
-    def apply_for_iteration(self, solver, players_dict, result):
-        if not result:
-            return
-        self.used_combinations.append([players_dict[player] for player in result])
-        total_players = self.optimizer.total_players
-        for variables in self.used_combinations:
-            solver.add_constraint(variables, None, SolverSign.LTE, total_players - 1)
 
 
 class RandomObjective(OptimizerRule):
@@ -62,11 +50,24 @@ class RandomObjective(OptimizerRule):
         solver.set_objective(variables, coefficients)
 
 
+class UniqueLineupRule(OptimizerRule):
+    def __init__(self, optimizer, params):
+        super(UniqueLineupRule, self).__init__(optimizer, params)
+        self.used_combinations = []  # type: List[Any]
+
+    def apply_for_iteration(self, solver, players_dict, result):
+        if not result:
+            return
+        self.used_combinations.append([players_dict[player] for player in result])
+        total_players = self.optimizer.total_players
+        for variables in self.used_combinations:
+            solver.add_constraint(variables, None, SolverSign.LTE, total_players - 1)
+
+
 class TotalPlayersRule(OptimizerRule):
     def apply(self, solver, players_dict):
         variables = players_dict.values()
-        coefficients = [1] * len(variables)
-        solver.add_constraint(variables, coefficients, SolverSign.EQ, self.optimizer.total_players)
+        solver.add_constraint(variables, None, SolverSign.EQ, self.optimizer.total_players)
 
 
 class LineupBudgetRule(OptimizerRule):
@@ -341,8 +342,8 @@ class RosterSpacingRule(OptimizerRule):
                 players for players_spacing, players in players_by_roster_positions.items()
                 if players_spacing >= next_restricted_roster_position
             )
-            for first_player, first_variable in players:
-                for second_player, second_variable in restricted_players:
+            for first_player, first_variable in restricted_players:
+                for second_player, second_variable in players:
                     if first_player.team != second_player.team:
                         continue
                     solver.add_constraint([first_variable, second_variable], None, SolverSign.LTE, 1)

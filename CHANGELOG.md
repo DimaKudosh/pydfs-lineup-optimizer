@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.5.1]
+- Fixed optimization for roster spacing rule
+- Fixed repeated lineups issue when optimizing in random mode
+
 ## [v2.5.0]
 - Added lineup ordering rule
 - Added DK NASCAR
