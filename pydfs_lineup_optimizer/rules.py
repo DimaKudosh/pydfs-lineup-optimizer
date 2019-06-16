@@ -341,8 +341,8 @@ class RosterSpacingRule(OptimizerRule):
                 players for players_spacing, players in players_by_roster_positions.items()
                 if players_spacing >= next_restricted_roster_position
             )
-            for first_player, first_variable in players:
-                for second_player, second_variable in restricted_players:
+            for first_player, first_variable in restricted_players:
+                for second_player, second_variable in players:
                     if first_player.team != second_player.team:
                         continue
                     solver.add_constraint([first_variable, second_variable], None, SolverSign.LTE, 1)
