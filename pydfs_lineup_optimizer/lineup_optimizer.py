@@ -13,7 +13,7 @@ from pydfs_lineup_optimizer.rules import *
 
 
 BASE_RULES = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamRule, LockedPlayersRule,
-              RemoveInjuredRule, UniquePlayerRule}
+              RemoveInjuredRule, UniquePlayerRule, UniqueLineupRule}
 
 
 class LineupOptimizer(object):
