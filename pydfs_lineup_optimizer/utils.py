@@ -1,5 +1,5 @@
-from typing import Dict, Tuple, List, Iterable, Any
-from collections import Counter
+from typing import Dict, Tuple, List, Iterable, Any, DefaultDict
+from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 from itertools import combinations, chain, permutations
 from pydfs_lineup_optimizer.player import Player, LineupPlayer
@@ -107,3 +107,11 @@ def get_remaining_positions(positions, unswappable_players):
                 positions.remove(position)
                 break
     return positions
+
+
+def get_players_grouped_by_teams(players):
+    # type: (Iterable[Player]) -> DefaultDict[str, List[Player]]
+    players_by_teams = defaultdict(list)  # type: DefaultDict[str, List[Player]]
+    for player in players:
+        players_by_teams[player.team].append(player)
+    return players_by_teams

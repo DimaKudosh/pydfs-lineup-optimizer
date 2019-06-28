@@ -1,11 +1,12 @@
 from __future__ import division
-from collections import defaultdict
+from collections import defaultdict, Counter
 from itertools import product, combinations, groupby, permutations, chain
 from math import ceil
 from random import getrandbits, uniform
-from typing import List, Dict, DefaultDict, Any, Optional, TYPE_CHECKING
+from typing import List, Dict, DefaultDict, Tuple, Any, Optional, TYPE_CHECKING, Counter as TypingCounter
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
-from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer, get_remaining_positions
+from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer, get_remaining_positions, \
+    get_players_grouped_by_teams
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import Player
 
@@ -162,27 +163,41 @@ class MinSalaryCapRule(OptimizerRule):
 
 class FromSameTeamByPositionsRule(OptimizerRule):
     def apply(self, solver, players_dict):
-        from_same_team = len(self.optimizer.positions_from_same_team)
-        players_combinations = []
-        # Create all possible combinations with specified position for each team
-        for team in self.optimizer.available_teams:
-            team_players = [player for player in players_dict.keys() if player.team == team]
-            players_by_positions = []
-            for position in self.optimizer.positions_from_same_team:
-                players_by_positions.append([player for player in team_players if position in player.positions])
-            for players_combination in product(*players_by_positions):
-                # Remove combinations with duplicated players
-                if len(set(players_combination)) != from_same_team:
-                    continue
-                players_combinations.append(tuple([player for player in players_combination]))
-        combinations_variable = {combination: solver.add_variable(
-            'combinations_%d' % i
-        ) for i, combination in enumerate(players_combinations)}
-        solver.add_constraint(combinations_variable.values(), None, SolverSign.GTE, 1)
-        for combination in players_combinations:
-            variables = [players_dict[player] for player in combination]
-            solver.add_constraint(variables, None, SolverSign.GTE,
-                                  from_same_team * combinations_variable[combination])
+        stacks = Counter(
+            map(tuple, self.optimizer.positions_stacks_from_same_team)
+        )  # type: TypingCounter[Tuple[str, ...]]
+        players_by_teams = get_players_grouped_by_teams(players_dict.keys())
+        combination_variables_by_team = defaultdict(list)  # type: DefaultDict[str, Any]
+        for stack, total_stacks in stacks.items():
+            all_players_combinations = {}  # type: Dict[Tuple[Player, ...], Any]
+            stack_variables = []
+            variable_prefix = 'rules_%s_players' % '_'.join(stack)
+            for team_name, team_players in players_by_teams.items():
+                players_by_positions = []
+                for position in stack:
+                    players_by_positions.append([player for player in team_players if position in player.positions])
+                # Create all possible players combinations for stack
+                for players_combination in product(*players_by_positions):
+                    # Remove combinations with duplicated players
+                    if len(set(players_combination)) != len(stack):
+                        continue
+                    players_combination = tuple(sorted(players_combination, key=lambda p: p.id))
+                    # Skip if this combination exist
+                    if players_combination in all_players_combinations:
+                        continue
+                    variable_name = '%s_players_%s_%s' % (variable_prefix, team_name,
+                                                          '_'.join([p.id for p in players_combination]))
+                    variable = solver.add_variable(variable_name)
+                    stack_variables.append(variable)
+                    combination_variables_by_team[team_name].append(variable)
+                    all_players_combinations[players_combination] = variable
+            solver.add_constraint(stack_variables, None, SolverSign.GTE, total_stacks)
+            for combination, variable in all_players_combinations.items():
+                variables = [players_dict[player] for player in combination]
+                solver.add_constraint(variables, None, SolverSign.GTE,
+                                      len(stack) * variable)
+        for combination_variables in combination_variables_by_team.values():
+            solver.add_constraint(combination_variables, None, SolverSign.LTE, 1)
 
 
 class RemoveInjuredRule(OptimizerRule):
@@ -278,11 +293,7 @@ class LateSwapRule(OptimizerRule):
 class TeamStacksRule(OptimizerRule):
     def apply(self, solver, players_dict):
         stacks = self.optimizer.team_stacks
-        players_by_teams = {
-            team: [player for player in players_dict.keys() if player.team == team]
-            for team in self.optimizer.available_teams
-        }
-
+        players_by_teams = get_players_grouped_by_teams(players_dict.keys())
         stacks_dict = {}
         for i, stack in enumerate(sorted(stacks, reverse=True), start=1):
             stacks_dict[stack] = i
@@ -359,3 +370,4 @@ class FanduelBaseballRosterRule(OptimizerRule):
         for team in self.optimizer.available_teams:
             players_from_team = [variable for player, variable in players_dict.items() if player.team == team]
             solver.add_constraint(players_from_team, None, SolverSign.LTE, self.MAXIMUM_HITTERS_FROM_ONE_TEAM)
+

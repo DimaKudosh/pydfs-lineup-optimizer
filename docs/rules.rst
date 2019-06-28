@@ -28,11 +28,12 @@ It accepts dict where key is a team name and value is number of players for this
 Positions for same team
 -----------------------
 For setting positions for same team you should call `set_positions_for_same_team` method of optimizer.
-It accepts list with positions that must be selected from one team.
+It accepts list with positions that must be selected from one team. You can specify multiple positions stacks as well.
 
 .. code-block:: python
 
     optimizer.set_positions_for_same_team(['QB', 'WR', 'WR'])
+    optimizer.set_positions_for_same_team(['WR', 'WR', 'WR'], ['RB', 'RB'])
 
 
 Number of specific positions

@@ -1,5 +1,5 @@
 from __future__ import division
-from collections import Counter, OrderedDict
+from collections import OrderedDict
 from typing import FrozenSet, Tuple, Type, Generator, Set
 from pydfs_lineup_optimizer.solvers import PuLPSolver, SolverException
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
@@ -32,7 +32,7 @@ class LineupOptimizer(object):
         self._max_deviation = 0.12
         self._players_from_one_team = {}  # type: Dict[str, int]
         self._players_with_same_position = {}  # type: Dict[str, int]
-        self._positions_from_same_team = []  # type: List[str]
+        self._positions_stacks_from_same_team = None  # type: Optional[Tuple[List[str], ...]]
         self._min_salary_cap = None  # type: Optional[float]
         self._max_repeating_players = None  # type: Optional[int]
         self._solver_class = solver
@@ -69,9 +69,9 @@ class LineupOptimizer(object):
         return self._settings.max_from_one_team
 
     @property
-    def positions_from_same_team(self):
-        # type: () -> List[str]
-        return self._positions_from_same_team
+    def positions_stacks_from_same_team(self):
+        # type: () -> Optional[Tuple[List[str], ...]]
+        return self._positions_stacks_from_same_team
 
     @property
     def players_from_one_team(self):
@@ -157,7 +157,7 @@ class LineupOptimizer(object):
         self._lineup = []
         self._players_with_same_position = {}
         self._players_from_one_team = {}
-        self._positions_from_same_team = []
+        self._positions_stacks_from_same_team = None
 
     def set_deviation(self, min_deviation, max_deviation):
         # type: (float, float) -> None
@@ -322,19 +322,25 @@ class LineupOptimizer(object):
             self._check_position_constraint(pos)
         self._players_with_same_position = positions
 
-    def set_positions_for_same_team(self, positions):
-        # type: (Optional[List[str]]) -> None
-        if positions is not None:
-            if self.max_from_one_team and len(positions) > self.max_from_one_team:
+    def set_positions_for_same_team(self, *positions_stacks):
+        # type: (*List[str]) -> None
+        if positions_stacks and positions_stacks[0] is not None:
+            max_allowed_players = self.settings.get_total_players()
+            if sum([len(positions) for positions in positions_stacks]) > max_allowed_players:
+                raise LineupOptimizerException('You can\'t set more than %d players' % max_allowed_players)
+            if self.max_from_one_team and \
+                    any(len(positions) > self.max_from_one_team for positions in positions_stacks):
                 raise LineupOptimizerException('You can\'t set more than %s players from one team.' %
                                                self.max_from_one_team)
-            positions = [position.upper() for position in positions]
-            for position, num_of_players in Counter(positions).items():
-                self._check_position_constraint(position)
+            for positions in positions_stacks:
+                positions = [position.upper() for position in positions]
+                for position, num_of_players in Counter(positions).items():
+                    self._check_position_constraint(position)
             self.add_new_rule(FromSameTeamByPositionsRule)
+            self._positions_stacks_from_same_team = positions_stacks
         else:
             self.remove_rule(FromSameTeamByPositionsRule)
-        self._positions_from_same_team = positions or []
+            self._positions_stacks_from_same_team = None
 
     def set_max_repeating_players(self, max_repeating_players):
         # type: (int) -> None
