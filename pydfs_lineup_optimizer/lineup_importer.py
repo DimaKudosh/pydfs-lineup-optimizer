@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from pydfs_lineup_optimizer.player import Player
 from pydfs_lineup_optimizer.lineup import Lineup
 
@@ -19,11 +19,17 @@ class CSVImporter(object):
         raise NotImplementedError
 
     @staticmethod
-    def get_player_extra(row):
+    def _parse_exposure(exposure):
+        # type: (Optional[str]) -> Optional[float]
+        exposure = (exposure or '').replace('%', '')
+        return float(exposure) if exposure else None
+
+    @classmethod
+    def get_player_extra(cls, row):
         # type: (Dict[str, str]) -> Dict[str, Any]
-        max_exposure = (row.get('Max Exposure') or '').replace('%', '')
         roster_order = row.get('Roster Order')
         return {
-            'max_exposure': float(max_exposure) if max_exposure else None,
+            'max_exposure': cls._parse_exposure(row.get('Max Exposure')),
+            'min_exposure': cls._parse_exposure(row.get('Min Exposure')),
             'roster_order': int(roster_order) if roster_order else None,
         }
