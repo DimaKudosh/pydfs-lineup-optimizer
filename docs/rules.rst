@@ -15,6 +15,7 @@ Rules
 - Team stacking
 - Restricting players from opposing teams
 - Spacing for positions
+- Teams exposures
 
 Number of players from same team
 --------------------------------
@@ -125,3 +126,15 @@ For example if you want to restrict optimizer to select players within specific 
 
     Because dfs sites doesn't provide information about batters hit order you should add additional column "Roster Order" where you can set this order,
     or specify it in Player objects using roster_order attribute. In other case this rule will be ignored.
+
+Teams exposures
+---------------
+
+This rule adds maximum exposures for teams used in stacking.
+It only works with `set_team_stacking` or `set_positions_for_same_team` rules.
+
+.. code-block:: python
+
+    optimizer.set_teams_max_exposure({'BOS': 0.3, 'LAL': 0.4})
+    # Set same max exposures for all teams
+    optimizer.set_teams_max_exposure({team: 0.2 for team in optimizer.available_teams})

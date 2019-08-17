@@ -397,7 +397,7 @@ class RosterSpacingTestCase(unittest.TestCase):
             Player('10', '10', '10', ['3B'], 'BOS', 3000, 25, roster_order=3),
             Player('11', '11', '11', ['1B'], 'NY', 3000, 30, roster_order=4),
             Player('12', '12', '12', ['2B'], 'NY', 3000, 35, roster_order=5),
-            Player('13', '13', '13', ['3B'], 'NY', 3000, 40, roster_order=6),
+            Player('13', '13', '13', ['3B'], 'NY', 3000, 50, roster_order=6),
         ]
         self.players_dict = {player.id: player for player in self.players}
         self.positions = ['1B', '2B', '3B']
@@ -460,3 +460,39 @@ class TestFanduelMaxFromOneTeamTestCase(unittest.TestCase):
         hou_players_positions = [player.lineup_position for player in lineup if player.team == 'HOU']
         self.assertEqual(len(hou_players_positions), 5)
         self.assertIn('P', hou_players_positions)
+
+
+class TestTeamStacksExposureRule(unittest.TestCase):
+    def setUp(self):
+        self.players = load_players()
+        self.test_team = 'TEST'
+        self.high_fppg_players = [
+            Player('1', '1', '1', ['PG'], self.test_team, 3000, 100),
+            Player('2', '2', '2', ['SG'], self.test_team, 3000, 100),
+            Player('3', '3', '3', ['SF'], self.test_team, 3000, 100),
+        ]
+        self.high_fppg_players_positions = ['PG', 'SG', 'SF']
+        self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+        self.optimizer.load_players(self.players + self.high_fppg_players)
+
+    def test_teams_exposure_correctness_with_stacking(self):
+        self.optimizer.set_team_stacking([3])
+        self.optimizer.set_teams_max_exposure({self.test_team: 0.5})
+        lineups = self.optimizer.optimize(2)
+        first_lineup = next(lineups)
+        second_lineup = next(lineups)
+        self.assertEqual(len([p for p in first_lineup if p in self.high_fppg_players]), len(self.high_fppg_players))
+        self.assertNotEqual(len([p for p in second_lineup if p in self.high_fppg_players]), len(self.high_fppg_players))
+
+    def test_teams_exposure_correctness_with_positions_for_same_team(self):
+        self.optimizer.set_positions_for_same_team(self.high_fppg_players_positions)
+        self.optimizer.set_teams_max_exposure({self.test_team: 0.5})
+        lineups = self.optimizer.optimize(2)
+        first_lineup = next(lineups)
+        second_lineup = next(lineups)
+        self.assertEqual(len([p for p in first_lineup if p in self.high_fppg_players]), len(self.high_fppg_players))
+        self.assertNotEqual(len([p for p in second_lineup if p in self.high_fppg_players]), len(self.high_fppg_players))
+
+    def test_incorrect_team_name(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_teams_max_exposure({'WRONG TEAM': 0.5})

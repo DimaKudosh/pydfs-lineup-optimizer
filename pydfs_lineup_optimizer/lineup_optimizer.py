@@ -1,6 +1,6 @@
 from __future__ import division
 from collections import OrderedDict
-from typing import FrozenSet, Tuple, Type, Generator, Set
+from typing import FrozenSet, Type, Generator, cast
 from pydfs_lineup_optimizer.solvers import PuLPSolver, SolverException
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
     LineupOptimizerIncorrectPositionName
@@ -8,7 +8,7 @@ from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.player import LineupPlayer, GameInfo
-from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions
+from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions, process_percents
 from pydfs_lineup_optimizer.rules import *
 
 
@@ -19,7 +19,7 @@ BASE_RULES = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamR
 class LineupOptimizer(object):
     def __init__(self, settings, solver=PuLPSolver):
         # type: (Type[BaseSettings], Type[Solver]) -> None
-        self._settings = settings
+        self._settings = settings()
         self._csv_importer = None  # type: Optional[Type[CSVImporter]]
         self._rules = BASE_RULES.copy()  # type: Set[Type[OptimizerRule]]
         self._players = []  # type: List[Player]
@@ -42,6 +42,7 @@ class LineupOptimizer(object):
         self._opposing_teams_position_restriction = None  # type: Optional[Tuple[List[str], List[str]]]
         self.spacing_positions = None  # type: Optional[List[str]]
         self.spacing = None  # type: Optional[int]
+        self.teams_exposures = None  # type: Optional[Dict[str, float]]
 
     @property
     def budget(self):
@@ -130,7 +131,7 @@ class LineupOptimizer(object):
 
     @property
     def settings(self):
-        # type: () -> Type[BaseSettings]
+        # type: () -> BaseSettings
         return self._settings
 
     @property
@@ -396,6 +397,17 @@ class LineupOptimizer(object):
         self.spacing_positions = positions
         self.spacing = spacing
         self.add_new_rule(RosterSpacingRule)
+
+    def set_teams_max_exposure(self, teams_exposures):
+        # type: (Dict[str, float]) -> None
+        processed_exposures = {}  # type: Dict[str, float]
+        for team, raw_exposure in teams_exposures.items():
+            if team not in self.available_teams:
+                raise LineupOptimizerException('Incorrect team: %s' % team)
+            if raw_exposure is not None:
+                exposure = process_percents(raw_exposure)
+                processed_exposures[team] = cast(float, exposure)
+        self.teams_exposures = processed_exposures
 
     def optimize(self, n, max_exposure=None, randomness=False, with_injured=False):
         # type: (int, Optional[float], bool, bool) -> Generator[Lineup, None, None]

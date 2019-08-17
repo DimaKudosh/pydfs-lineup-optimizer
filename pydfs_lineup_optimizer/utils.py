@@ -1,10 +1,14 @@
-from typing import Dict, Tuple, List, Iterable, Any, DefaultDict
+from __future__ import division
+from typing import Dict, Tuple, List, Iterable, Any, DefaultDict, Optional, TYPE_CHECKING
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 from itertools import combinations, chain, permutations
-from pydfs_lineup_optimizer.player import Player, LineupPlayer
 from pydfs_lineup_optimizer.settings import LineupPosition
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
+
+
+if TYPE_CHECKING:
+    from pydfs_lineup_optimizer.player import Player, LineupPlayer
 
 
 def list_intersection(first_list, second_list):
@@ -55,14 +59,14 @@ def get_positions_for_optimizer(positions_list, has_multi_positional_players=Tru
 
 
 def link_players_with_positions(players, positions):
-    # type: (List[Player], List[LineupPosition]) -> Dict[Player, LineupPosition]
+    # type: (List['Player'], List[LineupPosition]) -> Dict['Player', LineupPosition]
     """
     This method tries to set positions for given players, and raise error if can't.
     """
     positions = positions[:]
-    single_position_players = []  # type: List[Player]
-    multi_positions_players = []  # type: List[Player]
-    players_with_positions = {}  # type: Dict[Player, LineupPosition]
+    single_position_players = []  # type: List['Player']
+    multi_positions_players = []  # type: List['Player']
+    players_with_positions = {}  # type: Dict['Player', LineupPosition]
     for player in players:
         if len(player.positions) == 1:
             single_position_players.append(player)
@@ -96,7 +100,7 @@ def link_players_with_positions(players, positions):
 
 
 def get_remaining_positions(positions, unswappable_players):
-    # type: (List[LineupPosition], List[LineupPlayer]) -> List[LineupPosition]
+    # type: (List[LineupPosition], List['LineupPlayer']) -> List[LineupPosition]
     """
     Remove unswappable players positions from positions list
     """
@@ -110,8 +114,13 @@ def get_remaining_positions(positions, unswappable_players):
 
 
 def get_players_grouped_by_teams(players):
-    # type: (Iterable[Player]) -> DefaultDict[str, List[Player]]
-    players_by_teams = defaultdict(list)  # type: DefaultDict[str, List[Player]]
+    # type: (Iterable['Player']) -> DefaultDict[str, List['Player']]
+    players_by_teams = defaultdict(list)  # type: DefaultDict[str, List['Player']]
     for player in players:
         players_by_teams[player.team].append(player)
     return players_by_teams
+
+
+def process_percents(percent):
+    # type: (Optional[float]) -> Optional[float]
+    return percent / 100 if percent and percent > 1 else percent

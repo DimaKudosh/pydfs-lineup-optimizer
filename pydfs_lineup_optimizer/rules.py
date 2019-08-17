@@ -3,7 +3,7 @@ from collections import defaultdict, Counter
 from itertools import product, combinations, groupby, permutations, chain
 from math import ceil
 from random import getrandbits, uniform
-from typing import List, Dict, DefaultDict, Tuple, Any, Optional, TYPE_CHECKING, Counter as TypingCounter
+from typing import List, Dict, DefaultDict, Set, Tuple, Any, Optional, TYPE_CHECKING, Counter as TypingCounter
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
 from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer, get_remaining_positions, \
     get_players_grouped_by_teams
@@ -162,17 +162,44 @@ class MinSalaryCapRule(OptimizerRule):
 
 
 class FromSameTeamByPositionsRule(OptimizerRule):
-    def apply(self, solver, players_dict):
-        stacks = Counter(
+    def __init__(self, optimizer, params):
+        super(FromSameTeamByPositionsRule, self).__init__(optimizer, params)
+        self.stacks_dict = Counter(
             map(tuple, self.optimizer.positions_stacks_from_same_team)
         )  # type: TypingCounter[Tuple[str, ...]]
+        self.used_teams = defaultdict(int)  # type: DefaultDict[str, int]
+        self.total_lineups = params.get('n')
+        self.teams_max_exposures = optimizer.teams_exposures
+        self.players_combinations_by_team = {}  # type: Dict[Tuple[str, ...], Dict[str, Set]]
+
+    def apply(self, solver, players_dict):
+        self.players_combinations_by_team = self._get_players_combinations_by_team(players_dict)
+        if not self.teams_max_exposures:
+            self._create_constraints(solver)
+
+    def apply_for_iteration(self, solver, players_dict, result):
+        if not self.teams_max_exposures:
+            return
+        if not result:
+            self._create_constraints(solver)
+            return
+        for team in self._detect_teams_used_in_stacks(result):
+            self.used_teams[team] += 1
+        # Get teams reached max exposure
+        exclude_teams = set()
+        for team, max_exposure in self.teams_max_exposures.items():
+            if max_exposure is not None and max_exposure <= self.used_teams[team] / self.total_lineups:
+                exclude_teams.add(team)
+        self._create_constraints(solver, exclude_teams)
+
+    def _get_players_combinations_by_team(self, players_dict):
+        players_combinations_by_team = defaultdict(
+            lambda: defaultdict(set)
+        )  # type: Dict[Tuple[str, ...], Dict[str, Set]]
         players_by_teams = get_players_grouped_by_teams(players_dict.keys())
-        combination_variables_by_team = defaultdict(list)  # type: DefaultDict[str, Any]
-        for stack, total_stacks in stacks.items():
-            all_players_combinations = {}  # type: Dict[Tuple[Player, ...], Any]
-            stack_variables = []
-            variable_prefix = 'rules_%s_players' % '_'.join(stack)
+        for stack in self.stacks_dict.keys():
             for team_name, team_players in players_by_teams.items():
+                all_players_combinations = set()
                 players_by_positions = []
                 for position in stack:
                     players_by_positions.append([player for player in team_players if position in player.positions])
@@ -181,23 +208,45 @@ class FromSameTeamByPositionsRule(OptimizerRule):
                     # Remove combinations with duplicated players
                     if len(set(players_combination)) != len(stack):
                         continue
-                    players_combination = tuple(sorted(players_combination, key=lambda p: p.id))
-                    # Skip if this combination exist
-                    if players_combination in all_players_combinations:
-                        continue
+                    players_combination = tuple([
+                        players_dict[player] for player in sorted(players_combination, key=lambda p: p.id)
+                    ])
+                    all_players_combinations.add(players_combination)
+                players_combinations_by_team[stack][team_name] = all_players_combinations
+        return players_combinations_by_team
+
+    def _create_constraints(self, solver, exclude_teams=None):
+        combination_variables_by_team = defaultdict(list)  # type: Dict[str, List]
+        for stack, total_stacks in self.stacks_dict.items():
+            stack_variables = []
+            variable_prefix = 'rules_%s' % '_'.join(stack)
+            for team_name, variables in self.players_combinations_by_team[stack].items():
+                if exclude_teams and team_name in exclude_teams:
+                    for combination_variables in variables:
+                        solver.add_constraint(combination_variables, None, SolverSign.LTE, len(stack) - 1)
+                    continue
+                for combination_variables in variables:
                     variable_name = '%s_players_%s_%s' % (variable_prefix, team_name,
-                                                          '_'.join([p.id for p in players_combination]))
+                                                          '_'.join([str(v) for v in combination_variables]))
                     variable = solver.add_variable(variable_name)
-                    stack_variables.append(variable)
                     combination_variables_by_team[team_name].append(variable)
-                    all_players_combinations[players_combination] = variable
+                    stack_variables.append(variable)
+                    solver.add_constraint(combination_variables, None, SolverSign.GTE, len(stack) * variable)
             solver.add_constraint(stack_variables, None, SolverSign.GTE, total_stacks)
-            for combination, variable in all_players_combinations.items():
-                variables = [players_dict[player] for player in combination]
-                solver.add_constraint(variables, None, SolverSign.GTE,
-                                      len(stack) * variable)
         for combination_variables in combination_variables_by_team.values():
             solver.add_constraint(combination_variables, None, SolverSign.LTE, 1)
+
+    def _detect_teams_used_in_stacks(self, lineup):
+        teams = set([player.team for player in lineup])
+        all_teams_used_in_stacks = set()
+        for stack in self.stacks_dict.keys():
+            teams_used_in_stack = teams.copy()
+            for position in stack:
+                teams_used_in_stack = teams_used_in_stack.intersection(
+                    set([player.team for player in lineup if position in player.positions])
+                )
+            all_teams_used_in_stacks.update(teams_used_in_stack)
+        return all_teams_used_in_stacks
 
 
 class RemoveInjuredRule(OptimizerRule):
@@ -291,22 +340,59 @@ class LateSwapRule(OptimizerRule):
 
 
 class TeamStacksRule(OptimizerRule):
-    def apply(self, solver, players_dict):
+    def __init__(self, optimizer, params):
+        super(TeamStacksRule, self).__init__(optimizer, params)
         stacks = self.optimizer.team_stacks
-        players_by_teams = get_players_grouped_by_teams(players_dict.keys())
-        stacks_dict = {}
+        self.stacks_dict = {}  # type: Dict[int, int]
         for i, stack in enumerate(sorted(stacks, reverse=True), start=1):
-            stacks_dict[stack] = i
+            self.stacks_dict[stack] = i
+        self.used_teams = defaultdict(int)  # type: Dict[str, int]
+        self.total_lineups = params.get('n')
+        self.teams_max_exposures = optimizer.teams_exposures
+        self.min_count_not_in_stack = max(min(stacks) - 1, 1)
+        remaining_slots = optimizer.settings.get_total_players() - sum(stacks)
+        self.add_exclude_constraints = remaining_slots > self.min_count_not_in_stack
+        self.player_variables_by_teams = {}  # type: Dict[str, List]
 
-        for stack, total in stacks_dict.items():
+    def apply(self, solver, players_dict):
+        players_by_teams = get_players_grouped_by_teams(players_dict.keys())
+        for team, players in players_by_teams.items():
+            variables = [players_dict[player] for player in players]
+            self.player_variables_by_teams[team] = variables
+        if not self.teams_max_exposures:
+            self._create_constraints(solver)
+
+    def apply_for_iteration(self, solver, players_dict, result):
+        if not self.teams_max_exposures:
+            return
+        if not result:
+            self._create_constraints(solver)
+            return
+        # Detect teams used in stack
+        for team, total_players in Counter(player.team for player in result).most_common():
+            if total_players not in self.stacks_dict:
+                break
+            self.used_teams[team] += 1
+        # Get teams reached max exposure
+        exclude_teams = set()
+        for team, max_exposure in self.teams_max_exposures.items():
+            if max_exposure is not None and max_exposure <= self.used_teams[team] / self.total_lineups:
+                exclude_teams.add(team)
+        self._create_constraints(solver, exclude_teams)
+        if self.add_exclude_constraints:
+            for team in exclude_teams:
+                variables = self.player_variables_by_teams[team]
+                solver.add_constraint(variables, None, SolverSign.LTE, self.min_count_not_in_stack)
+
+    def _create_constraints(self, solver, exclude_teams=None):
+        for stack, total in self.stacks_dict.items():
             combinations_variables = []
-
-            for team, players in players_by_teams.items():
+            for team, variables in self.player_variables_by_teams.items():
+                if exclude_teams and team in exclude_teams:
+                    continue
                 solver_variable = solver.add_variable('teams_stack_%d_%s' % (stack, team))
                 combinations_variables.append(solver_variable)
-                variables = [players_dict[player] for player in players]
-                solver.add_constraint(variables, None, SolverSign.GTE,
-                                      stack * solver_variable)
+                solver.add_constraint(variables, None, SolverSign.GTE, stack * solver_variable)
             solver.add_constraint(combinations_variables, None, SolverSign.GTE, total)
 
 
