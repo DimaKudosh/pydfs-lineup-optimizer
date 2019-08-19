@@ -268,8 +268,7 @@ class MaxRepeatingPlayersRule(OptimizerRule):
         max_repeating_players = self.optimizer.max_repeating_players
         if max_repeating_players is None or not result:
             return
-        for players_combination in combinations(result.players, max_repeating_players + 1):
-            self.exclude_combinations.append([players_dict[player] for player in players_combination])
+        self.exclude_combinations.append([players_dict[player] for player in result])
         for players_combination in self.exclude_combinations:
             solver.add_constraint(players_combination, None, SolverSign.LTE, max_repeating_players)
 
