@@ -89,29 +89,31 @@ class LockedPlayersRule(OptimizerRule):
         self.remaining_iteration = params.get('n') + 1
 
     def apply_for_iteration(self, solver, players_dict, result):
+        force_variables = []
+        exclude_variables = []
         self.remaining_iteration -= 1
         for player, variable in players_dict.items():
             if not player.min_exposure:
                 continue
             if ceil(player.min_exposure * self.total_lineups) >= \
                     self.remaining_iteration - self.used_players.get(player, 0):
-                solver.add_constraint([variable], None, SolverSign.EQ, 1)
-        if not result:
-            # First iteration, locked players must have exposure > 0
-            for player in self.optimizer.locked_players:
-                solver.add_constraint([players_dict[player]], None, SolverSign.EQ, 1)
-            return
-        for player in result.lineup:
-            self.used_players[player] += 1
+                force_variables.append(variable)
+        if result:
+            for player in result.lineup:
+                self.used_players[player] += 1
         removed_players = []
         for player, used in self.used_players.items():
             max_exposure = player.max_exposure if player.max_exposure is not None else self.params.get('max_exposure')
             if max_exposure is not None and max_exposure <= used / self.total_lineups:
                 removed_players.append(player)
-                solver.add_constraint([players_dict[player]], None, SolverSign.EQ, 0)
+                exclude_variables.append(players_dict[player])
         for player in self.optimizer.locked_players:
             if player not in removed_players:
-                solver.add_constraint([players_dict[player]], None, SolverSign.EQ, 1)
+                force_variables.append(players_dict[player])
+        if force_variables:
+            solver.add_constraint(force_variables, None, SolverSign.EQ, len(force_variables))
+        if exclude_variables:
+            solver.add_constraint(exclude_variables, None, SolverSign.EQ, 0)
 
 
 class PositionsRule(OptimizerRule):
