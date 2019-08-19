@@ -1,5 +1,5 @@
 from __future__ import division
-from typing import Dict, Tuple, List, Iterable, Any, DefaultDict, Optional, TYPE_CHECKING
+from typing import Dict, Tuple, List, Iterable, Set, Any, DefaultDict, Optional, TYPE_CHECKING
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 from itertools import combinations, chain, permutations
@@ -32,8 +32,8 @@ def ratio(search_string, possible_match):
     return max([SequenceMatcher(None, search_string, part).ratio() for part in parts])
 
 
-def get_positions_for_optimizer(positions_list, has_multi_positional_players=True):
-    # type: (List[LineupPosition], bool) -> Dict[Tuple[str, ...], int]
+def get_positions_for_optimizer(positions_list, multi_positions_combinations=None):
+    # type: (List[LineupPosition], Set[Tuple[str, ...]]) -> Dict[Tuple[str, ...], int]
     """
     Convert positions list into dict for using in optimizer.
     """
@@ -44,14 +44,21 @@ def get_positions_for_optimizer(positions_list, has_multi_positional_players=Tru
             lambda p: len(p.positions) < len(key) and list_intersection(key, p.positions), positions_list
         )))
         positions[key] = min_value
-    if not has_multi_positional_players:
+    if not multi_positions_combinations:
         return positions
+    #  Create list of required combinations for consistency of multi-positions
+    for i in range(2, len(multi_positions_combinations)):
+        total_combinations = len(multi_positions_combinations)
+        for positions_tuple in combinations(multi_positions_combinations, i):
+            flatten_positions = tuple(sorted(set(chain.from_iterable(positions_tuple))))
+            multi_positions_combinations.add(flatten_positions)
+        if total_combinations == len(multi_positions_combinations):
+            break
+    multi_positions_combinations.update(positions.keys())
     for i in range(2, len(positions)):
         for positions_tuple in combinations(positions_counter.keys(), i):
-            flatten_positions = tuple(sorted(chain.from_iterable(positions_tuple)))
-            if len(flatten_positions) != len(set(flatten_positions)):
-                continue
-            if flatten_positions in positions:
+            flatten_positions = tuple(sorted(set(chain.from_iterable(positions_tuple))))
+            if flatten_positions in positions or flatten_positions not in multi_positions_combinations:
                 continue
             min_value = sum(positions[pos] for pos in positions_tuple)
             positions[flatten_positions] = min_value

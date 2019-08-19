@@ -13,6 +13,25 @@ from .utils import create_players
 
 
 class UtilsTestCase(unittest.TestCase):
+    def test_ratio(self):
+        threshold = 0.8
+        self.assertTrue(ratio('Blake Griffin', 'Blake Griffin') >= threshold)
+        self.assertTrue(ratio('griffin', 'Blake Griffin') >= threshold)
+        self.assertTrue(ratio('grifin', 'Blake Griffin') >= threshold)
+        self.assertFalse(ratio('Hood', 'Blake Griffin') >= threshold)
+
+    def test_list_intersection(self):
+        self.assertTrue(list_intersection(['PG'], ['SG', 'PG']))
+        self.assertTrue(list_intersection(['SG', 'PG'], ['PG']))
+        self.assertFalse(list_intersection(['PG'], ['SF', 'PF']))
+
+    def test_process_percents(self):
+        self.assertIsNone(process_percents(None))
+        self.assertEqual(process_percents(0.3), 0.3)
+        self.assertEqual(process_percents(30), 0.3)
+
+
+class PositionsConverterTestCase(unittest.TestCase):
     class TestSettings(settings.BaseSettings):
         positions = [
             LineupPosition('1', ('1',)),
@@ -24,34 +43,28 @@ class UtilsTestCase(unittest.TestCase):
             LineupPosition('all', ('1', '2', '3')),
         ]
 
-    def test_ratio(self):
-        threshold = 0.8
-        self.assertTrue(ratio('Blake Griffin', 'Blake Griffin') >= threshold)
-        self.assertTrue(ratio('griffin', 'Blake Griffin') >= threshold)
-        self.assertTrue(ratio('grifin', 'Blake Griffin') >= threshold)
-        self.assertFalse(ratio('Hood', 'Blake Griffin') >= threshold)
-
     def test_optimizer_positions_processing(self):
         optimizer = LineupOptimizer(self.TestSettings)
         positions = get_positions_for_optimizer(optimizer.settings.positions)
-        self.assertEqual(len(positions), 7)
+        self.assertEqual(len(positions), 5)
         self.assertEqual(positions[('1', )], 1)
         self.assertEqual(positions[('2', )], 1)
         self.assertEqual(positions[('3', )], 1)
         self.assertEqual(positions[('2', '3')], 4)
+        self.assertEqual(positions[('1', '2', '3')], 7)
+
+    def test_optimizer_positions_processing_with_multipositions(self):
+        optimizer = LineupOptimizer(self.TestSettings)
+        positions = get_positions_for_optimizer(
+            optimizer.settings.positions, {('1', '2'), ('2', '3'), ('1', '3')})
+        self.assertEqual(len(positions), 7)
+        self.assertEqual(positions[('1',)], 1)
+        self.assertEqual(positions[('2',)], 1)
+        self.assertEqual(positions[('3',)], 1)
+        self.assertEqual(positions[('2', '3')], 4)
         self.assertEqual(positions[('1', '2')], 2)
         self.assertEqual(positions[('1', '3')], 2)
         self.assertEqual(positions[('1', '2', '3')], 7)
-
-    def test_list_intersection(self):
-        self.assertTrue(list_intersection(['PG'], ['SG', 'PG']))
-        self.assertTrue(list_intersection(['SG', 'PG'], ['PG']))
-        self.assertFalse(list_intersection(['PG'], ['SF', 'PF']))
-
-    def test_process_percents(self):
-        self.assertIsNone(process_percents(None))
-        self.assertEqual(process_percents(0.3), 0.3)
-        self.assertEqual(process_percents(30), 0.3)
 
 
 class LineupBuildingTestCase(unittest.TestCase):

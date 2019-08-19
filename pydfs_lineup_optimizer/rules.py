@@ -118,7 +118,9 @@ class PositionsRule(OptimizerRule):
     def apply(self, solver, players_dict):
         optimizer = self.optimizer
         extra_positions = optimizer.players_with_same_position
-        positions = get_positions_for_optimizer(optimizer.settings.positions, optimizer.has_multi_positional_players)
+        positions_combinations = set([tuple(sorted(player.positions)) for player in players_dict.keys()
+                                      if len(player.positions) > 1])
+        positions = get_positions_for_optimizer(optimizer.settings.positions, positions_combinations)
         unique_positions = optimizer.available_positions
         players_by_positions = {
             position: {variable for player, variable in players_dict.items()
@@ -322,7 +324,9 @@ class LateSwapRule(OptimizerRule):
         for player in unswappable_players:
             solver.add_constraint([players_dict[player]], None, SolverSign.EQ, 1)
         # set remaining positions
-        positions = get_positions_for_optimizer(remaining_positions, self.optimizer.has_multi_positional_players)
+        positions_combinations = set([tuple(sorted(player.positions)) for player in players_dict.keys()
+                                      if len(player.positions) > 1])
+        positions = get_positions_for_optimizer(remaining_positions, positions_combinations)
         players_for_optimization = set()
         for position, places in positions.items():
             players_with_position = [variable for player, variable in players_dict.items()
@@ -456,4 +460,3 @@ class FanduelBaseballRosterRule(OptimizerRule):
         for team in self.optimizer.available_teams:
             players_from_team = [variable for player, variable in players_dict.items() if player.team == team]
             solver.add_constraint(players_from_team, None, SolverSign.LTE, self.MAXIMUM_HITTERS_FROM_ONE_TEAM)
-
