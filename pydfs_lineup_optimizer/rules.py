@@ -360,7 +360,11 @@ class TeamStacksRule(OptimizerRule):
         self.player_variables_by_teams = {}  # type: Dict[str, List]
 
     def apply(self, solver, players_dict):
-        players_by_teams = get_players_grouped_by_teams(players_dict.keys())
+        all_players = players_dict.keys()
+        for_positions = self.optimizer.team_stacks_for_positions
+        if for_positions:
+            all_players = [player for player in all_players if list_intersection(player.positions, for_positions)]
+        players_by_teams = get_players_grouped_by_teams(all_players)
         for team, players in players_by_teams.items():
             variables = [players_dict[player] for player in players]
             self.player_variables_by_teams[team] = variables

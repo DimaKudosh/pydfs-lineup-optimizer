@@ -327,7 +327,6 @@ class StacksRuleTestCase(unittest.TestCase):
     def test_stacks_correctness(self):
         stacks = [4, 2]
         self.optimizer.set_team_stacking(stacks)
-        self.optimizer.set_positions_for_same_team(['PG', 'SG', 'SF', 'PF'])
         lineup = next(self.optimizer.optimize(n=1))
         teams = Counter([player.team for player in lineup])
         self.assertListEqual(stacks, [stack[1] for stack in Counter(teams).most_common(len(stacks))])
@@ -341,6 +340,14 @@ class StacksRuleTestCase(unittest.TestCase):
         stacks = [5]
         with self.assertRaises(LineupOptimizerException):
             self.optimizer.set_team_stacking(stacks)
+
+    def test_stacks_for_positions(self):
+        position = 'PG'
+        stacks = [4]
+        self.optimizer.set_team_stacking(stacks, for_positions=[position])
+        lineup = next(self.optimizer.optimize(n=1))
+        all_position_players_teams = [player.team for player in lineup if position in player.positions]
+        self.assertEqual(len(set(all_position_players_teams)), 1)
 
 
 class PositionsForOpposingTeamTestCase(unittest.TestCase):

@@ -43,6 +43,7 @@ class LineupOptimizer(object):
         self.spacing_positions = None  # type: Optional[List[str]]
         self.spacing = None  # type: Optional[int]
         self.teams_exposures = None  # type: Optional[Dict[str, float]]
+        self.team_stacks_for_positions = None  # type: Optional[List[str]]
 
     @property
     def budget(self):
@@ -360,8 +361,8 @@ class LineupOptimizer(object):
         else:
             self.remove_rule(ProjectedOwnershipRule)
 
-    def set_team_stacking(self, stacks):
-        # type: (Optional[List[int]]) -> None
+    def set_team_stacking(self, stacks, for_positions=None):
+        # type: (Optional[List[int]], Optional[List[str]]) -> None
         if stacks:
             if sum(stacks) > self.settings.get_total_players():
                 raise LineupOptimizerException('Sum of stacks should be less than %d' % self.total_players)
@@ -374,6 +375,7 @@ class LineupOptimizer(object):
         else:
             self.remove_rule(TeamStacksRule)
         self._team_stacks = stacks
+        self.team_stacks_for_positions = for_positions
 
     def restrict_positions_for_opposing_team(self, first_team_positions, second_team_positions):
         # type: (List[str], List[str]) -> None

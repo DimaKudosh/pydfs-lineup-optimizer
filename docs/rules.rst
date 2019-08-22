@@ -89,10 +89,12 @@ Teams stacking
 --------------
 You can set how many players from same team will be in lineup, for this you can use `set_team_stacking` method.
 It accepts list with integers, each integer represents minimum number of players from same team, so you can stack multiple teams if you want.
+Also you can specify positions used in stack if you want.
 
 .. code-block:: python
 
     optimizer.set_team_stacking([3, 3])
+    optimizer.set_team_stacking([3, 3], for_positions=['1B', '2B', '3B', 'C', 'SS', 'OF'])
 
 Restrict players from opposing team
 -----------------------------------
