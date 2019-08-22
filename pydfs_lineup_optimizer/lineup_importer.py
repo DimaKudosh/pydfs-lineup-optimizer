@@ -32,4 +32,5 @@ class CSVImporter(object):
             'max_exposure': cls._parse_exposure(row.get('Max Exposure')),
             'min_exposure': cls._parse_exposure(row.get('Min Exposure')),
             'roster_order': int(roster_order) if roster_order else None,
+            'projected_ownership': cls._parse_exposure(row.get('Projected Ownership')),
         }
