@@ -15,6 +15,7 @@ Rules
 - Team stacking
 - Restricting players from opposing teams
 - Spacing for positions
+- Teams exposures
 
 Number of players from same team
 --------------------------------
@@ -28,11 +29,12 @@ It accepts dict where key is a team name and value is number of players for this
 Positions for same team
 -----------------------
 For setting positions for same team you should call `set_positions_for_same_team` method of optimizer.
-It accepts list with positions that must be selected from one team.
+It accepts list with positions that must be selected from one team. You can specify multiple positions stacks as well.
 
 .. code-block:: python
 
     optimizer.set_positions_for_same_team(['QB', 'WR', 'WR'])
+    optimizer.set_positions_for_same_team(['WR', 'WR', 'WR'], ['RB', 'RB'])
 
 
 Number of specific positions
@@ -87,10 +89,12 @@ Teams stacking
 --------------
 You can set how many players from same team will be in lineup, for this you can use `set_team_stacking` method.
 It accepts list with integers, each integer represents minimum number of players from same team, so you can stack multiple teams if you want.
+Also you can specify positions used in stack if you want.
 
 .. code-block:: python
 
     optimizer.set_team_stacking([3, 3])
+    optimizer.set_team_stacking([3, 3], for_positions=['1B', '2B', '3B', 'C', 'SS', 'OF'])
 
 Restrict players from opposing team
 -----------------------------------
@@ -124,3 +128,15 @@ For example if you want to restrict optimizer to select players within specific 
 
     Because dfs sites doesn't provide information about batters hit order you should add additional column "Roster Order" where you can set this order,
     or specify it in Player objects using roster_order attribute. In other case this rule will be ignored.
+
+Teams exposures
+---------------
+
+This rule adds maximum exposures for teams used in stacking.
+It only works with `set_team_stacking` or `set_positions_for_same_team` rules.
+
+.. code-block:: python
+
+    optimizer.set_teams_max_exposure({'BOS': 0.3, 'LAL': 0.4})
+    # Set same max exposures for all teams
+    optimizer.set_teams_max_exposure({team: 0.2 for team in optimizer.available_teams})

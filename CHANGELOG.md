@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.6.0]
+- Added ability to specify multiple positions stacks in positions for same team rule
+- Added teams exposure rule
+- Added ability to create stacks for specific positions
+- Added parsing of min exposure and projected ownership from csv
+- Improved performance for positions rule for multi-positional sports
+- Improved performance for max repeating players rule
+- Decreased number of created solver constraints for exposures rules
+
 ## [v2.5.1]
 - Fixed optimization for roster spacing rule
 - Fixed repeated lineups issue when optimizing in random mode

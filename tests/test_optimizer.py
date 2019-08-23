@@ -79,7 +79,7 @@ class OptimizerMethodsTestCase(unittest.TestCase):
 
     def test_get_optimizer(self):
         optimizer = get_optimizer(Site.YAHOO, Sport.FOOTBALL)
-        self.assertEqual(optimizer._settings, YahooFootballSettings)
+        self.assertIsInstance(optimizer._settings, YahooFootballSettings)
         with self.assertRaises(NotImplementedError):
             get_optimizer(Site.DRAFTKINGS, 'Some sport')
 

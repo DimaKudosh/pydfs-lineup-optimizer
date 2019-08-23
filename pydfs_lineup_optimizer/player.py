@@ -2,7 +2,7 @@ from __future__ import division
 from collections import namedtuple
 from datetime import datetime
 from typing import List, Optional
-from pytz import timezone
+from pydfs_lineup_optimizer.utils import process_percents
 
 
 GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at', 'game_started'])
@@ -56,7 +56,7 @@ class Player(object):
     @max_exposure.setter
     def max_exposure(self, max_exposure):
         # type: (Optional[float]) -> None
-        self._max_exposure = max_exposure / 100 if max_exposure and max_exposure > 1 else max_exposure
+        self._max_exposure = process_percents(max_exposure)
 
     @property
     def min_exposure(self):
@@ -66,7 +66,7 @@ class Player(object):
     @min_exposure.setter
     def min_exposure(self, min_exposure):
         # type: (Optional[float]) -> None
-        self._min_exposure = min_exposure / 100 if min_exposure and min_exposure > 1 else min_exposure
+        self._min_exposure = process_percents(min_exposure)
 
     @property
     def projected_ownership(self):
@@ -76,8 +76,7 @@ class Player(object):
     @projected_ownership.setter
     def projected_ownership(self, projected_ownership):
         # type: (Optional[float]) -> None
-        self._projected_ownership = projected_ownership / 100 if projected_ownership and projected_ownership > 1 \
-            else projected_ownership
+        self._projected_ownership = process_percents(projected_ownership)
 
     @property
     def full_name(self):

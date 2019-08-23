@@ -323,6 +323,15 @@
       "team": "LAC",
       "salary": 4600,
       "fppg": 16.5
+    },
+    {
+      "id": "0000037",
+      "first_name": "Lou",
+      "last_name": "Williams",
+      "positions": ["PG", "SG"],
+      "team": "LAC",
+      "salary": 11600,
+      "fppg": 26.1
     }
   ]
 }

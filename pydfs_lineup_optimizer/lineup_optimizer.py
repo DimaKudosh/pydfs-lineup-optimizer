@@ -1,6 +1,6 @@
 from __future__ import division
-from collections import Counter, OrderedDict
-from typing import FrozenSet, Tuple, Type, Generator, Set
+from collections import OrderedDict
+from typing import FrozenSet, Type, Generator, cast
 from pydfs_lineup_optimizer.solvers import PuLPSolver, SolverException
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
     LineupOptimizerIncorrectPositionName
@@ -8,7 +8,7 @@ from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.player import LineupPlayer, GameInfo
-from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions
+from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions, process_percents
 from pydfs_lineup_optimizer.rules import *
 
 
@@ -19,7 +19,7 @@ BASE_RULES = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamR
 class LineupOptimizer(object):
     def __init__(self, settings, solver=PuLPSolver):
         # type: (Type[BaseSettings], Type[Solver]) -> None
-        self._settings = settings
+        self._settings = settings()
         self._csv_importer = None  # type: Optional[Type[CSVImporter]]
         self._rules = BASE_RULES.copy()  # type: Set[Type[OptimizerRule]]
         self._players = []  # type: List[Player]
@@ -32,7 +32,7 @@ class LineupOptimizer(object):
         self._max_deviation = 0.12
         self._players_from_one_team = {}  # type: Dict[str, int]
         self._players_with_same_position = {}  # type: Dict[str, int]
-        self._positions_from_same_team = []  # type: List[str]
+        self._positions_stacks_from_same_team = None  # type: Optional[Tuple[List[str], ...]]
         self._min_salary_cap = None  # type: Optional[float]
         self._max_repeating_players = None  # type: Optional[int]
         self._solver_class = solver
@@ -42,6 +42,8 @@ class LineupOptimizer(object):
         self._opposing_teams_position_restriction = None  # type: Optional[Tuple[List[str], List[str]]]
         self.spacing_positions = None  # type: Optional[List[str]]
         self.spacing = None  # type: Optional[int]
+        self.teams_exposures = None  # type: Optional[Dict[str, float]]
+        self.team_stacks_for_positions = None  # type: Optional[List[str]]
 
     @property
     def budget(self):
@@ -69,9 +71,9 @@ class LineupOptimizer(object):
         return self._settings.max_from_one_team
 
     @property
-    def positions_from_same_team(self):
-        # type: () -> List[str]
-        return self._positions_from_same_team
+    def positions_stacks_from_same_team(self):
+        # type: () -> Optional[Tuple[List[str], ...]]
+        return self._positions_stacks_from_same_team
 
     @property
     def players_from_one_team(self):
@@ -130,7 +132,7 @@ class LineupOptimizer(object):
 
     @property
     def settings(self):
-        # type: () -> Type[BaseSettings]
+        # type: () -> BaseSettings
         return self._settings
 
     @property
@@ -148,16 +150,11 @@ class LineupOptimizer(object):
         # type: () -> FrozenSet[GameInfo]
         return frozenset(player.game_info for player in self.players if player.game_info)
 
-    @property
-    def has_multi_positional_players(self):
-        # type: () -> bool
-        return any([len(player.positions) > 1 for player in self.players])
-
     def reset_lineup(self):
         self._lineup = []
         self._players_with_same_position = {}
         self._players_from_one_team = {}
-        self._positions_from_same_team = []
+        self._positions_stacks_from_same_team = None
 
     def set_deviation(self, min_deviation, max_deviation):
         # type: (float, float) -> None
@@ -322,19 +319,25 @@ class LineupOptimizer(object):
             self._check_position_constraint(pos)
         self._players_with_same_position = positions
 
-    def set_positions_for_same_team(self, positions):
-        # type: (Optional[List[str]]) -> None
-        if positions is not None:
-            if self.max_from_one_team and len(positions) > self.max_from_one_team:
+    def set_positions_for_same_team(self, *positions_stacks):
+        # type: (*List[str]) -> None
+        if positions_stacks and positions_stacks[0] is not None:
+            max_allowed_players = self.settings.get_total_players()
+            if sum([len(positions) for positions in positions_stacks]) > max_allowed_players:
+                raise LineupOptimizerException('You can\'t set more than %d players' % max_allowed_players)
+            if self.max_from_one_team and \
+                    any(len(positions) > self.max_from_one_team for positions in positions_stacks):
                 raise LineupOptimizerException('You can\'t set more than %s players from one team.' %
                                                self.max_from_one_team)
-            positions = [position.upper() for position in positions]
-            for position, num_of_players in Counter(positions).items():
-                self._check_position_constraint(position)
+            for positions in positions_stacks:
+                positions = [position.upper() for position in positions]
+                for position, num_of_players in Counter(positions).items():
+                    self._check_position_constraint(position)
             self.add_new_rule(FromSameTeamByPositionsRule)
+            self._positions_stacks_from_same_team = positions_stacks
         else:
             self.remove_rule(FromSameTeamByPositionsRule)
-        self._positions_from_same_team = positions or []
+            self._positions_stacks_from_same_team = None
 
     def set_max_repeating_players(self, max_repeating_players):
         # type: (int) -> None
@@ -358,8 +361,8 @@ class LineupOptimizer(object):
         else:
             self.remove_rule(ProjectedOwnershipRule)
 
-    def set_team_stacking(self, stacks):
-        # type: (Optional[List[int]]) -> None
+    def set_team_stacking(self, stacks, for_positions=None):
+        # type: (Optional[List[int]], Optional[List[str]]) -> None
         if stacks:
             if sum(stacks) > self.settings.get_total_players():
                 raise LineupOptimizerException('Sum of stacks should be less than %d' % self.total_players)
@@ -372,6 +375,7 @@ class LineupOptimizer(object):
         else:
             self.remove_rule(TeamStacksRule)
         self._team_stacks = stacks
+        self.team_stacks_for_positions = for_positions
 
     def restrict_positions_for_opposing_team(self, first_team_positions, second_team_positions):
         # type: (List[str], List[str]) -> None
@@ -390,6 +394,17 @@ class LineupOptimizer(object):
         self.spacing_positions = positions
         self.spacing = spacing
         self.add_new_rule(RosterSpacingRule)
+
+    def set_teams_max_exposure(self, teams_exposures):
+        # type: (Dict[str, float]) -> None
+        processed_exposures = {}  # type: Dict[str, float]
+        for team, raw_exposure in teams_exposures.items():
+            if team not in self.available_teams:
+                raise LineupOptimizerException('Incorrect team: %s' % team)
+            if raw_exposure is not None:
+                exposure = process_percents(raw_exposure)
+                processed_exposures[team] = cast(float, exposure)
+        self.teams_exposures = processed_exposures
 
     def optimize(self, n, max_exposure=None, randomness=False, with_injured=False):
         # type: (int, Optional[float], bool, bool) -> Generator[Lineup, None, None]
