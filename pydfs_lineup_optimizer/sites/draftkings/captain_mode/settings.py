@@ -3,6 +3,16 @@ from pydfs_lineup_optimizer.constants import Sport, Site
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 
 
+POSITIONS_WITH_FLEX = [
+    LineupPosition('CPT', ('CPT',)),
+    LineupPosition('FLEX', ('FLEX',)),
+    LineupPosition('FLEX', ('FLEX',)),
+    LineupPosition('FLEX', ('FLEX',)),
+    LineupPosition('FLEX', ('FLEX',)),
+    LineupPosition('FLEX', ('FLEX',)),
+]
+
+
 class DraftKingsCaptainModeSettings(BaseSettings):
     site = Site.DRAFTKINGS_CAPTAIN_MODE
     budget = 50000
@@ -20,14 +30,7 @@ class DraftKingsCaptainModeSettings(BaseSettings):
 @SitesRegistry.register_settings
 class DraftKingsCaptainModeFootballSettings(DraftKingsCaptainModeSettings):
     sport = Sport.FOOTBALL
-    positions = [
-        LineupPosition('CPT', ('CPT', )),
-        LineupPosition('FLEX', ('FLEX', )),
-        LineupPosition('FLEX', ('FLEX', )),
-        LineupPosition('FLEX', ('FLEX', )),
-        LineupPosition('FLEX', ('FLEX', )),
-        LineupPosition('FLEX', ('FLEX', )),
-    ]
+    positions = POSITIONS_WITH_FLEX.copy()
 
 
 @SitesRegistry.register_settings
@@ -58,3 +61,9 @@ class DraftKingsCaptainModeBaseballSettings(DraftKingsCaptainModeSettings):
 @SitesRegistry.register_settings
 class DraftKingsCaptainModeWNBASettings(DraftKingsCaptainModeSettings):
     sport = Sport.WNBA
+
+
+@SitesRegistry.register_settings
+class DraftLingsCaptainModeSoccerSettings(DraftKingsCaptainModeSettings):
+    sport = Sport.SOCCER
+    positions = POSITIONS_WITH_FLEX.copy()
