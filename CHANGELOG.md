@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.6.1]
+- Added soccer for DK Captain Mode
+- Added Fanduel minimum teams restriction
+- Fixed export for DK
+
 ## [v2.6.0]
 - Added ability to specify multiple positions stacks in positions for same team rule
 - Added teams exposure rule
