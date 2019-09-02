@@ -503,3 +503,31 @@ class TestTeamStacksExposureRule(unittest.TestCase):
     def test_incorrect_team_name(self):
         with self.assertRaises(LineupOptimizerException):
             self.optimizer.set_teams_max_exposure({'WRONG TEAM': 0.5})
+
+
+class TestFanduelMinimumTeamsTestCase(unittest.TestCase):
+    def setUp(self):
+        self.players = [
+            Player('1', '1', '1', ['P'], 'HOU', 3000, 10),
+            Player('2', '2', '2', ['P'], 'BOS', 3000, 20),
+            Player('3', '3', '3', ['C'], 'BOS', 3000, 30),
+            Player('4', '4', '4', ['SS'], 'HOU', 3000, 30),
+            Player('5', '5', '5', ['OF'], 'HOU', 3000, 30),
+            Player('6', '6', '6', ['OF'], 'HOU', 3000, 30),
+            Player('7', '7', '7', ['OF'], 'HOU', 3000, 30),
+            Player('8', '8', '8', ['1B'], 'BOS', 3000, 30),
+            Player('9', '9', '9', ['2B'], 'BOS', 3000, 5),
+            Player('10', '10', '10', ['3B'], 'BOS', 3000, 5),
+            Player('11', '11', '11', ['P'], 'ARI', 3000, 5),
+        ]
+        self.optimizer = get_optimizer(Site.FANDUEL, Sport.BASEBALL)
+        self.optimizer.load_players(self.players)
+
+    def test_minimum_teams(self):
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len(set(player.team for player in lineup)), 3)
+
+    def test_minimum_teams_with_stacking(self):
+        self.optimizer.set_team_stacking([5, 4])
+        with self.assertRaises(LineupOptimizerException):
+            next(self.optimizer.optimize(1))

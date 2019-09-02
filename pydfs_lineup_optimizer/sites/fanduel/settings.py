@@ -2,13 +2,14 @@ from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.constants import Sport, Site
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 from pydfs_lineup_optimizer.lineup_printer import DropLowestLineupPrinter
-from pydfs_lineup_optimizer.rules import FanduelBaseballRosterRule
+from pydfs_lineup_optimizer.rules import FanduelBaseballRosterRule, FanduelMinimumTeamsRule
 
 
 class FanDuelSettings(BaseSettings):
     site = Site.FANDUEL
     budget = 60000
     max_from_one_team = 4
+    extra_rules = [FanduelMinimumTeamsRule]
 
 
 @SitesRegistry.register_settings
@@ -66,7 +67,7 @@ class FanDuelBaseballSettings(FanDuelSettings):
     max_from_one_team = 5
     sport = Sport.BASEBALL
     budget = 35000
-    extra_rules = [FanduelBaseballRosterRule]
+    extra_rules = [FanduelBaseballRosterRule, FanduelMinimumTeamsRule]
     positions = [
         LineupPosition('P', ('P',)),
         LineupPosition('C/1B', ('C', '1B')),
@@ -84,6 +85,7 @@ class FanDuelBaseballSettings(FanDuelSettings):
 class FanDuelWnbaSettings(FanDuelSettings):
     sport = Sport.WNBA
     budget = 40000
+    extra_rules = []
     positions = [
         LineupPosition('G', ('G', )),
         LineupPosition('G', ('G', )),

@@ -465,3 +465,13 @@ class FanduelBaseballRosterRule(OptimizerRule):
         for team in self.optimizer.available_teams:
             players_from_team = [variable for player, variable in players_dict.items() if player.team == team]
             solver.add_constraint(players_from_team, None, SolverSign.LTE, self.MAXIMUM_HITTERS_FROM_ONE_TEAM)
+
+
+class FanduelMinimumTeamsRule(OptimizerRule):
+    MINIMUM_TEAMS = 3
+
+    def apply(self, solver, players_dict):
+        for teams in combinations(self.optimizer.available_teams, self.MINIMUM_TEAMS - 1):
+            players_from_teams = [variable for player, variable in players_dict.items() if player.team in teams]
+            solver.add_constraint(players_from_teams, None, SolverSign.LTE,
+                                  self.optimizer.settings.get_total_players() - 1)
