@@ -42,11 +42,11 @@ class DraftKingsFootballSettings(DraftKingsSettings):
     sport = Sport.FOOTBALL
     positions = [
         LineupPosition('QB', ('QB',)),
-        LineupPosition('WR1', ('WR',)),
-        LineupPosition('WR2', ('WR',)),
-        LineupPosition('WR3', ('WR',)),
-        LineupPosition('RB1', ('RB',)),
-        LineupPosition('RB2', ('RB',)),
+        LineupPosition('RB', ('RB',)),
+        LineupPosition('RB', ('RB',)),
+        LineupPosition('WR', ('WR',)),
+        LineupPosition('WR', ('WR',)),
+        LineupPosition('WR', ('WR',)),
         LineupPosition('TE', ('TE',)),
         LineupPosition('FLEX', ('WR', 'RB', 'TE')),
         LineupPosition('DST', ('DST',))
