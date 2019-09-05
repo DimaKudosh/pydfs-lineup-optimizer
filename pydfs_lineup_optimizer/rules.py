@@ -364,6 +364,7 @@ class TeamStacksRule(OptimizerRule):
         for_positions = self.optimizer.team_stacks_for_positions
         if for_positions:
             all_players = [player for player in all_players if list_intersection(player.positions, for_positions)]
+            all_players.strip('P')
         players_by_teams = get_players_grouped_by_teams(all_players)
         for team, players in players_by_teams.items():
             variables = [players_dict[player] for player in players]
