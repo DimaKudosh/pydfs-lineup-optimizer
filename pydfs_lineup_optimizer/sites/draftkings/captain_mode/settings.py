@@ -30,7 +30,7 @@ class DraftKingsCaptainModeSettings(BaseSettings):
 @SitesRegistry.register_settings
 class DraftKingsCaptainModeFootballSettings(DraftKingsCaptainModeSettings):
     sport = Sport.FOOTBALL
-    positions = POSITIONS_WITH_FLEX.copy()
+    positions = POSITIONS_WITH_FLEX[:]
 
 
 @SitesRegistry.register_settings
@@ -66,4 +66,4 @@ class DraftKingsCaptainModeWNBASettings(DraftKingsCaptainModeSettings):
 @SitesRegistry.register_settings
 class DraftLingsCaptainModeSoccerSettings(DraftKingsCaptainModeSettings):
     sport = Sport.SOCCER
-    positions = POSITIONS_WITH_FLEX.copy()
+    positions = POSITIONS_WITH_FLEX[:]
