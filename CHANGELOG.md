@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.6.2]
+- Fixed python 2.7 support
+
 ## [v2.6.1]
 - Added soccer for DK Captain Mode
 - Added Fanduel minimum teams restriction
