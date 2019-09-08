@@ -1,4 +1,5 @@
 import csv
+import json
 from typing import Iterable, Callable
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import LineupPlayer
@@ -36,3 +37,37 @@ class CSVLineupExporter(LineupExporter):
                 row.append(str(lineup.salary_costs))
                 row.append(str(lineup.fantasy_points_projection))
                 lineup_writer.writerow(row)
+
+
+class JSONLineupExporter(LineupExporter):
+    def export(self):
+        totalLineups = []
+
+        for lineup in enumerate(self.lineups):
+            lineupList = []
+
+            # Generate players JSON object
+            for player in lineup.lineup:
+                playerJSON = {
+                    "id": player.id,
+                    "firstName": player.first_name,
+                    "lastName": player.last_name,
+                    "positions": player.positions,
+                    "team": player.team,
+                    "salary": player.salary,
+                    "fppg": player.fppg,
+                    "gameInfo": player.game_info
+                }
+
+                lineupList.append(playerJSON)
+
+            # Generate lineup JSON object
+            lineupJSON = {
+                "players": lineupList,
+                "totalSalary": lineup.salary_costs,
+                "totalFppg": lineup.fantasy_points_projection
+            }
+
+            totalLineups.append(lineupJSON)
+
+        return json.dumps(totalLineups)
