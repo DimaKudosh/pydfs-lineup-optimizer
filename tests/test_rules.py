@@ -531,3 +531,28 @@ class TestFanduelMinimumTeamsTestCase(unittest.TestCase):
         self.optimizer.set_team_stacking([5, 4])
         with self.assertRaises(LineupOptimizerException):
             next(self.optimizer.optimize(1))
+
+
+class TestFanduelSingleGameFootballTestCase(unittest.TestCase):
+    def setUp(self):
+        self.flex_players = [
+            Player('1', '1', '1', ['QB'], 'HOU', 3000, 30),
+            Player('2', '2', '2', ['QB'], 'BOS', 3000, 30),
+            Player('3', '3', '3', ['TE'], 'BOS', 3000, 10),
+            Player('4', '4', '4', ['WR'], 'HOU', 3000, 15),
+            Player('5', '5', '5', ['RB'], 'HOU', 3000, 20),
+        ]
+        self.mvp_players = []
+        for player in self.flex_players:
+            mvp = deepcopy(player)
+            mvp.is_mvp = True
+            mvp.fppg *= 1.5
+            self.mvp_players.append(mvp)
+        self.all_players = self.flex_players + self.mvp_players
+        self.optimizer = get_optimizer(Site.FANDUEL_SINGLE_GAME, Sport.FOOTBALL)
+        self.optimizer.load_players(self.all_players)
+
+    def test_minimum_teams(self):
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual([player.positions[0] for player in lineup if player.is_mvp][0], 'QB')
+        self.assertEqual(len([player for player in lineup if 'QB' in player.positions]), 2)

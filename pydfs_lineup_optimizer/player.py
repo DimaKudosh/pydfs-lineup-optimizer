@@ -41,6 +41,7 @@ class Player(object):
         self._projected_ownership = None  # type: Optional[float]
         self.projected_ownership = projected_ownership
         self.roster_order = roster_order
+        self.is_mvp = False  # type: bool
 
     def __repr__(self):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)

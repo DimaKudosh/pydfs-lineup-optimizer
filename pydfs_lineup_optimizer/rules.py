@@ -475,3 +475,15 @@ class FanduelMinimumTeamsRule(OptimizerRule):
             players_from_teams = [variable for player, variable in players_dict.items() if player.team in teams]
             solver.add_constraint(players_from_teams, None, SolverSign.LTE,
                                   self.optimizer.settings.get_total_players() - 1)
+
+
+class FanduelSingleGameMVPRule(OptimizerRule):
+    def apply(self, solver, players_dict):
+        variables = [var for player, var in players_dict.items() if player.is_mvp]
+        solver.add_constraint(variables, None, SolverSign.EQ, 1)
+
+
+class FanduelSingleGameMaxQBRule(OptimizerRule):
+    def apply(self, solver, players_dict):
+        variables = [var for player, var in players_dict.items() if 'QB' in player.positions]
+        solver.add_constraint(variables, None, SolverSign.LTE, 2)

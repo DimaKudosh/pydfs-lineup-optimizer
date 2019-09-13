@@ -74,7 +74,7 @@ def link_players_with_positions(players, positions):
     single_position_players = []  # type: List['Player']
     multi_positions_players = []  # type: List['Player']
     players_with_positions = {}  # type: Dict['Player', LineupPosition]
-    for player in players:
+    for player in sorted(players, key=lambda p: p.is_mvp, reverse=True):
         if len(player.positions) == 1:
             single_position_players.append(player)
         else:
