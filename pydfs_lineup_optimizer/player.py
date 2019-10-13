@@ -18,6 +18,7 @@ class Player(object):
                  salary,  # type: float
                  fppg,  # type: float
                  is_injured=False,  # type: bool
+                 status=None,
                  max_exposure=None,  # type: Optional[float]
                  min_exposure=None,  # type: Optional[float]
                  projected_ownership=None,  # type: Optional[float]
@@ -33,6 +34,7 @@ class Player(object):
         self.salary = salary
         self.fppg = fppg
         self.is_injured = is_injured
+        self.status = status
         self.game_info = game_info
         self._max_exposure = None  # type: Optional[float]
         self.max_exposure = max_exposure
