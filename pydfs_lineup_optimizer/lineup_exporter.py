@@ -51,7 +51,7 @@ class JSONLineupExporter(LineupExporter):
                 playerJSON = {
                    "firstName": player.first_name,
                     "fppg": player.fppg,
-                    "gameInfo": player.game_info
+                    "gameInfo": player.game_info,
                     "id": player.id,
                     "lastName": player.last_name,
                     "positions": '/'.join(player.positions),
