@@ -44,32 +44,27 @@ class JSONLineupExporter(LineupExporter):
         totalLineups = {
             "lineups": []
         }
-
         for index, lineup in enumerate(self.lineups):
             lineupList = []
-
             # Generate players JSON object
             for player in lineup.lineup:
                 playerJSON = {
-                    "id": player.id,
-                    "firstName": player.first_name,
-                    "lastName": player.last_name,
-                    "positions": player.positions,
-                    "team": player.team,
-                    "salary": player.salary,
+                   "firstName": player.first_name,
                     "fppg": player.fppg,
                     "gameInfo": player.game_info
+                    "id": player.id,
+                    "lastName": player.last_name,
+                    "positions": '/'.join(player.positions),
+                    "salary": player.salary,
+                    "status": player.status,
+                    "team": player.team,
                 }
-
                 lineupList.append(playerJSON)
-
             # Generate lineup JSON object
             lineupJSON = {
                 "players": lineupList,
                 "totalSalary": lineup.salary_costs,
                 "totalFppg": lineup.fantasy_points_projection
             }
-
             totalLineups["lineups"].append(lineupJSON)
-
         return totalLineups
