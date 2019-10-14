@@ -49,10 +49,11 @@ class JSONLineupExporter(LineupExporter):
             # Generate players JSON object
             for player in lineup.lineup:
                 playerJSON = {
-                   "firstName": player.first_name,
+                    "firstName": player.first_name,
                     "fppg": player.fppg,
                     "gameInfo": player.game_info,
                     "id": player.id,
+                    "isLocked": player.is_locked,
                     "lastName": player.last_name,
                     "positions": '/'.join(player.positions),
                     "salary": player.salary,
