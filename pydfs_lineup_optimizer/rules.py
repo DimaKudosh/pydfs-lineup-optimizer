@@ -15,6 +15,16 @@ if TYPE_CHECKING:  # pragma: no cover
     from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 
 
+__all__ = [
+    'OptimizerRule', 'NormalObjective', 'RandomObjective', 'UniqueLineupRule', 'TotalPlayersRule',
+    'LineupBudgetRule', 'LockedPlayersRule', 'PositionsRule', 'TeamMatesRule', 'MaxFromOneTeamRule',
+    'MinSalaryCapRule', 'FromSameTeamByPositionsRule', 'RemoveInjuredRule', 'MaxRepeatingPlayersRule',
+    'ProjectedOwnershipRule', 'UniquePlayerRule', 'LateSwapRule', 'TeamStacksRule',
+    'RestrictPositionsForOpposingTeams', 'RosterSpacingRule', 'FanduelBaseballRosterRule',
+    'FanduelMinimumTeamsRule', 'FanduelSingleGameMVPRule', 'FanduelSingleGameMaxQBRule',
+]
+
+
 class OptimizerRule(object):
     def __init__(self, optimizer, params):
         # type: ('LineupOptimizer', Dict[str, Any]) -> None
@@ -205,8 +215,9 @@ class FromSameTeamByPositionsRule(OptimizerRule):
             for team_name, team_players in players_by_teams.items():
                 all_players_combinations = set()
                 players_by_positions = []
-                for position in stack:
-                    players_by_positions.append([player for player in team_players if position in player.positions])
+                for positions in stack:
+                    players_by_positions.append([player for player in team_players
+                                                 if list_intersection(player.positions, positions)])
                 # Create all possible players combinations for stack
                 for players_combination in product(*players_by_positions):
                     # Remove combinations with duplicated players
@@ -223,7 +234,7 @@ class FromSameTeamByPositionsRule(OptimizerRule):
         combination_variables_by_team = defaultdict(list)  # type: Dict[str, List]
         for stack, total_stacks in self.stacks_dict.items():
             stack_variables = []
-            variable_prefix = 'rules_%s' % '_'.join(stack)
+            variable_prefix = 'rules_%s' % '_'.join(str(stack))
             for team_name, variables in self.players_combinations_by_team[stack].items():
                 if exclude_teams and team_name in exclude_teams:
                     for combination_variables in variables:
@@ -245,9 +256,9 @@ class FromSameTeamByPositionsRule(OptimizerRule):
         all_teams_used_in_stacks = set()
         for stack in self.stacks_dict.keys():
             teams_used_in_stack = teams.copy()
-            for position in stack:
+            for positions in stack:
                 teams_used_in_stack = teams_used_in_stack.intersection(
-                    set([player.team for player in lineup if position in player.positions])
+                    set([player.team for player in lineup if list_intersection(positions, player.positions)])
                 )
             all_teams_used_in_stacks.update(teams_used_in_stack)
         return all_teams_used_in_stacks

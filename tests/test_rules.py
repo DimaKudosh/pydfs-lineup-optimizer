@@ -126,12 +126,11 @@ class TestPositionsFromSameTeamTestCase(unittest.TestCase):
             Player('5', 'p5', 'p5', ['C'], 'team5', 10, 200),
             Player('6', 'p6', 'p6', ['PG', 'SG'], 'team6', 10, 200),
             Player('7', 'p7', 'p7', ['SF', 'PF'], 'team7', 10, 200),
-            Player('8', 'p8', 'p8', ['PG', 'SG', 'SF'], 'team8', 10, 200),
-            Player('9', 'p9', 'p9', ['SF', 'PF'], self.second_team, 10, 2),
-            Player('10', 'p10', 'p10', ['PG', 'SG', 'SF'], self.second_team, 10, 2),
-            Player('11', 'p11', 'p11', ['C'], self.first_team, 10, 2),
-            Player('12', 'p12', 'p12', ['SF'], self.first_team, 10, 2),
-            Player('13', 'p13', 'p13', ['PF', 'C'], self.first_team, 10, 2),
+            Player('8', 'p8', 'p8', ['SF', 'PF'], self.second_team, 10, 2),
+            Player('9', 'p9', 'p9', ['PG', 'SG', 'SF'], self.second_team, 10, 2),
+            Player('10', 'p10', 'p10', ['C'], self.first_team, 10, 2),
+            Player('11', 'p11', 'p11', ['SF'], self.first_team, 10, 2),
+            Player('12', 'p12', 'p12', ['PF', 'C'], self.first_team, 10, 2),
         ]
         self.optimizer.load_players(self.players)
 
@@ -162,6 +161,24 @@ class TestPositionsFromSameTeamTestCase(unittest.TestCase):
     def test_positions_stack_greater_than_max_from_one_team(self):
         with self.assertRaises(LineupOptimizerException):
             self.optimizer.set_positions_for_same_team(['PG', 'PG', 'SG', 'SG', 'SF', 'PF', 'C'])
+
+    def test_incorrect_position_names(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_positions_for_same_team(['G'])
+
+    def test_empty_positions_stacks_tuple(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_positions_for_same_team([tuple()])
+
+    def test_positions_from_same_team_with_combo_position(self):
+        self.optimizer.set_positions_for_same_team(['PG', ('SF', 'C')])
+        lineups = list(self.optimizer.optimize(2))
+        for stack in [('PG', 'SF'), ('PG', 'C')]:
+            players_in_stack = max([
+                len([p for p in lineup if p.team == self.first_team and list_intersection(p.positions, stack)])
+                for lineup in lineups
+            ])
+            self.assertEqual(players_in_stack, 2)
 
 
 class TestMaxFromOneTeamTestCase(unittest.TestCase):

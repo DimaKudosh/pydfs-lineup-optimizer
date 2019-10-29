@@ -1,14 +1,16 @@
 from __future__ import division
 from collections import OrderedDict
-from typing import FrozenSet, Type, Generator, cast
-from pydfs_lineup_optimizer.solvers import PuLPSolver, SolverException
+from itertools import chain
+from typing import FrozenSet, Type, Generator, Tuple, Union, Optional, List, Dict, Set, cast
+from pydfs_lineup_optimizer.lineup import Lineup
+from pydfs_lineup_optimizer.solvers import Solver, PuLPSolver, SolverException
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
     LineupOptimizerIncorrectPositionName
 from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
-from pydfs_lineup_optimizer.player import LineupPlayer, GameInfo
-from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions, process_percents
+from pydfs_lineup_optimizer.player import Player, LineupPlayer, GameInfo
+from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions, process_percents, get_remaining_positions
 from pydfs_lineup_optimizer.rules import *
 
 
@@ -32,7 +34,7 @@ class LineupOptimizer(object):
         self._max_deviation = 0.12
         self._players_from_one_team = {}  # type: Dict[str, int]
         self._players_with_same_position = {}  # type: Dict[str, int]
-        self._positions_stacks_from_same_team = None  # type: Optional[Tuple[List[str], ...]]
+        self._positions_stacks_from_same_team = None  # type: Optional[Tuple[List[Tuple[str, ...]], ...]]
         self._min_salary_cap = None  # type: Optional[float]
         self._max_repeating_players = None  # type: Optional[int]
         self._solver_class = solver
@@ -72,7 +74,7 @@ class LineupOptimizer(object):
 
     @property
     def positions_stacks_from_same_team(self):
-        # type: () -> Optional[Tuple[List[str], ...]]
+        # type: () -> Optional[Tuple[List[Tuple[str, ...]], ...]]
         return self._positions_stacks_from_same_team
 
     @property
@@ -320,21 +322,26 @@ class LineupOptimizer(object):
         self._players_with_same_position = positions
 
     def set_positions_for_same_team(self, *positions_stacks):
-        # type: (*List[str]) -> None
+        # type: (*List[Union[str, Tuple[str, ...]]]) -> None
         if positions_stacks and positions_stacks[0] is not None:
-            max_allowed_players = self.settings.get_total_players()
-            if sum([len(positions) for positions in positions_stacks]) > max_allowed_players:
-                raise LineupOptimizerException('You can\'t set more than %d players' % max_allowed_players)
+            formatted_positions_stacks = tuple(
+                [cast(Tuple[str, ...], (position, ) if isinstance(position, str) else tuple(position))
+                 for position in stack] for stack in positions_stacks
+            )
+            for stack in formatted_positions_stacks:
+                if not all(stack):
+                    raise LineupOptimizerException('Positions stack can\'t be empty')
+            total_players = self.settings.get_total_players()
+            if sum([len(stack) for stack in formatted_positions_stacks]) > total_players:
+                raise LineupOptimizerException('You can\'t set more than %d players' % total_players)
             if self.max_from_one_team and \
-                    any(len(positions) > self.max_from_one_team for positions in positions_stacks):
+                    any(len(stack) > self.max_from_one_team for stack in formatted_positions_stacks):
                 raise LineupOptimizerException('You can\'t set more than %s players from one team.' %
                                                self.max_from_one_team)
-            for positions in positions_stacks:
-                positions = [position.upper() for position in positions]
-                for position, num_of_players in Counter(positions).items():
-                    self._check_position_constraint(position)
+            for position in set(chain.from_iterable(chain.from_iterable(formatted_positions_stacks))):
+                self._check_position_constraint(position)
             self.add_new_rule(FromSameTeamByPositionsRule)
-            self._positions_stacks_from_same_team = positions_stacks
+            self._positions_stacks_from_same_team = formatted_positions_stacks
         else:
             self.remove_rule(FromSameTeamByPositionsRule)
             self._positions_stacks_from_same_team = None
