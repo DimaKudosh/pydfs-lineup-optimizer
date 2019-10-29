@@ -573,3 +573,37 @@ class TestFanduelSingleGameFootballTestCase(unittest.TestCase):
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual([player.positions[0] for player in lineup if player.is_mvp][0], 'QB')
         self.assertEqual(len([player for player in lineup if 'QB' in player.positions]), 2)
+
+
+class RestrictPositionsForSameTeamRuleTestCase(unittest.TestCase):
+    def setUp(self):
+        self.players = load_players()
+        self.first_team = 'TEST 1'
+        self.second_team = 'TEST 2'
+        self.high_fppg_players = [
+            Player('1', '1', '1', ['PG'], self.first_team, 3000, 100),
+            Player('2', '2', '2', ['SG'], self.first_team, 3000, 100),
+            Player('3', '3', '3', ['SF'], self.second_team, 3000, 100),
+            Player('3', '3', '3', ['PF'], self.second_team, 3000, 100),
+        ]
+        self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+        self.optimizer.load_players(self.players + self.high_fppg_players)
+
+    def test_restrict_positions_for_same_team_incorrect_positions(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.restrict_positions_for_same_team(('G', 'F'))
+
+    def test_restrict_positions_for_same_team_too_many_positions(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.restrict_positions_for_same_team(('G', 'F', 'C'))
+
+    def test_restrict_positions_for_same_team(self):
+        self.optimizer.restrict_positions_for_same_team(('PG', 'SG'))
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len([p for p in lineup if p.team == self.first_team]), 1)
+
+    def test_restrict_positions_for_same_team_multiple_combinations(self):
+        self.optimizer.restrict_positions_for_same_team(('PG', 'SG'), ('SF', 'PF'))
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len([p for p in lineup if p.team == self.first_team]), 1)
+        self.assertEqual(len([p for p in lineup if p.team == self.second_team]), 1)

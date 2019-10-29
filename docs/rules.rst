@@ -13,7 +13,8 @@ Rules
 - Maximum repeating players.
 - Ownership projection constraint.
 - Team stacking
-- Restricting players from opposing teams
+- Restrict players from opposing team
+- Restrict players from same team
 - Spacing for positions
 - Teams exposures
 
@@ -112,6 +113,17 @@ method of optimizer, it accepts 2 arguments with list of positions for one team 
     in other case `LineupOptimizerException` will be raised. So it will not work in FantasyDraft
     (because they doesn't provide information about opponents) and if you write your custom players importer and
     don't pass `game_info` parameter in players constructors.
+
+Restrict players from same team
+-------------------------------
+In some cases you would want to restrict creating of lineup with players from same team,
+for example prevent of 2 RB from same team. For this you can use `restrict_positions_for_same_team`
+method of optimizer, it takes tuples with 2 positions.
+
+.. code-block:: python
+
+    optimizer.restrict_positions_for_same_team(('RB', 'RB'))
+    optimizer.restrict_positions_for_same_team(('QB', 'DST'), ('RB', 'DST'))
 
 Spacing for positions
 ---------------------

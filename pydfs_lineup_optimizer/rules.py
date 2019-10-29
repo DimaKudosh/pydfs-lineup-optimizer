@@ -20,8 +20,9 @@ __all__ = [
     'LineupBudgetRule', 'LockedPlayersRule', 'PositionsRule', 'TeamMatesRule', 'MaxFromOneTeamRule',
     'MinSalaryCapRule', 'FromSameTeamByPositionsRule', 'RemoveInjuredRule', 'MaxRepeatingPlayersRule',
     'ProjectedOwnershipRule', 'UniquePlayerRule', 'LateSwapRule', 'TeamStacksRule',
-    'RestrictPositionsForOpposingTeams', 'RosterSpacingRule', 'FanduelBaseballRosterRule',
+    'RestrictPositionsForOpposingTeam', 'RosterSpacingRule', 'FanduelBaseballRosterRule',
     'FanduelMinimumTeamsRule', 'FanduelSingleGameMVPRule', 'FanduelSingleGameMaxQBRule',
+    'RestrictPositionsForSameTeamRule',
 ]
 
 
@@ -416,7 +417,7 @@ class TeamStacksRule(OptimizerRule):
             solver.add_constraint(combinations_variables, None, SolverSign.GTE, total)
 
 
-class RestrictPositionsForOpposingTeams(OptimizerRule):
+class RestrictPositionsForOpposingTeam(OptimizerRule):
     def apply(self, solver, players_dict):
         if not self.optimizer.opposing_teams_position_restriction:
             return
@@ -432,6 +433,25 @@ class RestrictPositionsForOpposingTeams(OptimizerRule):
                 second_team_variables = [variable for player, variable in second_team_players.items()
                                          if list_intersection(player.positions, second_team_positions)]
                 for variables in product(first_team_variables, second_team_variables):
+                    solver.add_constraint(variables, None, SolverSign.LTE, 1)
+
+
+class RestrictPositionsForSameTeamRule(OptimizerRule):
+    def apply(self, solver, players_dict):
+        all_restrict_positions = self.optimizer.same_team_restrict_positions
+        if not all_restrict_positions:
+            return
+        players_by_team = get_players_grouped_by_teams(players_dict.keys())
+        for restrict_positions in self.optimizer.same_team_restrict_positions:
+            for team_players in players_by_team.values():
+                first_position_players = [player for player in team_players
+                                          if restrict_positions[0] in player.positions]
+                second_position_players = [player for player in team_players
+                                           if restrict_positions[1] in player.positions]
+                for players_combination in product(first_position_players, second_position_players):
+                    if players_combination[0] == players_combination[1]:
+                        continue
+                    variables = [players_dict[player] for player in players_combination]
                     solver.add_constraint(variables, None, SolverSign.LTE, 1)
 
 

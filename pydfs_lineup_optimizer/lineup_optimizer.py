@@ -46,6 +46,7 @@ class LineupOptimizer(object):
         self.spacing = None  # type: Optional[int]
         self.teams_exposures = None  # type: Optional[Dict[str, float]]
         self.team_stacks_for_positions = None  # type: Optional[List[str]]
+        self.same_team_restrict_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
 
     @property
     def budget(self):
@@ -389,7 +390,16 @@ class LineupOptimizer(object):
         if not self.games:
             raise LineupOptimizerException('Game Info isn\'t specified for players')
         self._opposing_teams_position_restriction = (first_team_positions, second_team_positions)
-        self.add_new_rule(RestrictPositionsForOpposingTeams)
+        self.add_new_rule(RestrictPositionsForOpposingTeam)
+
+    def restrict_positions_for_same_team(self, *restrict_positions):
+        # type: (*Tuple[str, str]) -> None
+        if not all(len(positions) == 2 for positions in restrict_positions):
+            raise LineupOptimizerException('Exactly 2 positions must be specified in restrict positions')
+        for position in set(chain.from_iterable(restrict_positions)):
+            self._check_position_constraint(position)
+        self.same_team_restrict_positions = restrict_positions
+        self.add_new_rule(RestrictPositionsForSameTeamRule)
 
     def set_spacing_for_positions(self, positions, spacing):
         # type: (List[str], int) -> None
