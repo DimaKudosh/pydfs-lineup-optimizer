@@ -46,6 +46,14 @@ class OptimizerRulesTestCase(unittest.TestCase):
             (1 - self.lineup_optimizer._max_deviation) * optimized_lineup.fantasy_points_projection
         )
 
+    def test_randomness_with_player_deviation(self):
+        for player in self.lineup_optimizer.players:
+            player.min_deviation = 0
+            player.max_deviation = 0
+        optimized_lineup = next(self.lineup_optimizer.optimize(1))
+        random_lineup = next(self.lineup_optimizer.optimize(1, randomness=True))
+        self.assertListEqual(optimized_lineup.players, random_lineup.players)
+
     def test_lineup_with_players_from_same_positions(self):
         self.lineup_optimizer.load_players(create_players(['PG', 'SG', 'SF', 'PF', 'C', 'PG', 'SF', 'PF']))
         self.lineup_optimizer.extend_players([

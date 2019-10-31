@@ -23,6 +23,8 @@ class Player(object):
                  projected_ownership=None,  # type: Optional[float]
                  game_info=None,  # type: Optional[GameInfo]
                  roster_order=None,  # type: Optional[int]
+                 min_deviation=None,  # type: Optional[float]
+                 max_deviation=None,  # type: Optional[float]
                  ):
         # type: (...) -> None
         self.id = player_id
@@ -34,14 +36,18 @@ class Player(object):
         self.fppg = fppg
         self.is_injured = is_injured
         self.game_info = game_info
-        self._max_exposure = None  # type: Optional[float]
-        self.max_exposure = max_exposure
-        self._min_exposure = None  # type: Optional[float]
-        self.min_exposure = min_exposure
-        self._projected_ownership = None  # type: Optional[float]
-        self.projected_ownership = projected_ownership
         self.roster_order = roster_order
         self.is_mvp = False  # type: bool
+        self._min_exposure = None  # type: Optional[float]
+        self._max_exposure = None  # type: Optional[float]
+        self._min_deviation = None  # type: Optional[float]
+        self._max_deviation = None  # type: Optional[float]
+        self._projected_ownership = None  # type: Optional[float]
+        self.min_exposure = min_exposure
+        self.max_exposure = max_exposure
+        self.min_deviation = min_deviation
+        self.max_deviation = max_deviation
+        self.projected_ownership = projected_ownership
 
     def __repr__(self):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)
@@ -68,6 +74,26 @@ class Player(object):
     def min_exposure(self, min_exposure):
         # type: (Optional[float]) -> None
         self._min_exposure = process_percents(min_exposure)
+
+    @property
+    def min_deviation(self):
+        # type: () -> Optional[float]
+        return self._min_deviation
+
+    @min_deviation.setter
+    def min_deviation(self, min_deviation):
+        # type: (Optional[float]) -> None
+        self._min_deviation = process_percents(min_deviation)
+
+    @property
+    def max_deviation(self):
+        # type: () -> Optional[float]
+        return self._max_deviation
+
+    @max_deviation.setter
+    def max_deviation(self, max_deviation):
+        # type: (Optional[float]) -> None
+        self._max_deviation = process_percents(max_deviation)
 
     @property
     def projected_ownership(self):

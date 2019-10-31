@@ -55,10 +55,14 @@ class RandomObjective(OptimizerRule):
     def apply_for_iteration(self, solver, players_dict, result):
         variables = []
         coefficients = []
+        optimizer_min_deviation, optimizer_max_deviation = self.optimizer.get_deviation()
         for player, variable in players_dict.items():
             variables.append(variable)
-            coefficients.append(player.fppg * (1 + (-1 if bool(getrandbits(1)) else 1) *
-                                               uniform(*self.optimizer.get_deviation())))
+            multiplier = uniform(
+                player.min_deviation if player.min_deviation is not None else optimizer_min_deviation,
+                player.max_deviation if player.max_deviation is not None else optimizer_max_deviation
+            )
+            coefficients.append(player.fppg * (1 + (-1 if bool(getrandbits(1)) else 1) * multiplier))
         solver.set_objective(variables, coefficients)
 
 
