@@ -8,12 +8,12 @@ from pydfs_lineup_optimizer.player import Player, LineupPlayer, GameInfo
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 from pydfs_lineup_optimizer.constants import Site
+from pydfs_lineup_optimizer.tz import get_timezone
 
 
 @SitesRegistry.register_csv_importer
 class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
     site = Site.DRAFTKINGS
-    DEFAULT_TIMEZONE = 'US/Eastern'
 
     def _parse_game_info(self, row):
         game_info = row.get('Game Info')
@@ -29,7 +29,7 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
             teams, date, time, tz = game_info.rsplit(' ', 3)
             away_team, home_team = teams.upper().split('@')
             starts_at = datetime.strptime(date + time, '%m/%d/%Y%I:%M%p').\
-                replace(tzinfo=timezone(self.DEFAULT_TIMEZONE))
+                replace(tzinfo=timezone(get_timezone()))
             return GameInfo(
                 home_team=home_team,
                 away_team=away_team,

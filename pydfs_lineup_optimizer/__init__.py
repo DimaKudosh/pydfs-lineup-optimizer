@@ -8,12 +8,13 @@ from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_exporter import CSVLineupExporter
+from pydfs_lineup_optimizer.tz import set_timezone
 
 
 __all__ = [
     'get_optimizer', 'Site', 'Sport', 'Player', 'LineupOptimizerException', 'LineupOptimizerIncorrectTeamName',
     'LineupOptimizerIncorrectPositionName', 'LineupOptimizerIncorrectCSV', 'LineupOptimizer', 'Lineup',
-    'CSVLineupExporter',
+    'CSVLineupExporter', 'set_timezone',
 ]
 
 

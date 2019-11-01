@@ -1,8 +1,10 @@
 from __future__ import division
 from collections import namedtuple
 from datetime import datetime
+from pytz import timezone
 from typing import List, Optional
 from pydfs_lineup_optimizer.utils import process_percents
+from pydfs_lineup_optimizer.tz import get_timezone
 
 
 GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at', 'game_started'])
@@ -122,7 +124,8 @@ class Player(object):
             if self.game_info.game_started:
                 return True
             starts_at = self.game_info.starts_at
-            if starts_at and datetime.now(starts_at.tzinfo) > starts_at:
+            time_now = datetime.now().replace(tzinfo=timezone(get_timezone()))
+            if starts_at and time_now > starts_at:
                 return True
         return False
 

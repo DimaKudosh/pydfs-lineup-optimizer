@@ -169,3 +169,12 @@ Players with started game will be locked on specific positions and optimizer wil
     lineups = optimizer.load_lineups_from_csv(csv_filename)
     for lineup in optimizer.optimize_lineups(lineups):
         print(lineup)
+
+For parsing dates of games library uses US/Eastern timezone by default.
+You can change it using `set_timezone` function:
+
+.. code-block:: python
+
+    from pydfs_lineup_optimizer import set_timezone
+
+    set_timezone('UTC')
