@@ -16,7 +16,6 @@ class FanDuelSettings(BaseSettings):
 @SitesRegistry.register_settings
 class FanDuelBasketballSettings(FanDuelSettings):
     sport = Sport.BASKETBALL
-    lineup_printer = DropLowestLineupPrinter
     positions = [
         LineupPosition('PG', ('PG', )),
         LineupPosition('PG', ('PG', )),

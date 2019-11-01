@@ -1,10 +1,9 @@
 from copy import deepcopy
-from pydfs_lineup_optimizer.player import Player
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 from pydfs_lineup_optimizer.constants import Site
 from pydfs_lineup_optimizer.sites.fanduel.classic.importer import FanDuelCSVImporter
 
-from typing import List
+
 @SitesRegistry.register_csv_importer
 class FanDuelSingleGameCSVImporter(FanDuelCSVImporter):  # pragma: nocover
     site = Site.FANDUEL_SINGLE_GAME
