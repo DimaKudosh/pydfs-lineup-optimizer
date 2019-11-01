@@ -15,6 +15,7 @@ Rules
 - Team stacking
 - Restrict players from opposing team
 - Restrict players from same team
+- Force players from opposing team
 - Spacing for positions
 - Teams exposures
 
@@ -124,6 +125,18 @@ method of optimizer, it takes tuples with 2 positions.
 
     optimizer.restrict_positions_for_same_team(('RB', 'RB'))
     optimizer.restrict_positions_for_same_team(('QB', 'DST'), ('RB', 'DST'))
+
+
+Force players from opposing team
+--------------------------------
+If you want to force players from opposing team
+you can use `force_positions_for_opposing_team` rule,
+it takes tuples with 2 positions.
+
+.. code-block:: python
+
+    optimizer.force_positions_for_opposing_team(('QB', 'WR'))
+
 
 Spacing for positions
 ---------------------

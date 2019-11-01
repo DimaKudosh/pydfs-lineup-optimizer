@@ -22,7 +22,7 @@ __all__ = [
     'ProjectedOwnershipRule', 'UniquePlayerRule', 'LateSwapRule', 'TeamStacksRule',
     'RestrictPositionsForOpposingTeam', 'RosterSpacingRule', 'FanduelBaseballRosterRule',
     'FanduelMinimumTeamsRule', 'FanduelSingleGameMVPRule', 'FanduelSingleGameMaxQBRule',
-    'RestrictPositionsForSameTeamRule',
+    'RestrictPositionsForSameTeamRule', 'ForcePositionsForOpposingTeamRule',
 ]
 
 
@@ -457,6 +457,33 @@ class RestrictPositionsForSameTeamRule(OptimizerRule):
                         continue
                     variables = [players_dict[player] for player in players_combination]
                     solver.add_constraint(variables, None, SolverSign.LTE, 1)
+
+
+class ForcePositionsForOpposingTeamRule(OptimizerRule):
+    def apply(self, solver, players_dict):
+        all_force_positions = self.optimizer.opposing_team_force_positions
+        if not all_force_positions:
+            return
+        all_force_positions = [tuple(sorted(positions)) for positions in all_force_positions]
+        for positions, total_combinations in Counter(all_force_positions).items():
+            positions_vars = []
+            combinations_count = 0
+            for game in self.optimizer.games:
+                first_team_players = {player: variable for player, variable in players_dict.items()
+                                      if player.team == game.home_team}
+                second_team_players = {player: variable for player, variable in players_dict.items()
+                                       if player.team == game.away_team}
+                for first_team_positions, second_team_positions in permutations(positions, 2):
+                    first_team_variables = [variable for player, variable in first_team_players.items()
+                                            if first_team_positions in player.positions]
+                    second_team_variables = [variable for player, variable in second_team_players.items()
+                                             if second_team_positions in player.positions]
+                    for variables in product(first_team_variables, second_team_variables):
+                        solver_variable = solver.add_variable('force_positions_%s_%d' % (positions, combinations_count))
+                        combinations_count += 1
+                        positions_vars.append(solver_variable)
+                        solver.add_constraint(variables, None, SolverSign.GTE, 2 * solver_variable)
+            solver.add_constraint(positions_vars, None, SolverSign.GTE, total_combinations)
 
 
 class RosterSpacingRule(OptimizerRule):

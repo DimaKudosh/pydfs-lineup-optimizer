@@ -603,7 +603,7 @@ class RestrictPositionsForSameTeamRuleTestCase(unittest.TestCase):
 
     def test_restrict_positions_for_same_team_too_many_positions(self):
         with self.assertRaises(LineupOptimizerException):
-            self.optimizer.restrict_positions_for_same_team(('G', 'F', 'C'))
+            self.optimizer.restrict_positions_for_same_team(('PG', 'PF', 'C'))
 
     def test_restrict_positions_for_same_team(self):
         self.optimizer.restrict_positions_for_same_team(('PG', 'SG'))
@@ -615,3 +615,37 @@ class RestrictPositionsForSameTeamRuleTestCase(unittest.TestCase):
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len([p for p in lineup if p.team == self.first_team]), 1)
         self.assertEqual(len([p for p in lineup if p.team == self.second_team]), 1)
+
+
+class ForcePositionsForOpposingTeamRuleTestCase(unittest.TestCase):
+    def setUp(self):
+        self.players = load_players()
+        self.first_team = 'TEST 1'
+        self.second_team = 'TEST 2'
+        self.game_info = GameInfo(self.first_team, self.second_team, datetime.now(), False)
+        self.extra_players = [
+            Player('1', '1', '1', ['PG'], self.first_team, 3000, 100, game_info=self.game_info),
+            Player('2', '2', '2', ['SG'], self.first_team, 3000, 100, game_info=self.game_info),
+            Player('3', '3', '3', ['SF'], self.second_team, 3000, 1, game_info=self.game_info),
+            Player('4', '4', '4', ['PF'], self.second_team, 3000, 1, game_info=self.game_info),
+        ]
+        self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+        self.optimizer.load_players(self.players + self.extra_players)
+
+    def test_force_positions_for_opposing_team_incorrect_positions(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.force_positions_for_opposing_team(('G', 'F'))
+
+    def test_force_positions_for_opposing_team_too_many_positions(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.force_positions_for_opposing_team(('PG', 'PF', 'C'))
+
+    def test_force_positions_for_opposing_team(self):
+        self.optimizer.force_positions_for_opposing_team(('PG', 'PF'))
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len([p for p in lineup if p.team == self.second_team]), 1)
+
+    def test_force_positions_for_opposing_team_multiple_combinations(self):
+        self.optimizer.force_positions_for_opposing_team(('PG', 'PF'), ('SG', 'SF'))
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len([p for p in lineup if p.team == self.second_team]), 2)

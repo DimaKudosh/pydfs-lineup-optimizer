@@ -47,6 +47,7 @@ class LineupOptimizer(object):
         self.teams_exposures = None  # type: Optional[Dict[str, float]]
         self.team_stacks_for_positions = None  # type: Optional[List[str]]
         self.same_team_restrict_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
+        self.opposing_team_force_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
 
     @property
     def budget(self):
@@ -400,6 +401,15 @@ class LineupOptimizer(object):
             self._check_position_constraint(position)
         self.same_team_restrict_positions = restrict_positions
         self.add_new_rule(RestrictPositionsForSameTeamRule)
+
+    def force_positions_for_opposing_team(self, *force_positions):
+        # type: (*Tuple[str, str]) -> None
+        if not all(len(positions) == 2 for positions in force_positions):
+            raise LineupOptimizerException('Exactly 2 positions must be specified in force positions')
+        for position in set(chain.from_iterable(force_positions)):
+            self._check_position_constraint(position)
+        self.opposing_team_force_positions = force_positions
+        self.add_new_rule(ForcePositionsForOpposingTeamRule)
 
     def set_spacing_for_positions(self, positions, spacing):
         # type: (List[str], int) -> None
