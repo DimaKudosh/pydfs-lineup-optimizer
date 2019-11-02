@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.7.0]
+- Added rule for restricting players from same team
+- Added ability to specify several positions in stack
+- Added FanDuel Golf
+- Added ability to set player specific deviation for randomness mode
+- Added rule for forcing players from opposing team
+- Added ability to change default timezone
+- Added set total teams rule
+- Improved performance of positions for same team rule
+- Removed dropping of lowest score in FD NBA
+- Added missed DK Hockey min teams rule
+- Added average ownership to lineup printing
+- Fixed Yahoo Hockey settings positions
+
 ## [v2.6.2]
 - Fixed python 2.7 support
 
