@@ -59,6 +59,7 @@ class DropLowestLineupPrinter(LineupPrinter):
         return cast('LineupPlayer', sorted(lineup, key=lambda p: p.fppg)[0])
 
     def _print_player(self, index, player, is_dropped=False):
+        # type: (int, 'LineupPlayer', bool) -> str
         return self.OUTPUT_FORMAT.format(
             index,
             player.lineup_position,
@@ -71,6 +72,7 @@ class DropLowestLineupPrinter(LineupPrinter):
         )
 
     def _print_footer(self, lineup):
+        # type: ('Lineup') -> str
         footer = super(DropLowestLineupPrinter, self)._print_footer(lineup)
         footer += 'Fantasy Points Without Dropped Player %.2f' % \
                   (lineup.fantasy_points_projection - self._get_lowest_fppg_player(lineup).fppg)

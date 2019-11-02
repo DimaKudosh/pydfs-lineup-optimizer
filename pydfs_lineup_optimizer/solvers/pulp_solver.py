@@ -8,10 +8,10 @@ class PuLPSolver(Solver):
     LP_SOLVER = None
 
     def __init__(self):
-        self.prob = None
+        self.prob = LpProblem('Daily Fantasy Sports', LpMaximize)
 
     def setup_solver(self):
-        self.prob = LpProblem('Daily Fantasy Sports', LpMaximize)
+        pass
 
     def add_variable(self, name):
         return LpVariable(name, cat=LpBinary)

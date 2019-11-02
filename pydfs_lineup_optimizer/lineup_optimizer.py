@@ -98,7 +98,7 @@ class LineupOptimizer(object):
 
     @property
     def available_positions(self):
-        # type: () -> FrozenSet[LineupPosition]
+        # type: () -> FrozenSet[str]
         return self._available_positions
 
     @property
@@ -509,7 +509,7 @@ class LineupOptimizer(object):
             constraint.apply(base_solver, players_dict)
         previous_lineup = None
         for lineup in lineups:
-            solver = base_solver.copy()
+            solver = base_solver.copy()  # type: Solver
             for constraint in constraints:
                 constraint.apply_for_iteration(solver, players_dict, previous_lineup)
             try:

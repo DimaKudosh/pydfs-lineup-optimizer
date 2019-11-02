@@ -184,8 +184,8 @@ class FromSameTeamByPositionsRule(OptimizerRule):
     def __init__(self, optimizer, params):
         super(FromSameTeamByPositionsRule, self).__init__(optimizer, params)
         self.stacks_dict = Counter(
-            map(tuple, self.optimizer.positions_stacks_from_same_team)
-        )  # type: TypingCounter[Tuple[str, ...]]
+            map(tuple, self.optimizer.positions_stacks_from_same_team)  # type: ignore
+        )  # type: TypingCounter[Tuple[Tuple[str, ...], ...]]
         self.used_teams = defaultdict(int)  # type: DefaultDict[str, int]
         self.total_lineups = params.get('n')
         self.teams_max_exposures = optimizer.teams_exposures
@@ -211,6 +211,7 @@ class FromSameTeamByPositionsRule(OptimizerRule):
         self._create_constraints(solver, players_dict, exclude_teams)
 
     def _create_constraints(self, solver, players_dict, exclude_teams=None):
+        # type: (Solver, Dict[Player, Any], Optional[Set[str]]) -> None
         all_combinations = defaultdict(set)  # type: DefaultDict[Tuple[Any, ...], Set[Any]]
         players_by_teams = get_players_grouped_by_teams(players_dict.keys())
         for stack, total_stacks in self.stacks_dict.items():
@@ -240,6 +241,7 @@ class FromSameTeamByPositionsRule(OptimizerRule):
                 solver.add_constraint(combination_variables, None, SolverSign.LTE, 1)
 
     def _detect_teams_used_in_stacks(self, lineup):
+        # type: (Lineup) -> Set[str]
         teams = set([player.team for player in lineup])
         all_teams_used_in_stacks = set()
         for stack in self.stacks_dict.keys():
@@ -346,7 +348,7 @@ class LateSwapRule(OptimizerRule):
 class TeamStacksRule(OptimizerRule):
     def __init__(self, optimizer, params):
         super(TeamStacksRule, self).__init__(optimizer, params)
-        stacks = self.optimizer.team_stacks
+        stacks = self.optimizer.team_stacks or []
         self.stacks_dict = {}  # type: Dict[int, int]
         for i, stack in enumerate(sorted(stacks, reverse=True), start=1):
             self.stacks_dict[stack] = i
@@ -393,6 +395,7 @@ class TeamStacksRule(OptimizerRule):
                 solver.add_constraint(variables, None, SolverSign.LTE, self.min_count_not_in_stack)
 
     def _create_constraints(self, solver, exclude_teams=None):
+        # type: (Solver, Set[str]) -> None
         for stack, total in self.stacks_dict.items():
             combinations_variables = []
             for team, variables in self.player_variables_by_teams.items():
@@ -429,7 +432,7 @@ class RestrictPositionsForSameTeamRule(OptimizerRule):
         if not all_restrict_positions:
             return
         players_by_team = get_players_grouped_by_teams(players_dict.keys())
-        for restrict_positions in self.optimizer.same_team_restrict_positions:
+        for restrict_positions in all_restrict_positions:
             for team_players in players_by_team.values():
                 first_position_players = [player for player in team_players
                                           if restrict_positions[0] in player.positions]
@@ -444,10 +447,10 @@ class RestrictPositionsForSameTeamRule(OptimizerRule):
 
 class ForcePositionsForOpposingTeamRule(OptimizerRule):
     def apply(self, solver, players_dict):
-        all_force_positions = self.optimizer.opposing_team_force_positions
-        if not all_force_positions:
+        raw_all_force_positions = self.optimizer.opposing_team_force_positions
+        if not raw_all_force_positions:
             return
-        all_force_positions = [tuple(sorted(positions)) for positions in all_force_positions]
+        all_force_positions = [tuple(sorted(positions)) for positions in raw_all_force_positions]
         for positions, total_combinations in Counter(all_force_positions).items():
             positions_vars = []
             combinations_count = 0

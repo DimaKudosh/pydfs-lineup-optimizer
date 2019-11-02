@@ -2,6 +2,7 @@ import csv
 from itertools import islice
 from datetime import datetime
 from pytz import timezone
+from typing import Dict, Optional
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerIncorrectCSV
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.player import Player, LineupPlayer, GameInfo
@@ -16,9 +17,10 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
     site = Site.DRAFTKINGS
 
     def _parse_game_info(self, row):
+        # type: (Dict) -> Optional[GameInfo]
         game_info = row.get('Game Info')
         if not game_info:
-            return
+            return None
         if game_info in ('In Progress', 'Final'):
             return GameInfo(  # No game info provided, just mark game as started
                 home_team='',
@@ -37,9 +39,10 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
                 game_started=False
             )
         except ValueError:
-            return
+            return None
 
     def _row_to_player(self, row):
+        # type: (Dict) -> Player
         try:
             name = row['Name'].split()
             player = Player(
