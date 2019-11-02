@@ -111,13 +111,21 @@ pass max_exposure parameter to optimize method
    Exposure percentage rounds to ceil.
 
 Optimizer also have randomness feature. It adds some deviation for players projection for
-creating less optimized but more randomized lineups. For activating randomness feature you must set randomness parameter to True.
+creating less optimized but more randomized lineups. For activating randomness feature you should set randomness parameter to True.
 By default min deviation is 6% and max deviation is 12%. You can change it with set_deviation method.
+You also can specify player specific deviation using `min_deviation` and `max_deviation` attributes for player,
+or using additional columns `Min Deviation` and `Max Deviation` in import csv.
 
 .. code-block:: python
 
     lineups = optimizer.optimize(n=10, randomness=True)
     lineups = optimizer.set_deviation(0.2, 0.4)  # for making more random lineups
+    harden = optimizer.get_player_by_name('Harden')
+    harden.min_deviation = 0.3
+    harden.max_deviation = 0.6
+    westbrook = optimizer.get_player_by_name('Westbrook')
+    westbrook.min_deviation = 0  # Disable randomness for this player
+    westbrook.max_deviation = 0
     lineups = optimizer.optimize(n=10, randomness=True)
 
 .. note::
@@ -161,3 +169,12 @@ Players with started game will be locked on specific positions and optimizer wil
     lineups = optimizer.load_lineups_from_csv(csv_filename)
     for lineup in optimizer.optimize_lineups(lineups):
         print(lineup)
+
+For parsing dates of games library uses US/Eastern timezone by default.
+You can change it using `set_timezone` function:
+
+.. code-block:: python
+
+    from pydfs_lineup_optimizer import set_timezone
+
+    set_timezone('UTC')

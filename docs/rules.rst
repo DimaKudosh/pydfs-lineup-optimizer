@@ -13,9 +13,12 @@ Rules
 - Maximum repeating players.
 - Ownership projection constraint.
 - Team stacking
-- Restricting players from opposing teams
+- Restrict players from opposing team
+- Restrict players from same team
+- Force players from opposing team
 - Spacing for positions
 - Teams exposures
+- Total teams
 
 Number of players from same team
 --------------------------------
@@ -28,12 +31,13 @@ It accepts dict where key is a team name and value is number of players for this
 
 Positions for same team
 -----------------------
-For setting positions for same team you should call `set_positions_for_same_team` method of optimizer.
+For setting positions for same team you should use `set_positions_for_same_team` method of optimizer.
 It accepts list with positions that must be selected from one team. You can specify multiple positions stacks as well.
 
 .. code-block:: python
 
     optimizer.set_positions_for_same_team(['QB', 'WR', 'WR'])
+    optimizer.set_positions_for_same_team(['QB', 'WR', ('WR', 'TE')])
     optimizer.set_positions_for_same_team(['WR', 'WR', 'WR'], ['RB', 'RB'])
 
 
@@ -113,6 +117,29 @@ method of optimizer, it accepts 2 arguments with list of positions for one team 
     (because they doesn't provide information about opponents) and if you write your custom players importer and
     don't pass `game_info` parameter in players constructors.
 
+Restrict players from same team
+-------------------------------
+In some cases you would want to restrict creating of lineup with players from same team,
+for example prevent of 2 RB from same team. For this you can use `restrict_positions_for_same_team`
+method of optimizer, it takes tuples with 2 positions.
+
+.. code-block:: python
+
+    optimizer.restrict_positions_for_same_team(('RB', 'RB'))
+    optimizer.restrict_positions_for_same_team(('QB', 'DST'), ('RB', 'DST'))
+
+
+Force players from opposing team
+--------------------------------
+If you want to force players from opposing team
+you can use `force_positions_for_opposing_team` rule,
+it takes tuples with 2 positions.
+
+.. code-block:: python
+
+    optimizer.force_positions_for_opposing_team(('QB', 'WR'))
+
+
 Spacing for positions
 ---------------------
 
@@ -140,3 +167,13 @@ It only works with `set_team_stacking` or `set_positions_for_same_team` rules.
     optimizer.set_teams_max_exposure({'BOS': 0.3, 'LAL': 0.4})
     # Set same max exposures for all teams
     optimizer.set_teams_max_exposure({team: 0.2 for team in optimizer.available_teams})
+
+Total teams
+-----------
+
+It's also possible to set exact number of teams that will be presented in generated lineups,
+you can set it using `set_total_teams` method.
+
+.. code-block:: python
+
+    optimizer.set_total_teams(4)

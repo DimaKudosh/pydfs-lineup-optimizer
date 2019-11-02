@@ -16,6 +16,7 @@ class BaseSettings(object):
     budget = 0  # type: float
     positions = []  # type: List[LineupPosition]
     max_from_one_team = None  # type: Optional[int]
+    min_teams = None  # type: Optional[int]
     lineup_printer = LineupPrinter  # type: Type[BaseLineupPrinter]
     extra_rules = []  # type: List[Type['OptimizerRule']]
 

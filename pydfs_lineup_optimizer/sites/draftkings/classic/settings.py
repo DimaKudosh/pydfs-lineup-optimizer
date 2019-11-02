@@ -56,6 +56,7 @@ class DraftKingsFootballSettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsHockeySettings(DraftKingsSettings):
     sport = Sport.HOCKEY
+    min_teams = 3
     positions = [
         LineupPosition('W', ('LW', 'RW')),
         LineupPosition('W', ('LW', 'RW')),

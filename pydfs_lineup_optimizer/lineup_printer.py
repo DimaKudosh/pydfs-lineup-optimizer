@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
@@ -34,17 +34,32 @@ class LineupPrinter(BaseLineupPrinter):
             str(player.salary) + '$',
         )
 
+    def _print_footer(self, lineup):
+        # type: ('Lineup') -> str
+        footer = 'Fantasy Points %.2f\n' % lineup.fantasy_points_projection
+        footer += 'Salary %.2f\n' % lineup.salary_costs
+        ownerships = [player.projected_ownership for player in lineup if player.projected_ownership]
+        if ownerships:
+            footer += 'Average Ownership %.1f%%\n' % (sum(ownerships) * 100 / len(ownerships))
+        return footer
+
     def print_lineup(self, lineup):
         res = ''
         for index, player in enumerate(lineup.players, start=1):
             res += self._print_player(index, player)
-        res += '\nFantasy Points %.2f' % lineup.fantasy_points_projection
-        res += '\nSalary %.2f\n' % lineup.salary_costs
+        res += '\n'
+        res += self._print_footer(lineup)
         return res
 
 
 class DropLowestLineupPrinter(LineupPrinter):
+    @staticmethod
+    def _get_lowest_fppg_player(lineup):
+        # type: ('Lineup') -> 'LineupPlayer'
+        return cast('LineupPlayer', sorted(lineup, key=lambda p: p.fppg)[0])
+
     def _print_player(self, index, player, is_dropped=False):
+        # type: (int, 'LineupPlayer', bool) -> str
         return self.OUTPUT_FORMAT.format(
             index,
             player.lineup_position,
@@ -56,15 +71,20 @@ class DropLowestLineupPrinter(LineupPrinter):
             str(player.salary) + '$',
         )
 
+    def _print_footer(self, lineup):
+        # type: ('Lineup') -> str
+        footer = super(DropLowestLineupPrinter, self)._print_footer(lineup)
+        footer += 'Fantasy Points Without Dropped Player %.2f' % \
+                  (lineup.fantasy_points_projection - self._get_lowest_fppg_player(lineup).fppg)
+        return footer
+
     def print_lineup(self, lineup):
         res = ''
-        lowest_fppg_player = sorted(lineup, key=lambda p: p.fppg)[0]
+        lowest_fppg_player = self._get_lowest_fppg_player(lineup)
         for index, player in enumerate(lineup.players, start=1):
-            res += self._print_player(index, player, is_dropped=lowest_fppg_player)
-        res += 'Fantasy Points %.2f' % lineup.fantasy_points_projection
-        res += '\nFantasy Points Without Dropped Player %.2f' % \
-               (lineup.fantasy_points_projection - lowest_fppg_player.fppg)
-        res += '\nSalary %.2f\n' % lineup.salary_costs
+            res += self._print_player(index, player, is_dropped=player == lowest_fppg_player)
+        res += '\n'
+        res += self._print_footer(lineup)
         return res
 
 

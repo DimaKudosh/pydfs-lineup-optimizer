@@ -51,6 +51,7 @@ class YahooHockeySettings(YahooSettings):
         LineupPosition('W', ('LW', 'RW')),
         LineupPosition('W', ('LW', 'RW')),
         LineupPosition('W', ('LW', 'RW')),
+        LineupPosition('D', ('D', )),
         LineupPosition('D', ('D', ))
     ]
 
