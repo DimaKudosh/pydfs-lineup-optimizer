@@ -1,3 +1,4 @@
+import sys
 from typing import Any
 from pydfs_lineup_optimizer.version import __version__
 from pydfs_lineup_optimizer.constants import Site, Sport
@@ -21,3 +22,9 @@ __all__ = [
 def get_optimizer(site, sport, **kwargs):
     # type: (str, str, **Any) -> LineupOptimizer
     return LineupOptimizer(SitesRegistry.get_settings(site, sport), **kwargs)
+
+
+if sys.version_info < (3, 0):
+    import warnings
+    warnings.simplefilter('always', DeprecationWarning)
+    warnings.warn('pydfs-lineup-optimizer will drop python 2 support in next release', DeprecationWarning)
