@@ -30,7 +30,7 @@ Tennis | +          | -       | -            | -     | -       | -              
 Documentation is available at https://pydfs-lineup-optimizer.readthedocs.io/en/latest
 
 ## Example
-Here is a example for evaluating optimal lineup for Yahoo fantasy NBA. It's loads players list from "yahoo-NBA.csv" and select 10 best lineups.
+Here is an example for evaluating optimal lineup for Yahoo fantasy NBA. It loads players list from "yahoo-NBA.csv" and select 10 best lineups.
 ```python
 from pydfs_lineup_optimizer import Site, Sport, get_optimizer
 
