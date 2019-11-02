@@ -530,7 +530,7 @@ class TestTeamStacksExposureRule(unittest.TestCase):
             self.optimizer.set_teams_max_exposure({'WRONG TEAM': 0.5})
 
 
-class TestFanduelMinimumTeamsTestCase(unittest.TestCase):
+class TotalTeamsTestCase(unittest.TestCase):
     def setUp(self):
         self.players = [
             Player('1', '1', '1', ['P'], 'HOU', 3000, 10),
@@ -544,8 +544,12 @@ class TestFanduelMinimumTeamsTestCase(unittest.TestCase):
             Player('9', '9', '9', ['2B'], 'BOS', 3000, 5),
             Player('10', '10', '10', ['3B'], 'BOS', 3000, 5),
             Player('11', '11', '11', ['P'], 'ARI', 3000, 5),
+            Player('12', '12', '12', ['SS'], 'NY', 3000, 5),
+            Player('13', '13', '13', ['OF'], 'POR', 3000, 5),
         ]
         self.optimizer = get_optimizer(Site.FANDUEL, Sport.BASEBALL)
+        self.optimizer.settings.min_teams = 3
+        self.optimizer.settings.max_from_one_team = 5
         self.optimizer.load_players(self.players)
 
     def test_minimum_teams(self):
@@ -556,6 +560,25 @@ class TestFanduelMinimumTeamsTestCase(unittest.TestCase):
         self.optimizer.set_team_stacking([5, 4])
         with self.assertRaises(LineupOptimizerException):
             next(self.optimizer.optimize(1))
+
+    def test_total_teams_less_than_minimum(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_total_teams(2)
+
+    def test_total_teams_greater_than_total_players(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_total_teams(15)
+
+    def test_total_teams_less_than_possible_minimum(self):
+        self.optimizer.settings.min_teams = None
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_total_teams(1)
+
+    def test_set_total_teams(self):
+        total_teams = 4
+        self.optimizer.set_total_teams(total_teams)
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len(set(player.team for player in lineup)), total_teams)
 
 
 class TestFanduelSingleGameFootballTestCase(unittest.TestCase):

@@ -18,6 +18,7 @@ Rules
 - Force players from opposing team
 - Spacing for positions
 - Teams exposures
+- Total teams
 
 Number of players from same team
 --------------------------------
@@ -165,3 +166,13 @@ It only works with `set_team_stacking` or `set_positions_for_same_team` rules.
     optimizer.set_teams_max_exposure({'BOS': 0.3, 'LAL': 0.4})
     # Set same max exposures for all teams
     optimizer.set_teams_max_exposure({team: 0.2 for team in optimizer.available_teams})
+
+Total teams
+-----------
+
+It's also possible to set exact number of teams that will be presented in generated lineups,
+you can set it using `set_total_teams` method.
+
+.. code-block:: python
+
+    optimizer.set_total_teams(4)

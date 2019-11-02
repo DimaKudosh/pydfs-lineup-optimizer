@@ -1,6 +1,7 @@
 from __future__ import division
 from collections import OrderedDict
 from itertools import chain
+from math import ceil
 from typing import FrozenSet, Type, Generator, Tuple, Union, Optional, List, Dict, Set, cast
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.solvers import Solver, PuLPSolver, SolverException
@@ -15,7 +16,7 @@ from pydfs_lineup_optimizer.rules import *
 
 
 BASE_RULES = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamRule, LockedPlayersRule,
-              RemoveInjuredRule, UniquePlayerRule, UniqueLineupRule}
+              RemoveInjuredRule, UniquePlayerRule, UniqueLineupRule, TotalTeamsRule}
 
 
 class LineupOptimizer(object):
@@ -48,6 +49,7 @@ class LineupOptimizer(object):
         self.team_stacks_for_positions = None  # type: Optional[List[str]]
         self.same_team_restrict_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
         self.opposing_team_force_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
+        self.total_teams = None  # type: Optional[int]
 
     @property
     def budget(self):
@@ -432,6 +434,19 @@ class LineupOptimizer(object):
                 exposure = process_percents(raw_exposure)
                 processed_exposures[team] = cast(float, exposure)
         self.teams_exposures = processed_exposures
+
+    def set_total_teams(self, total_teams):
+        # type: (int) -> None
+        min_teams = self.settings.min_teams
+        max_from_one_team = self.settings.max_from_one_team
+        total_players = self.settings.get_total_players()
+        if not min_teams and max_from_one_team:
+            min_teams = ceil(total_players / max_from_one_team)
+        if min_teams and total_teams < min_teams:
+            raise LineupOptimizerException('Minimum number of teams is %d' % min_teams)
+        if total_teams > total_players:
+            raise LineupOptimizerException('Maximum number of teams is %d' % total_players)
+        self.total_teams = total_teams
 
     def optimize(self, n, max_exposure=None, randomness=False, with_injured=False):
         # type: (int, Optional[float], bool, bool) -> Generator[Lineup, None, None]
