@@ -1,9 +1,9 @@
 from __future__ import division
 from collections import defaultdict, Counter
-from itertools import product, combinations, groupby, permutations, chain
+from itertools import product, groupby, permutations, chain
 from math import ceil
 from random import getrandbits, uniform
-from typing import List, Dict, DefaultDict, Set, Tuple, Any, Optional, TYPE_CHECKING, Counter as TypingCounter
+from typing import List, Dict, DefaultDict, Set, Tuple, Any, Optional, TYPE_CHECKING
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
 from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer, get_remaining_positions, \
     get_players_grouped_by_teams
@@ -18,19 +18,20 @@ if TYPE_CHECKING:  # pragma: no cover
 __all__ = [
     'OptimizerRule', 'NormalObjective', 'RandomObjective', 'UniqueLineupRule', 'TotalPlayersRule',
     'LineupBudgetRule', 'LockedPlayersRule', 'PositionsRule', 'TeamMatesRule', 'MaxFromOneTeamRule',
-    'MinSalaryCapRule', 'FromSameTeamByPositionsRule', 'RemoveInjuredRule', 'MaxRepeatingPlayersRule',
-    'ProjectedOwnershipRule', 'UniquePlayerRule', 'LateSwapRule', 'TeamStacksRule',
+    'MinSalaryCapRule', 'RemoveInjuredRule', 'MaxRepeatingPlayersRule',
+    'ProjectedOwnershipRule', 'UniquePlayerRule', 'LateSwapRule',
     'RestrictPositionsForOpposingTeam', 'RosterSpacingRule', 'FanduelBaseballRosterRule',
     'TotalTeamsRule', 'FanduelSingleGameMVPRule', 'FanduelSingleGameMaxQBRule',
-    'RestrictPositionsForSameTeamRule', 'ForcePositionsForOpposingTeamRule',
+    'RestrictPositionsForSameTeamRule', 'ForcePositionsForOpposingTeamRule', 'GenericStacksRule',
 ]
 
 
 class OptimizerRule(object):
-    def __init__(self, optimizer, params):
-        # type: ('LineupOptimizer', Dict[str, Any]) -> None
+    def __init__(self, optimizer, all_players, params):
+        # type: ('LineupOptimizer', List[Player], Dict[str, Any]) -> None
         self.params = params
         self.optimizer = optimizer
+        self.all_players = all_players
 
     def apply(self, solver, players_dict):
         # type: (Solver, Dict[Player, Any]) -> None
@@ -38,6 +39,10 @@ class OptimizerRule(object):
 
     def apply_for_iteration(self, solver, players_dict, result):
         # type: (Solver, Dict[Player, Any], Optional[Lineup]) -> None
+        pass
+
+    def post_optimize(self, solved_variables):
+        # type: (List[str]) -> None
         pass
 
 
@@ -67,8 +72,8 @@ class RandomObjective(OptimizerRule):
 
 
 class UniqueLineupRule(OptimizerRule):
-    def __init__(self, optimizer, params):
-        super(UniqueLineupRule, self).__init__(optimizer, params)
+    def __init__(self, optimizer, all_players, params):
+        super(UniqueLineupRule, self).__init__(optimizer, all_players, params)
         self.used_combinations = []  # type: List[Any]
 
     def apply_for_iteration(self, solver, players_dict, result):
@@ -97,8 +102,8 @@ class LineupBudgetRule(OptimizerRule):
 
 
 class LockedPlayersRule(OptimizerRule):
-    def __init__(self, optimizer, params):
-        super(LockedPlayersRule, self).__init__(optimizer, params)
+    def __init__(self, optimizer, all_players, params):
+        super(LockedPlayersRule, self).__init__(optimizer, all_players, params)
         self.used_players = defaultdict(int)  # type: DefaultDict[Player, int]
         self.total_lineups = params.get('n')
         self.remaining_iteration = params.get('n') + 1
@@ -180,80 +185,6 @@ class MinSalaryCapRule(OptimizerRule):
         solver.add_constraint(variables, coefficients, SolverSign.GTE, min_salary_cap)
 
 
-class FromSameTeamByPositionsRule(OptimizerRule):
-    def __init__(self, optimizer, params):
-        super(FromSameTeamByPositionsRule, self).__init__(optimizer, params)
-        self.stacks_dict = Counter(
-            map(tuple, self.optimizer.positions_stacks_from_same_team)  # type: ignore
-        )  # type: TypingCounter[Tuple[Tuple[str, ...], ...]]
-        self.used_teams = defaultdict(int)  # type: DefaultDict[str, int]
-        self.total_lineups = params.get('n')
-        self.teams_max_exposures = optimizer.teams_exposures
-        self.players_combinations_by_team = {}  # type: Dict[Tuple[str, ...], Dict[str, Set]]
-
-    def apply(self, solver, players_dict):
-        if not self.teams_max_exposures:
-            self._create_constraints(solver, players_dict)
-
-    def apply_for_iteration(self, solver, players_dict, result):
-        if not self.teams_max_exposures:
-            return
-        if not result:
-            self._create_constraints(solver, players_dict)
-            return
-        for team in self._detect_teams_used_in_stacks(result):
-            self.used_teams[team] += 1
-        # Get teams reached max exposure
-        exclude_teams = set()
-        for team, max_exposure in self.teams_max_exposures.items():
-            if max_exposure is not None and max_exposure <= self.used_teams[team] / self.total_lineups:
-                exclude_teams.add(team)
-        self._create_constraints(solver, players_dict, exclude_teams)
-
-    def _create_constraints(self, solver, players_dict, exclude_teams=None):
-        # type: (Solver, Dict[Player, Any], Optional[Set[str]]) -> None
-        all_combinations = defaultdict(set)  # type: DefaultDict[Tuple[Any, ...], Set[Any]]
-        players_by_teams = get_players_grouped_by_teams(players_dict.keys())
-        for stack, total_stacks in self.stacks_dict.items():
-            stack_variables = []
-            variable_prefix = 'rules_%s' % '_'.join(str(stack))
-            all_positions = tuple(set(chain.from_iterable(stack)))
-            positions_for_optimizer = Counter(stack)
-            positions_for_optimizer[all_positions] = len(stack)
-            for team_name, team_players in players_by_teams.items():
-                if exclude_teams and team_name in exclude_teams:
-                    variables = [players_dict[player] for player in team_players
-                                 if list_intersection(player.positions, all_positions)]
-                    solver.add_constraint(variables, None, SolverSign.LTE, len(stack) - 1)
-                    continue
-                variable_name = '%s_players_%s' % (variable_prefix, team_name)
-                team_stack_var = solver.add_variable(variable_name)
-                stack_variables.append(team_stack_var)
-                for positions, total in positions_for_optimizer.items():
-                    position_variables = set(
-                        players_dict[player] for player in sorted(team_players, key=lambda p: p.full_name)
-                        if list_intersection(player.positions, positions))
-                    all_combinations[tuple(position_variables)].add(team_stack_var)
-                    solver.add_constraint(position_variables, None, SolverSign.GTE, total * team_stack_var)
-            solver.add_constraint(stack_variables, None, SolverSign.GTE, total_stacks)
-        for combination_variables in all_combinations.values():
-            if len(combination_variables) > 1:
-                solver.add_constraint(combination_variables, None, SolverSign.LTE, 1)
-
-    def _detect_teams_used_in_stacks(self, lineup):
-        # type: (Lineup) -> Set[str]
-        teams = set([player.team for player in lineup])
-        all_teams_used_in_stacks = set()
-        for stack in self.stacks_dict.keys():
-            teams_used_in_stack = teams.copy()
-            for positions in stack:
-                teams_used_in_stack = teams_used_in_stack.intersection(
-                    set([player.team for player in lineup if list_intersection(positions, player.positions)])
-                )
-            all_teams_used_in_stacks.update(teams_used_in_stack)
-        return all_teams_used_in_stacks
-
-
 class RemoveInjuredRule(OptimizerRule):
     def apply(self, solver, players_dict):
         injured_players_variables = [variable for player, variable in players_dict.items() if player.is_injured]
@@ -261,8 +192,8 @@ class RemoveInjuredRule(OptimizerRule):
 
 
 class MaxRepeatingPlayersRule(OptimizerRule):
-    def __init__(self, optimizer, params):
-        super(MaxRepeatingPlayersRule, self).__init__(optimizer, params)
+    def __init__(self, optimizer, all_players, params):
+        super(MaxRepeatingPlayersRule, self).__init__(optimizer, all_players, params)
         self.exclude_combinations = []  # type: List[Any]
 
     def apply_for_iteration(self, solver, players_dict, result):
@@ -313,8 +244,8 @@ class UniquePlayerRule(OptimizerRule):
 
 
 class LateSwapRule(OptimizerRule):
-    def __init__(self, optimizer, params):
-        super(LateSwapRule, self).__init__(optimizer, params)
+    def __init__(self, optimizer, all_players, params):
+        super(LateSwapRule, self).__init__(optimizer, all_players, params)
         self.current_iteration = 0
         self.lineups = params.get('lineups')  # type: List[Lineup]
 
@@ -345,66 +276,57 @@ class LateSwapRule(OptimizerRule):
         self.current_iteration += 1
 
 
-class TeamStacksRule(OptimizerRule):
-    def __init__(self, optimizer, params):
-        super(TeamStacksRule, self).__init__(optimizer, params)
-        stacks = self.optimizer.team_stacks or []
-        self.stacks_dict = {}  # type: Dict[int, int]
-        for i, stack in enumerate(sorted(stacks, reverse=True), start=1):
-            self.stacks_dict[stack] = i
-        self.used_teams = defaultdict(int)  # type: Dict[str, int]
+class GenericStacksRule(OptimizerRule):
+    def __init__(self, optimizer, all_players, params):
+        super(GenericStacksRule, self).__init__(optimizer, all_players, params)
+        self.stacks = [stack.build_stack(all_players) for stack in optimizer.stacks]
         self.total_lineups = params.get('n')
-        self.teams_max_exposures = optimizer.teams_exposures
-        self.min_count_not_in_stack = max(min(stacks) - 1, 1)
-        remaining_slots = optimizer.settings.get_total_players() - sum(stacks)
-        self.add_exclude_constraints = remaining_slots > self.min_count_not_in_stack
-        self.player_variables_by_teams = {}  # type: Dict[str, List]
+        self.used_groups = defaultdict(int)  # type: Dict[str, int]
+        self.with_exposures = any(stack.with_exposures for stack in self.stacks)
 
     def apply(self, solver, players_dict):
-        all_players = players_dict.keys()
-        for_positions = self.optimizer.team_stacks_for_positions
-        if for_positions:
-            all_players = [player for player in all_players if list_intersection(player.positions, for_positions)]
-        players_by_teams = get_players_grouped_by_teams(all_players)
-        for team, players in players_by_teams.items():
-            variables = [players_dict[player] for player in players]
-            self.player_variables_by_teams[team] = variables
-        if not self.teams_max_exposures:
-            self._create_constraints(solver)
+        if not self.with_exposures:
+            self._create_constraints(solver, players_dict)
 
     def apply_for_iteration(self, solver, players_dict, result):
-        if not self.teams_max_exposures:
-            return
-        if not result:
-            self._create_constraints(solver)
-            return
-        # Detect teams used in stack
-        for team, total_players in Counter(player.team for player in result).most_common():
-            if total_players not in self.stacks_dict:
-                break
-            self.used_teams[team] += 1
-        # Get teams reached max exposure
-        exclude_teams = set()
-        for team, max_exposure in self.teams_max_exposures.items():
-            if max_exposure is not None and max_exposure <= self.used_teams[team] / self.total_lineups:
-                exclude_teams.add(team)
-        self._create_constraints(solver, exclude_teams)
-        if self.add_exclude_constraints:
-            for team in exclude_teams:
-                variables = self.player_variables_by_teams[team]
-                solver.add_constraint(variables, None, SolverSign.LTE, self.min_count_not_in_stack)
+        if self.with_exposures:
+            self._create_constraints(solver, players_dict)
 
-    def _create_constraints(self, solver, exclude_teams=None):
-        # type: (Solver, Set[str]) -> None
-        for stack, total in self.stacks_dict.items():
-            combinations_variables = []
-            for team, variables in self.player_variables_by_teams.items():
-                if exclude_teams and team in exclude_teams:
+    def _create_constraints(self, solver, players_dict, exclude_groups=None):
+        # type: (Solver, Dict[Player, Any], Set[str]) -> None
+        players_in_stack = defaultdict(set)  # type: Dict[Player, Set[Any]]
+        for stack in self.stacks:
+            combinations_variables = {}
+            for group in stack.groups:
+                if exclude_groups and group in exclude_groups:
                     continue
-                solver_variable = solver.add_variable('teams_stack_%d_%s' % (stack, team))
-                combinations_variables.append(solver_variable)
-                solver.add_constraint(variables, None, SolverSign.GTE, stack * solver_variable)
-            solver.add_constraint(combinations_variables, None, SolverSign.GTE, total)
+                group_name = ('stack_%s_%s' % (stack.uuid, group.uuid)).replace('-', '_')
+                sub_groups = group.get_all_players_groups()
+                if group.max_exposure is not None and group.max_exposure <= self.used_groups[group_name] / self.total_lineups:
+                    max_group = sorted(sub_groups, key=lambda t: t[1])[0]
+                    variables = [players_dict[p] for p in max_group[0]]
+                    solver.add_constraint(variables, None, SolverSign.LTE, max_group[1] - 1)
+                    continue
+                if any(sub_group[1] is not None for sub_group in  sub_groups):
+                    solver_variable = solver.add_variable(group_name)
+                    combinations_variables[group_name] = solver_variable
+                for group_players, group_min, group_max in sub_groups:
+                    variables = [players_dict[p] for p in group_players]
+                    if group_min is not None:
+                        for player in group_players:
+                            players_in_stack[player].add(solver_variable)
+                        solver.add_constraint(variables, None, SolverSign.GTE, group_min * solver_variable)
+                    if group_max is not None:
+                        solver.add_constraint(variables, None, SolverSign.LTE, group_max)
+            if combinations_variables:
+                solver.add_constraint(combinations_variables.values(), None, SolverSign.GTE, 1)
+        for player, stacks_vars in players_in_stack.items():
+            if len(stacks_vars) > 1:
+                solver.add_constraint(stacks_vars, None, SolverSign.LTE, 1)
+
+    def post_optimize(self, solved_variables):
+        for variable in solved_variables:
+            self.used_groups[variable] += 1
 
 
 class RestrictPositionsForOpposingTeam(OptimizerRule):
@@ -473,23 +395,16 @@ class ForcePositionsForOpposingTeamRule(OptimizerRule):
 
 
 class RosterSpacingRule(OptimizerRule):
-    @staticmethod
-    def sort_players(player_tuple):
-        return player_tuple[0].roster_order
-
     def apply(self, solver, players_dict):
         optimizer = self.optimizer
         positions, spacing = optimizer.spacing_positions, optimizer.spacing
         if not spacing or not positions:
             return
-        available_players = sorted([
-                (player, variable) for player, variable in players_dict.items()
-                if player.roster_order is not None and list_intersection(player.positions, positions)
-            ],
-            key=self.sort_players,
-        )
-        players_by_roster_positions = {players_spacing: list(players) for players_spacing, players in
-                                       groupby(available_players, key=self.sort_players)}
+        players_by_roster_positions = defaultdict(list)  # type: Dict[int, List[Tuple[Player, Any]]]
+        for player, variable in players_dict.items():
+            if player.roster_order is None or not list_intersection(player.positions, positions):
+                continue
+            players_by_roster_positions[player.roster_order].append((player, variable))
         for roster_position, players in players_by_roster_positions.items():
             next_restricted_roster_position = roster_position + spacing
             restricted_players = chain.from_iterable(

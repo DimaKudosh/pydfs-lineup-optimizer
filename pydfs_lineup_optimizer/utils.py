@@ -120,10 +120,14 @@ def get_remaining_positions(positions, unswappable_players):
     return positions
 
 
-def get_players_grouped_by_teams(players):
-    # type: (Iterable['Player']) -> DefaultDict[str, List['Player']]
+def get_players_grouped_by_teams(players, for_teams=None, for_positions=None):
+    # type: (Iterable['Player'], Optional[List[str]], Optional[List[str]]) -> DefaultDict[str, List['Player']]
     players_by_teams = defaultdict(list)  # type: DefaultDict[str, List['Player']]
     for player in players:
+        if for_teams is not None and player.team not in for_teams:
+            continue
+        if for_positions is not None and not list_intersection(player.positions, for_positions):
+            continue
         players_by_teams[player.team].append(player)
     return players_by_teams
 

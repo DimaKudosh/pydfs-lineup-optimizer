@@ -4,12 +4,14 @@ from copy import deepcopy
 from collections import Counter
 from datetime import datetime
 from math import ceil
+from parameterized import parameterized
 from pydfs_lineup_optimizer import get_optimizer
 from pydfs_lineup_optimizer.constants import Site, Sport
 from pydfs_lineup_optimizer.player import Player, GameInfo
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.rules import ProjectedOwnershipRule
 from pydfs_lineup_optimizer.utils import list_intersection
+from pydfs_lineup_optimizer.stacks import PlayersGroup, TeamStack
 from .utils import create_players, load_players, count_players_in_lineups
 
 
@@ -142,18 +144,16 @@ class TestPositionsFromSameTeamTestCase(unittest.TestCase):
         ]
         self.optimizer.load_players(self.players)
 
-    def test_positions_from_same_team(self):
-        combinations = [['PG', 'C'], ['PG', 'SF', 'C'], ['PG', 'SF', 'C', 'C']]
-        for combination in combinations:
-            self.optimizer.set_positions_for_same_team(combination)
-            lineup = next(self.optimizer.optimize(1))
-            self.assertEqual(len([p for p in lineup.lineup if p.team == self.first_team]), len(combination))
-
-    def test_reset_positions_from_same_team(self):
-        self.optimizer.set_positions_for_same_team(['PG', 'C'])
-        self.optimizer.set_positions_for_same_team(None)
+    @parameterized.expand([
+        (['PG', 'C'], ),
+        (['PG', 'SF', 'C'], ),
+        (['PG', 'SF', 'C', 'C'], ),
+    ])
+    def test_positions_from_same_team(self, combination):
+        self.optimizer.stacks = []
+        self.optimizer.set_positions_for_same_team(combination)
         lineup = next(self.optimizer.optimize(1))
-        self.assertEqual(len(set([p.team for p in lineup.lineup])), 8)
+        self.assertEqual(len([p for p in lineup.lineup if p.team == self.first_team]), len(combination))
 
     def test_multiple_positions_from_same_team(self):
         from_same_team = (['PG', 'C'], ['SG', 'SF'])
@@ -161,10 +161,6 @@ class TestPositionsFromSameTeamTestCase(unittest.TestCase):
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len([p for p in lineup.lineup if p.team == self.first_team]), len(from_same_team[0]))
         self.assertEqual(len([p for p in lineup.lineup if p.team == self.second_team]), len(from_same_team[1]))
-
-    def test_total_players_greater_than_roster_slots(self):
-        with self.assertRaises(LineupOptimizerException):
-            self.optimizer.set_positions_for_same_team(['PG', 'SG', 'SF', 'PF'], ['PG', 'SG', 'SF', 'PF', 'C'])
 
     def test_positions_stack_greater_than_max_from_one_team(self):
         with self.assertRaises(LineupOptimizerException):
@@ -347,7 +343,13 @@ class StacksRuleTestCase(unittest.TestCase):
         self.players = load_players()
         self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
         self.optimizer.settings.max_from_one_team = 4
-        self.optimizer.load_players(self.players)
+        self.test_team = 'TEST'
+        self.spacing_players = [
+            Player('1', '1', '1', ['PG'], self.test_team, 100, 40, roster_order=1),
+            Player('2', '2', '2', ['SG'], self.test_team, 100, 30, roster_order=2),
+            Player('3', '3', '3', ['SF'], self.test_team, 100, 50, roster_order=3),
+        ]
+        self.optimizer.load_players(self.players + self.spacing_players)
 
     def test_stacks_correctness(self):
         stacks = [4, 2]
@@ -355,11 +357,6 @@ class StacksRuleTestCase(unittest.TestCase):
         lineup = next(self.optimizer.optimize(n=1))
         teams = Counter([player.team for player in lineup])
         self.assertListEqual(stacks, [stack[1] for stack in Counter(teams).most_common(len(stacks))])
-
-    def test_stacks_greater_than_total_players(self):
-        stacks = [3, 3, 3]
-        with self.assertRaises(LineupOptimizerException):
-            self.optimizer.set_team_stacking(stacks)
 
     def test_stack_greater_than_max_from_one_team(self):
         stacks = [5]
@@ -373,6 +370,18 @@ class StacksRuleTestCase(unittest.TestCase):
         lineup = next(self.optimizer.optimize(n=1))
         all_position_players_teams = [player.team for player in lineup if position in player.positions]
         self.assertEqual(len(set(all_position_players_teams)), 1)
+
+    @parameterized.expand([
+        (3, [1, 3]),
+        (2, [2, 3]),
+        (1, [3]),
+    ])
+    def test_stacks_with_spacing(self, spacing, expected):
+        self.optimizer.add_stack(TeamStack(2, spacing=spacing))
+        lineup = next(self.optimizer.optimize(n=1))
+        spacings = [player.roster_order for player in lineup if player in self.spacing_players]
+        spacings.sort()
+        self.assertEqual(spacings, expected)
 
 
 class PositionsForOpposingTeamTestCase(unittest.TestCase):
@@ -508,8 +517,8 @@ class TestTeamStacksExposureRule(unittest.TestCase):
         self.optimizer.load_players(self.players + self.high_fppg_players)
 
     def test_teams_exposure_correctness_with_stacking(self):
-        self.optimizer.set_team_stacking([3])
         self.optimizer.set_teams_max_exposure({self.test_team: 0.5})
+        self.optimizer.set_team_stacking([3])
         lineups = self.optimizer.optimize(2)
         first_lineup = next(lineups)
         second_lineup = next(lineups)
@@ -517,8 +526,8 @@ class TestTeamStacksExposureRule(unittest.TestCase):
         self.assertNotEqual(len([p for p in second_lineup if p in self.high_fppg_players]), len(self.high_fppg_players))
 
     def test_teams_exposure_correctness_with_positions_for_same_team(self):
-        self.optimizer.set_positions_for_same_team(self.high_fppg_players_positions)
         self.optimizer.set_teams_max_exposure({self.test_team: 0.5})
+        self.optimizer.set_positions_for_same_team(self.high_fppg_players_positions)
         lineups = self.optimizer.optimize(2)
         first_lineup = next(lineups)
         second_lineup = next(lineups)
@@ -672,3 +681,36 @@ class ForcePositionsForOpposingTeamRuleTestCase(unittest.TestCase):
         self.optimizer.force_positions_for_opposing_team(('PG', 'PF'), ('SG', 'SF'))
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len([p for p in lineup if p.team == self.second_team]), 2)
+
+
+class PlayersGroupsRuleTestCase(unittest.TestCase):
+    def setUp(self):
+        self.players = load_players()
+        self.group = [
+            Player('1', '1', '1', ['PG'], '1', 3000, 1),
+            Player('2', '2', '2', ['SG'], '2', 3000, 1),
+        ]
+        self.high_fppg_group = [
+            Player('3', '3', '3', ['SF'], '3', 30, 100),
+            Player('4', '4', '4', ['PF'], '4', 30, 100),
+        ]
+        self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+        self.optimizer.load_players(self.players + self.group + self.high_fppg_group)
+
+    def test_group_players(self):
+        group = PlayersGroup(self.group)
+        self.optimizer.add_players_group(group)
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len([player for player in self.group if player in lineup]), len(self.group))
+
+    def test_group_players_smaller_total(self):
+        group = PlayersGroup(self.group, 1)
+        self.optimizer.add_players_group(group)
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len([player for player in self.group if player in lineup]), 1)
+
+    def test_ungroup_players(self):
+        group = PlayersGroup(self.high_fppg_group, max_from_group=1)
+        self.optimizer.add_players_group(group)
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len([player for player in self.high_fppg_group if player in lineup]), 1)

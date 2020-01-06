@@ -2,3 +2,4 @@ PuLP==1.6.8
 mock==2.0.0
 typing
 pytz
+parameterized
