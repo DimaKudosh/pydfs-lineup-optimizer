@@ -45,7 +45,8 @@ class PuLPSolver(Solver):
         if self.prob.status == LpStatusOptimal:
             result = []
             for variable in self.prob.variables():
-                if round(variable.value()) == 1.0:
+                val = variable.value()
+                if val is not None and round(val) == 1.0:
                     result.append(variable)
             return result
         else:

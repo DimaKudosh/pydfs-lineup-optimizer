@@ -1,4 +1,3 @@
-from __future__ import division
 from collections import defaultdict, Counter
 from itertools import product, groupby, permutations, chain
 from math import ceil
@@ -26,23 +25,19 @@ __all__ = [
 ]
 
 
-class OptimizerRule(object):
-    def __init__(self, optimizer, all_players, params):
-        # type: ('LineupOptimizer', List[Player], Dict[str, Any]) -> None
+class OptimizerRule:
+    def __init__(self, optimizer: 'LineupOptimizer', all_players: List[Player], params: Dict[str, Any]):
         self.params = params
         self.optimizer = optimizer
         self.all_players = all_players
 
-    def apply(self, solver, players_dict):
-        # type: (Solver, Dict[Player, Any]) -> None
+    def apply(self, solver: Solver, players_dict: Dict[Player, Any]):
         pass
 
-    def apply_for_iteration(self, solver, players_dict, result):
-        # type: (Solver, Dict[Player, Any], Optional[Lineup]) -> None
+    def apply_for_iteration(self, solver: Solver, players_dict: Dict[Player, Any], result: Optional[Lineup]):
         pass
 
-    def post_optimize(self, solved_variables):
-        # type: (List[str]) -> None
+    def post_optimize(self, solved_variables: List[str]):
         pass
 
 
@@ -292,8 +287,12 @@ class GenericStacksRule(OptimizerRule):
         if self.with_exposures:
             self._create_constraints(solver, players_dict)
 
-    def _create_constraints(self, solver, players_dict, exclude_groups=None):
-        # type: (Solver, Dict[Player, Any], Set[str]) -> None
+    def _create_constraints(
+            self,
+            solver: Solver,
+            players_dict: Dict[Player, Any],
+            exclude_groups: Optional[Set[str]] = None
+    ):
         players_in_stack = defaultdict(set)  # type: Dict[Player, Set[Any]]
         for stack in self.stacks:
             combinations_variables = {}

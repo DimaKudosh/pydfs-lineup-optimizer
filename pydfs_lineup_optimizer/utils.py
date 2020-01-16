@@ -1,4 +1,3 @@
-from __future__ import division
 from typing import Dict, Tuple, List, Iterable, Set, Any, DefaultDict, Optional, TYPE_CHECKING
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
@@ -11,16 +10,14 @@ if TYPE_CHECKING:
     from pydfs_lineup_optimizer.player import Player, LineupPlayer
 
 
-def list_intersection(first_list, second_list):
-    # type: (Iterable[Any], Iterable[Any]) -> bool
+def list_intersection(first_list: Iterable[Any], second_list: Iterable[Any]) -> bool:
     for el in first_list:
         if el in second_list:
             return True
     return False
 
 
-def ratio(search_string, possible_match):
-    # type: (str, str) -> float
+def ratio(search_string: str, possible_match: str) -> float:
     search_string = search_string.lower()
     possible_match = possible_match.lower()
     if len(search_string) >= len(possible_match):
@@ -32,8 +29,10 @@ def ratio(search_string, possible_match):
     return max([SequenceMatcher(None, search_string, part).ratio() for part in parts])
 
 
-def get_positions_for_optimizer(positions_list, multi_positions_combinations=None):
-    # type: (List[LineupPosition], Set[Tuple[str, ...]]) -> Dict[Tuple[str, ...], int]
+def get_positions_for_optimizer(
+        positions_list: List[LineupPosition],
+        multi_positions_combinations: Optional[Set[Tuple[str, ...]]] = None
+) -> Dict[Tuple[str, ...], int]:
     """
     Convert positions list into dict for using in optimizer.
     """
@@ -65,8 +64,10 @@ def get_positions_for_optimizer(positions_list, multi_positions_combinations=Non
     return positions
 
 
-def link_players_with_positions(players, positions):
-    # type: (List['Player'], List[LineupPosition]) -> Dict['Player', LineupPosition]
+def link_players_with_positions(
+        players: List['Player'],
+        positions: List[LineupPosition]
+) -> Dict['Player', LineupPosition]:
     """
     This method tries to set positions for given players, and raise error if can't.
     """
@@ -106,8 +107,10 @@ def link_players_with_positions(players, positions):
     return players_with_positions
 
 
-def get_remaining_positions(positions, unswappable_players):
-    # type: (List[LineupPosition], List['LineupPlayer']) -> List[LineupPosition]
+def get_remaining_positions(
+        positions: List[LineupPosition],
+        unswappable_players: List['LineupPlayer']
+) -> List[LineupPosition]:
     """
     Remove unswappable players positions from positions list
     """
@@ -120,8 +123,11 @@ def get_remaining_positions(positions, unswappable_players):
     return positions
 
 
-def get_players_grouped_by_teams(players, for_teams=None, for_positions=None):
-    # type: (Iterable['Player'], Optional[List[str]], Optional[List[str]]) -> DefaultDict[str, List['Player']]
+def get_players_grouped_by_teams(
+        players: Iterable['Player'],
+        for_teams: Optional[List[str]] = None,
+        for_positions: Optional[List[str]] = None,
+) -> DefaultDict[str, List['Player']]:
     players_by_teams = defaultdict(list)  # type: DefaultDict[str, List['Player']]
     for player in players:
         if for_teams is not None and player.team not in for_teams:
@@ -132,6 +138,5 @@ def get_players_grouped_by_teams(players, for_teams=None, for_positions=None):
     return players_by_teams
 
 
-def process_percents(percent):
-    # type: (Optional[float]) -> Optional[float]
+def process_percents(percent: Optional[float]) -> Optional[float]:
     return percent / 100 if percent and percent > 1 else percent

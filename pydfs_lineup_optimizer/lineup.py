@@ -3,9 +3,8 @@ from pydfs_lineup_optimizer.player import LineupPlayer
 from pydfs_lineup_optimizer.lineup_printer import BaseLineupPrinter, LineupPrinter
 
 
-class Lineup(object):
-    def __init__(self, players, printer=LineupPrinter):
-        # type: (List[LineupPlayer], Type[BaseLineupPrinter]) -> None
+class Lineup:
+    def __init__(self, players: List[LineupPlayer], printer: Type[BaseLineupPrinter] = LineupPrinter):
         self.players = players
         self.printer = printer()
 
@@ -21,21 +20,23 @@ class Lineup(object):
     def __repr__(self):
         return 'Lineup: projection %s, budget %s' % (self.fantasy_points_projection, self.salary_costs)
 
+    def __hash__(self):
+        return hash(sorted(p.id for p in self))
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
     @property
-    def lineup(self):
-        # type: () -> List[LineupPlayer]
+    def lineup(self) -> List[LineupPlayer]:
         return self.players
 
     @property
-    def fantasy_points_projection(self):
-        # type: () -> float
+    def fantasy_points_projection(self) -> float:
         return round(sum(player.fppg for player in self.players), 3)
 
     @property
-    def salary_costs(self):
-        # type: () -> int
+    def salary_costs(self) -> int:
         return sum(player.salary for player in self.players)
 
-    def get_unswappable_players(self):
-        # type: () -> List[LineupPlayer]
+    def get_unswappable_players(self) -> List[LineupPlayer]:
         return [player for player in self.players if player.is_game_started]

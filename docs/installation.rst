@@ -6,7 +6,7 @@ Installation
 
 Compatibility
 -------------
-**pydfs-lineup-optimizer** works with following versions of python: Python: 2.7, 3.3+
+**pydfs-lineup-optimizer** works with following versions of python: Python: 3.3+
 
 Installation
 ------------

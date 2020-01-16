@@ -4,27 +4,21 @@ from typing import TypeVar, Any, List, Iterable, Optional
 Self = TypeVar('Self', bound='Solver')
 
 
-class Solver(object):  # pragma: no cover
-    def setup_solver(self):
-        # type: () -> None
+class Solver:  # pragma: no cover
+    def setup_solver(self) -> None:
         raise NotImplementedError
 
-    def set_objective(self, variables, coefficients):
-        # type: (Iterable[Any], Iterable[float]) -> None
+    def set_objective(self, variables: Iterable[Any], coefficients: Iterable[float]):
         raise NotImplementedError
 
-    def add_variable(self, name):
-        # type: (str) -> Any
+    def add_variable(self, name: str) -> Any:
         raise NotImplementedError
 
-    def add_constraint(self, variables, coefficients, sense, rhs):
-        # type: (Iterable[Any], Optional[Iterable[float]], str, float) -> None
+    def add_constraint(self, variables: Iterable[Any], coefficients: Optional[Iterable[float]], sign: str, rhs: float):
         raise NotImplementedError
 
-    def solve(self):
-        # type: () -> List[Any]
+    def solve(self) -> List[Any]:
         raise NotImplementedError
 
-    def copy(self):
-        # type: () -> Self
+    def copy(self) -> Self:
         raise NotImplementedError

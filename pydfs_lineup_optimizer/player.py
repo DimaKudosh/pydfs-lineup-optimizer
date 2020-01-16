@@ -1,4 +1,3 @@
-from __future__ import division
 from collections import namedtuple
 from datetime import datetime
 from pytz import timezone
@@ -10,30 +9,29 @@ from pydfs_lineup_optimizer.tz import get_timezone
 GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at', 'game_started'])
 
 
-class Player(object):
+class Player:
     def __init__(self,
-                 player_id,  # type: str
-                 first_name,  # type: str
-                 last_name,  # type: str
-                 positions,  # type: List[str]
-                 team,  # type: str
-                 salary,  # type: float
-                 fppg,  # type: float
-                 is_injured=False,  # type: bool
-                 max_exposure=None,  # type: Optional[float]
-                 min_exposure=None,  # type: Optional[float]
-                 projected_ownership=None,  # type: Optional[float]
-                 game_info=None,  # type: Optional[GameInfo]
-                 roster_order=None,  # type: Optional[int]
-                 min_deviation=None,  # type: Optional[float]
-                 max_deviation=None,  # type: Optional[float]
+                 player_id: str,
+                 first_name: str,
+                 last_name: str,
+                 positions: List[str],
+                 team: str,
+                 salary: float,
+                 fppg: float,
+                 is_injured: bool = False,
+                 max_exposure: Optional[float] = None,
+                 min_exposure: Optional[float] = None,
+                 projected_ownership: Optional[float] = None,
+                 game_info: Optional[GameInfo] = None,
+                 roster_order: Optional[int] = None,
+                 min_deviation: Optional[float] = None,
+                 max_deviation: Optional[float] = None,
                  ):
-        # type: (...) -> None
         self.id = player_id
         self.first_name = first_name
         self.last_name = last_name
         self.positions = positions
-        self.team = team.upper()
+        self.team = team
         self.salary = salary
         self.fppg = fppg
         self.is_injured = is_injured
@@ -58,68 +56,55 @@ class Player(object):
         return hash(self.id)
 
     @property
-    def max_exposure(self):
-        # type: () -> Optional[float]
+    def max_exposure(self) -> Optional[float]:
         return self._max_exposure
 
     @max_exposure.setter
-    def max_exposure(self, max_exposure):
-        # type: (Optional[float]) -> None
+    def max_exposure(self, max_exposure: Optional[float]):
         self._max_exposure = process_percents(max_exposure)
 
     @property
-    def min_exposure(self):
-        # type: () -> Optional[float]
+    def min_exposure(self) -> Optional[float]:
         return self._min_exposure
 
     @min_exposure.setter
-    def min_exposure(self, min_exposure):
-        # type: (Optional[float]) -> None
+    def min_exposure(self, min_exposure: Optional[float]):
         self._min_exposure = process_percents(min_exposure)
 
     @property
-    def min_deviation(self):
-        # type: () -> Optional[float]
+    def min_deviation(self) -> Optional[float]:
         return self._min_deviation
 
     @min_deviation.setter
-    def min_deviation(self, min_deviation):
-        # type: (Optional[float]) -> None
+    def min_deviation(self, min_deviation: Optional[float]):
         self._min_deviation = process_percents(min_deviation)
 
     @property
-    def max_deviation(self):
-        # type: () -> Optional[float]
+    def max_deviation(self) -> Optional[float]:
         return self._max_deviation
 
     @max_deviation.setter
-    def max_deviation(self, max_deviation):
-        # type: (Optional[float]) -> None
+    def max_deviation(self, max_deviation: Optional[float]):
         self._max_deviation = process_percents(max_deviation)
 
     @property
-    def projected_ownership(self):
-        # type: () -> Optional[float]
+    def projected_ownership(self) -> Optional[float]:
         return self._projected_ownership
 
     @projected_ownership.setter
-    def projected_ownership(self, projected_ownership):
-        # type: (Optional[float]) -> None
+    def projected_ownership(self, projected_ownership: Optional[float]):
         self._projected_ownership = process_percents(projected_ownership)
 
     @property
-    def full_name(self):
-        # type: () -> str
+    def full_name(self) -> str:
         return '{} {}'.format(self.first_name, self.last_name)
 
     @property
-    def efficiency(self):
-        # type: () -> float
+    def efficiency(self) -> float:
         return round(self.fppg / self.salary, 6)
 
     @property
-    def is_game_started(self):
-        # type: () -> bool
+    def is_game_started(self) -> bool:
         if self.game_info:
             if self.game_info.game_started:
                 return True
@@ -130,11 +115,10 @@ class Player(object):
         return False
 
 
-class LineupPlayer(object):
+class LineupPlayer:
     __slots__ = ['_player', 'lineup_position']
 
-    def __init__(self, player, lineup_position):
-        # type: (Player, str) -> None
+    def __init__(self, player: Player, lineup_position: str):
         self._player = player
         self.lineup_position = lineup_position
 

@@ -1,4 +1,4 @@
-class SolverSign(object):
+class SolverSign:
     EQ = 'eq'
     NOT_EQ = 'not_eq'
     GTE = 'gte'

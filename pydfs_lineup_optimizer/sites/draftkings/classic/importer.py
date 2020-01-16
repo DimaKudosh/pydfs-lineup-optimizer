@@ -16,8 +16,7 @@ from pydfs_lineup_optimizer.tz import get_timezone
 class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
     site = Site.DRAFTKINGS
 
-    def _parse_game_info(self, row):
-        # type: (Dict) -> Optional[GameInfo]
+    def _parse_game_info(self, row: Dict) -> Optional[GameInfo]:
         game_info = row.get('Game Info')
         if not game_info:
             return None
@@ -41,8 +40,7 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
         except ValueError:
             return None
 
-    def _row_to_player(self, row):
-        # type: (Dict) -> Player
+    def _row_to_player(self, row: Dict) -> Player:
         try:
             name = row['Name'].split()
             player = Player(

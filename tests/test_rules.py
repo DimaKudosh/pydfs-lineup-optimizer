@@ -66,7 +66,7 @@ class OptimizerRulesTestCase(unittest.TestCase):
         self.assertTrue(len(list(filter(lambda x: 'C' in x.positions, lineup.lineup))) >= 2)
 
     def test_lineup_with_players_from_same_team(self):
-        teams = {'CAVS': 4, 'LAC': 4}
+        teams = {'Cavs': 4, 'LAC': 4}
         self.lineup_optimizer.set_players_from_one_team(teams)
         lineup = next(self.lineup_optimizer.optimize(1))
         for team, total in teams.items():
