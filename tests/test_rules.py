@@ -211,7 +211,7 @@ class TestMaxFromOneTeamTestCase(unittest.TestCase):
             self.lineup_optimizer.add_player_to_lineup(self.effective_players[1])
 
 
-class ExposureTestCase(unittest.TestCase):
+class MaxExposureTestCase(unittest.TestCase):
     def setUp(self):
         self.players = load_players()
         self.player_with_max_exposure = [
@@ -221,11 +221,6 @@ class ExposureTestCase(unittest.TestCase):
             Player('4', 'p4', 'p4', ['PG'], 'DEN', 100, 2),
             Player('5', 'p5', 'p5', ['PF'], 'DEN', 100, 2, max_exposure=0),
             Player('6', 'p6', 'p6', ['SF'], 'DEN', 1, 2001, max_exposure=0),
-        ]
-        self.players_with_min_exposure = [
-            Player('7', 'p7', 'p7', ['PG', 'SG'], 'SAS', 1000, 0, min_exposure=0.3),
-            Player('8', 'p8', 'p8', ['C'], 'SAS', 1000, 0, min_exposure=0.35),
-            Player('9', 'p9', 'p9', ['C'], 'SAS', 1000, 0, min_exposure=1),
         ]
         self.lineup_optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
         self.lineup_optimizer.load_players(self.players)
@@ -261,15 +256,6 @@ class ExposureTestCase(unittest.TestCase):
         self.lineup_optimizer.extend_players(self.player_with_max_exposure)
         with self.assertRaises(LineupOptimizerException):
             self.lineup_optimizer.add_player_to_lineup(self.player_with_max_exposure[4])
-
-    def test_min_exposure(self):
-        optimizer = self.lineup_optimizer
-        players = self.players_with_min_exposure
-        optimizer.extend_players(players)
-        lineups_with_players = count_players_in_lineups(players, optimizer.optimize(10))
-        self.assertEqual(lineups_with_players[players[0]], 3)
-        self.assertEqual(lineups_with_players[players[1]], 4)
-        self.assertEqual(lineups_with_players[players[2]], 10)
 
 
 class ProjectedOwnershipTestCase(unittest.TestCase):
@@ -714,3 +700,32 @@ class PlayersGroupsRuleTestCase(unittest.TestCase):
         self.optimizer.add_players_group(group)
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len([player for player in self.high_fppg_group if player in lineup]), 1)
+
+
+class MinExposureTestCase(unittest.TestCase):
+    def setUp(self):
+        self.players = load_players()
+        self.players_with_min_exposure = [
+            Player('1', '1', '1', ['PG', 'SG'], '1', 1000, 0, min_exposure=0.3),
+            Player('2', '2', '2', ['SF', 'PF'], '2', 1000, 0, min_exposure=0.35),
+            Player('3', '3', '3', ['C'], '3', 1000, 0, min_exposure=1),
+            Player('4', '4', '4', ['C'], '4', 1000, 0, min_exposure=1),
+        ]
+        self.lineup_optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+        self.lineup_optimizer.load_players(self.players + self.players_with_min_exposure)
+
+    def test_min_exposure(self):
+        optimizer = self.lineup_optimizer
+        players = self.players_with_min_exposure
+        lineups_with_players = count_players_in_lineups(players, optimizer.optimize(10))
+        self.assertEqual(lineups_with_players[players[0]], 3)
+        self.assertEqual(lineups_with_players[players[1]], 3)
+        self.assertEqual(lineups_with_players[players[2]], 10)
+        self.assertEqual(lineups_with_players[players[3]], 10)
+
+    def test_min_exposure_error(self):
+        self.lineup_optimizer.extend_players([
+            Player('5', '5', '5', ['C'], '5', 1000, 0, min_exposure=1)
+        ])
+        with self.assertRaises(LineupOptimizerException):
+            list(self.lineup_optimizer.optimize(10))

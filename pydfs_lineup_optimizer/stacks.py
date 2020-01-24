@@ -70,9 +70,10 @@ class NestedPlayersGroup(BaseGroup):
 
 
 class OptimizerStack:
-    def __init__(self, groups: List[BaseGroup]):
+    def __init__(self, groups: List[BaseGroup], can_intersect=False):
         self.groups = groups
         self.uuid = uuid4()
+        self.can_intersect = can_intersect
 
     @property
     def with_exposures(self) -> bool:
@@ -85,7 +86,7 @@ class BaseStack(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def build_stack(self, players: List[Player]) -> OptimizerStack:
+    def build_stacks(self, players: List[Player], optimizer: 'LineupOptimizer') -> List[OptimizerStack]:
         pass
 
 
@@ -93,8 +94,8 @@ class Stack(BaseStack):
     def __init__(self, groups: List[BaseGroup]):
         self.groups = groups
 
-    def build_stack(self, players: List[Player]) -> OptimizerStack:
-        return OptimizerStack(groups=self.groups)
+    def build_stacks(self, players: List[Player], optimizer: 'LineupOptimizer') -> List[OptimizerStack]:
+        return [OptimizerStack(groups=self.groups)]
 
     def validate(self, optimizer: 'LineupOptimizer') -> None:
         pass
@@ -117,7 +118,7 @@ class TeamStack(BaseStack):
         self.max_exposure = max_exposure
         self.max_exposure_per_team = max_exposure_per_team or {}
 
-    def build_stack(self, players: List[Player]) -> OptimizerStack:
+    def build_stacks(self, players: List[Player], optimizer: 'LineupOptimizer') -> List[OptimizerStack]:
         players_by_teams = get_players_grouped_by_teams(
             players, for_teams=self.for_teams, for_positions=self.for_positions)
         groups = []  # type: List[BaseGroup]
@@ -149,7 +150,7 @@ class TeamStack(BaseStack):
                 groups.append(NestedPlayersGroup(
                     groups=sub_groups,
                 ))
-        return OptimizerStack(groups=groups)
+        return [OptimizerStack(groups=groups)]
 
     def validate(self, optimizer: 'LineupOptimizer') -> None:
         settings = optimizer.settings
@@ -182,7 +183,7 @@ class PositionsStack(BaseStack):
         self.max_exposure = max_exposure
         self.max_exposure_per_team = max_exposure_per_team or {}
 
-    def build_stack(self, players: List[Player]) -> OptimizerStack:
+    def build_stacks(self, players: List[Player], optimizer: 'LineupOptimizer') -> List[OptimizerStack]:
         players_by_teams = get_players_grouped_by_teams(players, for_teams=self.for_teams)
         all_positions = tuple(set(chain.from_iterable(self.positions)))
         positions_for_optimizer = Counter(self.positions)
@@ -200,7 +201,7 @@ class PositionsStack(BaseStack):
                 max_exposure=self.max_exposure_per_team.get(team_name, self.max_exposure),
             )
             all_groups.append(nested_group)
-        return OptimizerStack(groups=all_groups)
+        return [OptimizerStack(groups=all_groups)]
 
     def validate(self, optimizer: 'LineupOptimizer') -> None:
         if not all(self.positions):
@@ -216,3 +217,30 @@ class PositionsStack(BaseStack):
         for team in self.for_teams or []:
             if team not in optimizer.available_teams:
                 raise LineupOptimizerIncorrectTeamName('%s is incorrect team name.' % team)
+
+
+class MinExposureStack(BaseStack):
+    def validate(self, optimizer: 'LineupOptimizer') -> None:
+        pass
+
+    def build_stacks(self, players: List[Player], optimizer: 'LineupOptimizer') -> List[OptimizerStack]:
+        stacks = []
+        current_max_exposure = 1
+        current_players = players
+        total_players = optimizer.settings.get_total_players()
+        players_with_min_exposures = sorted([p for p in players if p.min_exposure], key=lambda p: -p.min_exposure)
+        for min_exposure_player in players_with_min_exposures:
+            current_players = [p for p in current_players if p != min_exposure_player]
+            if current_max_exposure <= min_exposure_player.min_exposure:
+                stacks.append(OptimizerStack(groups=[
+                    PlayersGroup(players=current_players, min_from_group=total_players, max_exposure=0),
+                ], can_intersect=True))
+            current_max_exposure -= min_exposure_player.min_exposure
+            current_max_exposure = round(current_max_exposure, 3)
+            if current_max_exposure <= 0:
+                current_max_exposure += 1
+                total_players -= 1
+            stacks.append(OptimizerStack(groups=[
+                PlayersGroup(players=current_players, min_from_group=total_players, max_exposure=current_max_exposure),
+            ], can_intersect=True))
+        return stacks

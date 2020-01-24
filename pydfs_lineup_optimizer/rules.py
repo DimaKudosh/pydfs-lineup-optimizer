@@ -1,6 +1,5 @@
 from collections import defaultdict, Counter
 from itertools import product, groupby, permutations, chain
-from math import ceil
 from random import getrandbits, uniform
 from typing import List, Dict, DefaultDict, Set, Tuple, Any, Optional, TYPE_CHECKING
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
@@ -8,6 +7,7 @@ from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_op
     get_players_grouped_by_teams
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import Player
+from pydfs_lineup_optimizer.stacks import MinExposureStack
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -107,12 +107,6 @@ class LockedPlayersRule(OptimizerRule):
         force_variables = []
         exclude_variables = []
         self.remaining_iteration -= 1
-        for player, variable in players_dict.items():
-            if not player.min_exposure:
-                continue
-            if ceil(player.min_exposure * self.total_lineups) >= \
-                    self.remaining_iteration - self.used_players.get(player, 0):
-                force_variables.append(variable)
         if result:
             for player in result.lineup:
                 self.used_players[player] += 1
@@ -274,7 +268,9 @@ class LateSwapRule(OptimizerRule):
 class GenericStacksRule(OptimizerRule):
     def __init__(self, optimizer, all_players, params):
         super(GenericStacksRule, self).__init__(optimizer, all_players, params)
-        self.stacks = [stack.build_stack(all_players) for stack in optimizer.stacks]
+        min_exposure_stack = MinExposureStack()
+        stacks = optimizer.stacks + [min_exposure_stack]
+        self.stacks = list(chain.from_iterable(stack.build_stacks(all_players, optimizer) for stack in stacks))
         self.total_lineups = params.get('n')
         self.used_groups = defaultdict(int)  # type: Dict[str, int]
         self.with_exposures = any(stack.with_exposures for stack in self.stacks)
@@ -306,14 +302,15 @@ class GenericStacksRule(OptimizerRule):
                     variables = [players_dict[p] for p in max_group[0]]
                     solver.add_constraint(variables, None, SolverSign.LTE, max_group[1] - 1)
                     continue
-                if any(sub_group[1] is not None for sub_group in  sub_groups):
+                if any(sub_group[1] is not None for sub_group in sub_groups):
                     solver_variable = solver.add_variable(group_name)
                     combinations_variables[group_name] = solver_variable
                 for group_players, group_min, group_max in sub_groups:
                     variables = [players_dict[p] for p in group_players]
                     if group_min is not None:
-                        for player in group_players:
-                            players_in_stack[player].add(solver_variable)
+                        if not stack.can_intersect:
+                            for player in group_players:
+                                players_in_stack[player].add(solver_variable)
                         solver.add_constraint(variables, None, SolverSign.GTE, group_min * solver_variable)
                     if group_max is not None:
                         solver.add_constraint(variables, None, SolverSign.LTE, group_max)
