@@ -38,6 +38,8 @@ class Player:
         self.game_info = game_info
         self.roster_order = roster_order
         self.is_mvp = False  # type: bool
+        self.is_star = False  # type: bool
+        self.is_pro = False  # type: bool
         self._min_exposure = None  # type: Optional[float]
         self._max_exposure = None  # type: Optional[float]
         self._min_deviation = None  # type: Optional[float]

@@ -75,7 +75,7 @@ def link_players_with_positions(
     single_position_players = []  # type: List['Player']
     multi_positions_players = []  # type: List['Player']
     players_with_positions = {}  # type: Dict['Player', LineupPosition]
-    for player in sorted(players, key=lambda p: p.is_mvp, reverse=True):
+    for player in sorted(players, key=get_player_priority, reverse=True):
         if len(player.positions) == 1:
             single_position_players.append(player)
         else:
@@ -140,3 +140,13 @@ def get_players_grouped_by_teams(
 
 def process_percents(percent: Optional[float]) -> Optional[float]:
     return percent / 100 if percent and percent > 1 else percent
+
+
+def get_player_priority(player: 'Player') -> int:
+    if player.is_mvp:
+        return 4
+    elif player.is_star:
+        return 3
+    elif player.is_pro:
+        return 2
+    return 1

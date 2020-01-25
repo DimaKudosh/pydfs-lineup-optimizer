@@ -453,6 +453,16 @@ class FanduelSingleGameMVPRule(OptimizerRule):
         solver.add_constraint(variables, None, SolverSign.EQ, 1)
 
 
+class FanduelSingleGameBasketballRule(OptimizerRule):
+    def apply(self, solver, players_dict):
+        variables = [var for player, var in players_dict.items() if player.is_mvp]
+        solver.add_constraint(variables, None, SolverSign.EQ, 1)
+        variables = [var for player, var in players_dict.items() if player.is_star]
+        solver.add_constraint(variables, None, SolverSign.EQ, 1)
+        variables = [var for player, var in players_dict.items() if player.is_pro]
+        solver.add_constraint(variables, None, SolverSign.EQ, 1)
+
+
 class FanduelSingleGameMaxQBRule(OptimizerRule):
     def apply(self, solver, players_dict):
         variables = [var for player, var in players_dict.items() if 'QB' in player.positions]
