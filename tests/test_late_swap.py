@@ -2,7 +2,7 @@ from __future__ import absolute_import, division
 import unittest
 from datetime import datetime, timedelta
 from pytz import timezone
-from mock import patch, PropertyMock
+from unittest.mock import patch, PropertyMock
 from pydfs_lineup_optimizer import get_optimizer
 from pydfs_lineup_optimizer.constants import Site, Sport
 from pydfs_lineup_optimizer.lineup import Lineup

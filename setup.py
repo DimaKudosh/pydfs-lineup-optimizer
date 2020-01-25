@@ -18,7 +18,7 @@ setup(
     author_email='dimakudosh@gmail.com',
     description='Tool for creating optimal lineups for daily fantasy sports',
     keywords=['dfs', 'fantasy', 'sport', 'lineup', 'optimize', 'optimizer', 'nba', 'nfl', 'nhl', 'mlb'],
-    install_requires=['PuLP>=2.0', 'typing', 'pytz'],
+    install_requires=['PuLP>=2.0', 'pytz'],
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     classifiers=[
