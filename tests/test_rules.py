@@ -708,8 +708,8 @@ class MinExposureTestCase(unittest.TestCase):
         self.players_with_min_exposure = [
             Player('1', '1', '1', ['PG', 'SG'], '1', 1000, 0, min_exposure=0.3),
             Player('2', '2', '2', ['SF', 'PF'], '2', 1000, 0, min_exposure=0.35),
-            Player('3', '3', '3', ['C'], '3', 1000, 0, min_exposure=1),
-            Player('4', '4', '4', ['C'], '4', 1000, 0, min_exposure=1),
+            Player('3', '3', '3', ['C'], '3', 1000, 0, min_exposure=0.95),
+            Player('4', '4', '4', ['C'], '4', 1000, 0, min_exposure=0.93),
         ]
         self.lineup_optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
         self.lineup_optimizer.load_players(self.players + self.players_with_min_exposure)
@@ -719,9 +719,9 @@ class MinExposureTestCase(unittest.TestCase):
         players = self.players_with_min_exposure
         lineups_with_players = count_players_in_lineups(players, optimizer.optimize(10))
         self.assertEqual(lineups_with_players[players[0]], 3)
-        self.assertEqual(lineups_with_players[players[1]], 3)
+        self.assertEqual(lineups_with_players[players[1]], 4)
         self.assertEqual(lineups_with_players[players[2]], 10)
-        self.assertEqual(lineups_with_players[players[3]], 10)
+        self.assertEqual(lineups_with_players[players[3]], 9)
 
     def test_min_exposure_error(self):
         self.lineup_optimizer.extend_players([

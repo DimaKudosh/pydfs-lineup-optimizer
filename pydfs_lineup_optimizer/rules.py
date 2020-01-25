@@ -268,10 +268,10 @@ class LateSwapRule(OptimizerRule):
 class GenericStacksRule(OptimizerRule):
     def __init__(self, optimizer, all_players, params):
         super(GenericStacksRule, self).__init__(optimizer, all_players, params)
-        min_exposure_stack = MinExposureStack()
+        self.total_lineups = params.get('n')
+        min_exposure_stack = MinExposureStack(self.total_lineups)
         stacks = optimizer.stacks + [min_exposure_stack]
         self.stacks = list(chain.from_iterable(stack.build_stacks(all_players, optimizer) for stack in stacks))
-        self.total_lineups = params.get('n')
         self.used_groups = defaultdict(int)  # type: Dict[str, int]
         self.with_exposures = any(stack.with_exposures for stack in self.stacks)
 
