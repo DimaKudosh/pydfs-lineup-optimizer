@@ -23,7 +23,7 @@ class LineupPrinter(BaseLineupPrinter):
         return self.OUTPUT_FORMAT.format(
             index,
             player.lineup_position,
-            '%s(%s)' % (player.full_name, player.roster_order),
+            '%s%s' % (player.full_name, '(%s)' % player.roster_order if player.roster_order else ''),
             '/'.join(player.positions),
             player.team,
             self._print_game_info(player),

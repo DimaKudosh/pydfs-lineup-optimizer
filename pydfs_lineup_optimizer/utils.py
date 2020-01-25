@@ -72,23 +72,15 @@ def link_players_with_positions(
     This method tries to set positions for given players, and raise error if can't.
     """
     positions = positions[:]
-    single_position_players = []  # type: List['Player']
-    multi_positions_players = []  # type: List['Player']
     players_with_positions = {}  # type: Dict['Player', LineupPosition]
-    for player in sorted(players, key=get_player_priority, reverse=True):
-        if len(player.positions) == 1:
-            single_position_players.append(player)
-        else:
-            multi_positions_players.append(player)
-    for player in single_position_players:
-        for position in positions:
-            if player.positions[0] in position.positions:
-                players_with_positions[player] = position
-                positions.remove(position)
-                break
-        else:
-            raise LineupOptimizerException('Unable to build lineup')
-    for players_permutation in permutations(multi_positions_players):
+    players = sorted(players, key=get_player_priority)
+    for position in positions:
+        players_for_position = [p for p in players if list_intersection(position.positions, p.positions)]
+        if len(players_for_position) == 1:
+            players_with_positions[players_for_position[0]] = position
+            positions.remove(position)
+            players.remove(players_for_position[0])
+    for players_permutation in permutations(players):
         is_correct = True
         remaining_positions = positions[:]
         for player in players_permutation:
@@ -142,11 +134,13 @@ def process_percents(percent: Optional[float]) -> Optional[float]:
     return percent / 100 if percent and percent > 1 else percent
 
 
-def get_player_priority(player: 'Player') -> int:
+def get_player_priority(player: 'Player') -> Tuple[int, float]:
+    priority = 1
     if player.is_mvp:
-        return 4
+        priority = 4
     elif player.is_star:
-        return 3
+        priority = 3
     elif player.is_pro:
-        return 2
-    return 1
+        priority = 2
+    game_starts_at = player.game_info.starts_at.timestamp() if player.game_info and player.game_info.starts_at else 0
+    return (-priority, game_starts_at)
