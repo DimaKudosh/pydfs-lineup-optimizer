@@ -541,6 +541,7 @@ class TotalTeamsTestCase(unittest.TestCase):
             Player('11', '11', '11', ['P'], 'ARI', 3000, 5),
             Player('12', '12', '12', ['SS'], 'NY', 3000, 5),
             Player('13', '13', '13', ['OF'], 'POR', 3000, 5),
+            Player('13', '13', '13', ['OF'], 'MIN', 3000, 50),
         ]
         self.optimizer = get_optimizer(Site.FANDUEL, Sport.BASEBALL)
         self.optimizer.settings.min_teams = 3
@@ -574,6 +575,14 @@ class TotalTeamsTestCase(unittest.TestCase):
         self.optimizer.set_total_teams(total_teams)
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len(set(player.team for player in lineup)), total_teams)
+
+    def test_set_total_teams_exclude_positions(self):
+        self.optimizer.settings.min_teams = None
+        self.optimizer.settings.max_from_one_team = None
+        self.optimizer.settings.total_teams_exclude_positions = ['P', 'C', 'SS', '1B', '2B', '3B']
+        self.optimizer.set_total_teams(1)
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len(set(player.team for player in lineup if 'OF' in player.positions)), 1)
 
 
 class TestFanduelSingleGameFootballTestCase(unittest.TestCase):

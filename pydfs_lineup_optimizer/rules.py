@@ -429,11 +429,15 @@ class FanduelBaseballRosterRule(OptimizerRule):
 class TotalTeamsRule(OptimizerRule):
     def apply(self, solver, players_dict):
         total_teams = self.optimizer.total_teams
-        min_teams = self.optimizer.settings.min_teams
+        settings = self.optimizer.settings
+        min_teams = settings.min_teams
         if not min_teams and not total_teams:
             return
         total_players = self.optimizer.settings.get_total_players()
-        players_by_teams = get_players_grouped_by_teams(players_dict.keys())
+        players_by_teams = get_players_grouped_by_teams(players_dict.keys(), for_positions=[
+            position for position in self.optimizer.available_positions
+            if position not in settings.total_teams_exclude_positions
+        ])
         teams_variables = []
         for team, team_players in players_by_teams.items():
             variable = solver.add_variable('total_teams_%s' % team)
