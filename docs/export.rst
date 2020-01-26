@@ -35,3 +35,9 @@ If you want to display another information for player you can pass your own func
 .. code-block:: python
 
     exporter.export('result.csv', lambda p: p.id)
+
+.. note::
+
+    Fantasy Draft has special requirements for import file so if you want to use export feature for Fantasy Draft
+    you should download players list from Lineups page then use `FantasyDraftCSVLineupExporter` instead of `CSVLineupExporter`
+    and pass file with players to export function so export will append generate lineups.

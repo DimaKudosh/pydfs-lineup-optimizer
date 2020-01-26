@@ -1,5 +1,5 @@
 import csv
-from typing import Iterable, Callable
+from typing import Iterable, Callable, cast
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import LineupPlayer
 
@@ -32,3 +32,24 @@ class CSVLineupExporter(LineupExporter):
                 row.append(str(lineup.salary_costs))
                 row.append(str(lineup.fantasy_points_projection))
                 lineup_writer.writerow(row)
+
+
+class FantasyDraftCSVLineupExporter(LineupExporter):
+    def export(self, filename, render_func=None):
+        if not self.lineups:
+            return
+        total_players = 0
+        with open(filename, 'r') as csvfile:
+            lines = list(csv.reader(csvfile))
+            for i, lineup in enumerate(self.lineups, start=1):
+                if i >= len(lines):
+                    lines.append([])
+                players_list = [(render_func or self.render_player)(player) for player in lineup.lineup]
+                if not total_players:
+                    total_players = len(players_list)
+                lines[i] = players_list + lines[i][total_players:]
+            for line_order in range(i, len(lines) - 1):
+                lines[line_order] = [''] * total_players + lines[line_order][total_players:]
+        with open(filename, 'w') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(lines)

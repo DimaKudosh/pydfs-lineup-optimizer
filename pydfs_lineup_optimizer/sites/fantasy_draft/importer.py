@@ -16,12 +16,14 @@ class FantasyDraftCSVImporter(CSVImporter):  # pragma: nocover
             csv_data = csv.DictReader(csvfile, skipinitialspace=True)
             for i, row in enumerate(csv_data):
                 try:
+                    if not row.get('Name'):
+                        break
                     name = row['Name'].split()
                     fppg = row.get('Avg FPPG') or row.get('Avg FPPT')
                     if not fppg:
                         raise LineupOptimizerIncorrectCSV
                     player = Player(
-                        str(i),
+                        row.get('ID', str(i)),
                         name[0],
                         name[1] if len(name) > 1 else '',
                         row['Position'].split('/'),

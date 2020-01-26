@@ -6,14 +6,14 @@ from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOp
 from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.sites import SitesRegistry
-from pydfs_lineup_optimizer.lineup_exporter import CSVLineupExporter
+from pydfs_lineup_optimizer.lineup_exporter import CSVLineupExporter, FantasyDraftCSVLineupExporter
 from pydfs_lineup_optimizer.tz import set_timezone
 
 
 __all__ = [
     'get_optimizer', 'Site', 'Sport', 'Player', 'LineupOptimizerException', 'LineupOptimizerIncorrectTeamName',
     'LineupOptimizerIncorrectPositionName', 'LineupOptimizerIncorrectCSV', 'LineupOptimizer', 'Lineup',
-    'CSVLineupExporter', 'set_timezone',
+    'CSVLineupExporter', 'set_timezone', 'FantasyDraftCSVLineupExporter',
 ]
 
 
