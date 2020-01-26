@@ -30,4 +30,5 @@ class CSVImporter:
             'projected_ownership': cls._parse_exposure(row.get('Projected Ownership')),
             'min_deviation': cls._parse_exposure(row.get('Min Deviation')),
             'max_deviation': cls._parse_exposure(row.get('Max Deviation')),
+            'is_confirmed_starter': bool(row.get('Confirmed Starter')),
         }

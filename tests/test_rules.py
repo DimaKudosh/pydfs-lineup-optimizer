@@ -738,3 +738,32 @@ class MinExposureTestCase(unittest.TestCase):
         ])
         with self.assertRaises(LineupOptimizerException):
             list(self.lineup_optimizer.optimize(10))
+
+
+class MinStartersTestCase(unittest.TestCase):
+    def setUp(self):
+        self.players = load_players()
+        self.starters = [
+            Player('1', '1', '1', ['PG', 'SG'], '1', 1000, 0, is_confirmed_starter=True),
+            Player('2', '2', '2', ['SF', 'PF'], '2', 1000, 0, is_confirmed_starter=True),
+        ]
+        self.lineup_optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+        self.lineup_optimizer.load_players(self.players + self.starters)
+
+    @parameterized.expand([
+        (1, ),
+        (2, ),
+    ])
+    def test_min_starters(self, min_starters):
+        optimizer = self.lineup_optimizer
+        optimizer.set_min_starters(min_starters)
+        lineup = next(optimizer.optimize(1))
+        self.assertEqual(len([p for p in self.starters if p in lineup]), min_starters)
+
+    def test_min_starters_greater_than_total_starters(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.set_min_starters(3)
+
+    def test_min_starters_greater_than_total_players(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.set_min_starters(9)

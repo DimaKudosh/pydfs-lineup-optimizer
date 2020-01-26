@@ -26,6 +26,7 @@ class Player:
                  roster_order: Optional[int] = None,
                  min_deviation: Optional[float] = None,
                  max_deviation: Optional[float] = None,
+                 is_confirmed_starter: Optional[bool] = None,
                  ):
         self.id = player_id
         self.first_name = first_name
@@ -50,6 +51,7 @@ class Player:
         self.min_deviation = min_deviation
         self.max_deviation = max_deviation
         self.projected_ownership = projected_ownership
+        self.is_confirmed_starter = is_confirmed_starter
 
     def __repr__(self):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)

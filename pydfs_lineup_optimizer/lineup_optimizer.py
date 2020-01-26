@@ -49,6 +49,7 @@ class LineupOptimizer:
         self.opposing_team_force_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
         self.total_teams = None  # type: Optional[int]
         self.stacks = []  # type: List[BaseStack]
+        self.min_starters = None  # type: Optional[int]
 
     @property
     def budget(self) -> float:
@@ -347,6 +348,14 @@ class LineupOptimizer:
     def add_stack(self, stack: BaseStack) -> None:
         stack.validate(self)
         self.stacks.append(stack)
+
+    def set_min_starters(self, min_starters: int) -> None:
+        if min_starters > self.settings.get_total_players():
+            raise LineupOptimizerException('Num of starters can\'t be greater than max players')
+        if min_starters > len([p for p in self.players if p.is_confirmed_starter]):
+            raise LineupOptimizerException('Num of starters can\'t be greater than max starters')
+        self.min_starters = min_starters
+        self.add_new_rule(MinStartersRule)
 
     def optimize(
             self,

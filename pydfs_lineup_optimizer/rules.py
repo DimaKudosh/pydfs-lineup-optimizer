@@ -22,6 +22,7 @@ __all__ = [
     'RestrictPositionsForOpposingTeam', 'RosterSpacingRule', 'FanduelBaseballRosterRule',
     'TotalTeamsRule', 'FanduelSingleGameMVPRule', 'FanduelSingleGameMaxQBRule',
     'RestrictPositionsForSameTeamRule', 'ForcePositionsForOpposingTeamRule', 'GenericStacksRule',
+    'MinStartersRule',
 ]
 
 
@@ -471,3 +472,12 @@ class FanduelSingleGameMaxQBRule(OptimizerRule):
     def apply(self, solver, players_dict):
         variables = [var for player, var in players_dict.items() if 'QB' in player.positions]
         solver.add_constraint(variables, None, SolverSign.LTE, 2)
+
+
+class MinStartersRule(OptimizerRule):
+    def apply(self, solver, players_dict):
+        min_starters = self.optimizer.min_starters
+        if not min_starters:
+            return
+        variables = [variable for player, variable in players_dict.items() if player.is_confirmed_starter]
+        solver.add_constraint(variables, None, SolverSign.GTE, min_starters)

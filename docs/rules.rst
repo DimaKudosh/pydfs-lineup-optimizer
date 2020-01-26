@@ -16,6 +16,7 @@ Rules
 - Force players from opposing team
 - Spacing for positions
 - Total teams
+- Minimum starters
 - Stacking rules
 
 Number of players from same team
@@ -141,6 +142,18 @@ you can set it using `set_total_teams` method.
 .. code-block:: python
 
     optimizer.set_total_teams(4)
+
+Minimum starters
+----------------
+
+You can force optimizer to choose minimum number of starters using `set_min_starters` method.
+For marking player as starter you can set `is_confirmed_starter` attribute of Player object to True or
+add `Confirmed Starter` column to csv.
+
+.. code-block:: python
+
+    optimizer.set_min_starters(4)
+
 
 Stacking
 ========
