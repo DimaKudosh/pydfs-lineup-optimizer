@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.0.0]
+- Added new stacking api
+- Fixed min exposure
+- Added FanDuel NBA Single Game
+- Added sorting of players in lineup by game start time
+- Added export lineups for Fantasy Draft
+- Added confirmed starters rule
+- Fixed total teams rule for DK NHL
+- Fixed NHL export for DK
+- Dropped python 2 support
+- Added python 3.8 support
+
 ## [v2.7.0]
 - Added rule for restricting players from same team
 - Added ability to specify several positions in stack
