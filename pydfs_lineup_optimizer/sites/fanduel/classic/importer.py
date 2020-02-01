@@ -12,8 +12,7 @@ from pydfs_lineup_optimizer.constants import Site
 class FanDuelCSVImporter(CSVImporter):  # pragma: nocover
     site = Site.FANDUEL
 
-    def _row_to_player(self, row):
-        # type: (Dict) -> Player
+    def _row_to_player(self, row: Dict) -> Player:
         game_info = None
         try:
             away_team, home_team = row.get('Game', '').split('@')
@@ -37,8 +36,7 @@ class FanDuelCSVImporter(CSVImporter):  # pragma: nocover
             raise LineupOptimizerIncorrectCSV
         return player
 
-    def import_players(self):
-        # type: () -> List[Player]
+    def import_players(self) -> List[Player]:
         with open(self.filename, 'r') as csv_file:
             start_line = 0  # Find line with 'FPPG', that's where players data starts
             while True:

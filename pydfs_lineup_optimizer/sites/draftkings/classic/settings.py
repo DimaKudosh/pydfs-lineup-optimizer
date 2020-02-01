@@ -57,12 +57,13 @@ class DraftKingsFootballSettings(DraftKingsSettings):
 class DraftKingsHockeySettings(DraftKingsSettings):
     sport = Sport.HOCKEY
     min_teams = 3
+    total_teams_exclude_positions = ['G']
     positions = [
-        LineupPosition('W', ('LW', 'RW')),
-        LineupPosition('W', ('LW', 'RW')),
-        LineupPosition('W', ('LW', 'RW')),
         LineupPosition('C', ('C',)),
         LineupPosition('C', ('C',)),
+        LineupPosition('W', ('LW', 'RW')),
+        LineupPosition('W', ('LW', 'RW')),
+        LineupPosition('W', ('LW', 'RW')),
         LineupPosition('D', ('D', )),
         LineupPosition('D', ('D', )),
         LineupPosition('G', ('G',)),

@@ -1,12 +1,14 @@
 from __future__ import absolute_import, division
 import unittest
 from functools import partial
+from parameterized import parameterized
 from pydfs_lineup_optimizer import settings
+from pydfs_lineup_optimizer.player import Player
 from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 from pydfs_lineup_optimizer.settings import LineupPosition
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.utils import ratio, get_positions_for_optimizer, link_players_with_positions, \
-    list_intersection, process_percents
+    list_intersection, process_percents, get_player_priority
 from pydfs_lineup_optimizer.sites.draftkings.classic.settings import DraftKingsBasketballSettings, \
     DraftKingsFootballSettings, DraftKingsBaseballSettings, DraftKingsHockeySettings
 from pydfs_lineup_optimizer.tz import get_timezone, set_timezone
@@ -30,6 +32,27 @@ class UtilsTestCase(unittest.TestCase):
         self.assertIsNone(process_percents(None))
         self.assertEqual(process_percents(0.3), 0.3)
         self.assertEqual(process_percents(30), 0.3)
+
+    @parameterized.expand([
+        (True, False, False, -4),
+        (False, True, False, -3),
+        (False, False, True, -2),
+        (False, False, False, -1),
+    ])
+    def test_player_priority(self, is_mvp, is_star, is_pro, expected):
+        player = Player(
+            player_id='test',
+            first_name='test',
+            last_name='test',
+            positions=['test'],
+            team='test',
+            salary=1000,
+            fppg=10,
+        )
+        player.is_mvp = is_mvp
+        player.is_star = is_star
+        player.is_pro = is_pro
+        self.assertEqual(get_player_priority(player)[0], expected)
 
 
 class PositionsConverterTestCase(unittest.TestCase):

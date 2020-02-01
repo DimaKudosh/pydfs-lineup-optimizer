@@ -10,17 +10,17 @@ if TYPE_CHECKING:  # pragma: no cover
 LineupPosition = namedtuple('LineupPosition', ['name', 'positions'])
 
 
-class BaseSettings(object):
+class BaseSettings:
     site = None  # type: str
     sport = None  # type: str
     budget = 0  # type: float
     positions = []  # type: List[LineupPosition]
     max_from_one_team = None  # type: Optional[int]
     min_teams = None  # type: Optional[int]
+    total_teams_exclude_positions = []  # type: List[str]
     lineup_printer = LineupPrinter  # type: Type[BaseLineupPrinter]
     extra_rules = []  # type: List[Type['OptimizerRule']]
 
     @classmethod
-    def get_total_players(cls):
-        # type: () -> int
+    def get_total_players(cls) -> int:
         return len(cls.positions)

@@ -1,6 +1,5 @@
 class LineupOptimizerException(Exception):
-    def __init__(self, message):
-        # type: (str) -> None
+    def __init__(self, message: str):
         self.message = message
 
     def __str__(self):
@@ -16,6 +15,5 @@ class LineupOptimizerIncorrectPositionName(LineupOptimizerException):
 
 
 class LineupOptimizerIncorrectCSV(LineupOptimizerException):
-    def __init__(self, message='Incorrect csv format!'):
-        # type: (str) -> None
+    def __init__(self, message: str = 'Incorrect csv format!'):
         super(LineupOptimizerIncorrectCSV, self).__init__(message)

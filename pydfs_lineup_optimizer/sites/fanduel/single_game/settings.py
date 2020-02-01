@@ -2,7 +2,8 @@ from typing import List, Type
 from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.constants import Sport, Site
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
-from pydfs_lineup_optimizer.rules import OptimizerRule, FanduelSingleGameMVPRule, FanduelSingleGameMaxQBRule
+from pydfs_lineup_optimizer.rules import OptimizerRule, FanduelSingleGameMVPRule, FanduelSingleGameMaxQBRule, \
+    FanduelSingleGameBasketballRule
 
 
 class FanDuelSingleGameSettings(BaseSettings):
@@ -22,4 +23,17 @@ class FanDuelSingleGameFootballSettings(FanDuelSingleGameSettings):
         LineupPosition('FLEX', ('QB', 'WR', 'RB', 'TE', 'K')),
         LineupPosition('FLEX', ('QB', 'WR', 'RB', 'TE', 'K')),
         LineupPosition('FLEX', ('QB', 'WR', 'RB', 'TE', 'K')),
+    ]
+
+
+@SitesRegistry.register_settings
+class FanDuelSingleGameBasketballSettings(FanDuelSingleGameSettings):
+    sport = Sport.BASKETBALL
+    extra_rules = [FanduelSingleGameBasketballRule]
+    positions = [
+        LineupPosition('MVP', ('PG', 'SG', 'SF', 'PF', 'C')),
+        LineupPosition('STAR', ('PG', 'SG', 'SF', 'PF', 'C')),
+        LineupPosition('PRO', ('PG', 'SG', 'SF', 'PF', 'C')),
+        LineupPosition('FLEX', ('PG', 'SG', 'SF', 'PF', 'C')),
+        LineupPosition('FLEX', ('PG', 'SG', 'SF', 'PF', 'C')),
     ]

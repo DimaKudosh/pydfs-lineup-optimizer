@@ -1,0 +1,219 @@
+from abc import ABCMeta, abstractmethod
+from uuid import uuid4
+from typing import List, Optional, Tuple, Dict, Union, cast, TYPE_CHECKING
+from itertools import chain
+from collections import Counter, defaultdict
+from pydfs_lineup_optimizer import Player
+from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
+    LineupOptimizerIncorrectPositionName
+from pydfs_lineup_optimizer.utils import get_players_grouped_by_teams, list_intersection
+
+
+if TYPE_CHECKING:  # pragma: no cover
+    from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
+
+
+class BaseGroup(metaclass=ABCMeta):
+    min_from_group = None  # type: Optional[int]
+    max_from_group = None  # type: Optional[int]
+    max_exposure = None  # type: Optional[float]
+
+    @abstractmethod
+    def get_all_players_groups(self) -> List[Tuple[List[Player], Optional[int], Optional[int]]]:
+        pass
+
+
+class PlayersGroup(BaseGroup):
+    def __init__(
+            self,
+            players: List[Player],
+            min_from_group: Optional[int] = None,
+            max_from_group: Optional[int] = None,
+            max_exposure: Optional[float] = None
+    ):
+        self.uuid = uuid4()
+        self.players = list(set(players))
+        self.max_from_group = max_from_group
+        self.min_from_group = None  # type: Optional[int]
+        if min_from_group is not None:
+            self.min_from_group = min_from_group
+        elif max_from_group is None:
+            self.min_from_group = len(players)
+        self.max_exposure = max_exposure
+
+    def get_all_players_groups(self) -> List[Tuple[List[Player], Optional[int], Optional[int]]]:
+        return [(self.players, self.min_from_group, self.max_from_group)]
+
+    def __str__(self):
+        return 'Group: %s' % ','.join(player.full_name for player in self.players)
+
+
+class NestedPlayersGroup(BaseGroup):
+    def __init__(
+            self,
+            groups: List[PlayersGroup],
+            min_from_group: Optional[int] = None,
+            max_from_group: Optional[int] = None,
+            max_exposure: Optional[float] = None
+    ):
+        self.uuid = uuid4()
+        self.groups = groups
+        self.min_from_group = None  # type: Optional[int]
+        if min_from_group is not None:
+            self.min_from_group = min_from_group
+        elif max_from_group is None:
+            self.min_from_group = len(groups)
+        self.max_exposure = max_exposure
+
+    def get_all_players_groups(self):
+        return list(chain.from_iterable(group.get_all_players_groups() for group in self.groups))
+
+
+class OptimizerStack:
+    def __init__(self, groups: List[BaseGroup], can_intersect=False):
+        self.groups = groups
+        self.uuid = uuid4()
+        self.can_intersect = can_intersect
+
+    @property
+    def with_exposures(self) -> bool:
+        return any(group.max_exposure is not None for group in self.groups)
+
+
+class BaseStack(metaclass=ABCMeta):
+    @abstractmethod
+    def validate(self, optimizer: 'LineupOptimizer') -> None:
+        pass
+
+    @abstractmethod
+    def build_stacks(self, players: List[Player], optimizer: 'LineupOptimizer') -> List[OptimizerStack]:
+        pass
+
+
+class Stack(BaseStack):
+    def __init__(self, groups: List[BaseGroup]):
+        self.groups = groups
+
+    def build_stacks(self, players: List[Player], optimizer: 'LineupOptimizer') -> List[OptimizerStack]:
+        return [OptimizerStack(groups=self.groups)]
+
+    def validate(self, optimizer: 'LineupOptimizer') -> None:
+        pass
+
+
+class TeamStack(BaseStack):
+    def __init__(
+            self,
+            size: int,
+            for_teams: Optional[List[str]] = None,
+            for_positions: Optional[List[str]] = None,
+            spacing: Optional[int] = None,
+            max_exposure: Optional[float] = None,
+            max_exposure_per_team: Optional[Dict[str, float]] = None,
+    ):
+        self.size = size
+        self.for_teams = for_teams
+        self.for_positions = for_positions
+        self.spacing = spacing
+        self.max_exposure = max_exposure
+        self.max_exposure_per_team = max_exposure_per_team or {}
+
+    def build_stacks(self, players: List[Player], optimizer: 'LineupOptimizer') -> List[OptimizerStack]:
+        players_by_teams = get_players_grouped_by_teams(
+            players, for_teams=self.for_teams, for_positions=self.for_positions)
+        groups = []  # type: List[BaseGroup]
+        for team, players in players_by_teams.items():
+            groups.append(PlayersGroup(
+                players=players,
+                min_from_group=self.size,
+                max_exposure=self.max_exposure_per_team.get(team, self.max_exposure)
+            ))
+            if self.spacing:
+                sub_groups = []
+                players_by_roster_positions = defaultdict(list)  # type: Dict[int, List[Player]]
+                for player in players:
+                    if player.roster_order is None:
+                        continue
+                    players_by_roster_positions[player.roster_order].append(player)
+                for roster_position, players in players_by_roster_positions.items():
+                    next_restricted_roster_position = roster_position + self.spacing
+                    restricted_players = chain.from_iterable(
+                        players for players_spacing, players in players_by_roster_positions.items()
+                        if players_spacing >= next_restricted_roster_position
+                    )
+                    for first_player in restricted_players:
+                        for second_player in players:
+                            sub_groups.append(PlayersGroup(
+                                players=[first_player, second_player],
+                                max_from_group=1,
+                            ))
+                groups.append(NestedPlayersGroup(
+                    groups=sub_groups,
+                ))
+        return [OptimizerStack(groups=groups)]
+
+    def validate(self, optimizer: 'LineupOptimizer') -> None:
+        settings = optimizer.settings
+        max_from_one_team = settings.max_from_one_team or settings.get_total_players()
+        if self.size > max_from_one_team:
+            raise LineupOptimizerException(
+                'Stack size should be smaller than max players from one team (%d)' % max_from_one_team)
+        for team in self.for_teams or []:
+            if team not in optimizer.available_teams:
+                raise LineupOptimizerIncorrectTeamName('%s is incorrect team name.' % team)
+        for position in self.for_positions or []:
+            if position not in optimizer.available_positions:
+                raise LineupOptimizerIncorrectPositionName('%s is incorrect position name.' % position)
+
+
+class PositionsStack(BaseStack):
+    def __init__(
+            self,
+            positions: List[Union[str, Tuple[str, ...]]],
+            for_teams: Optional[List[str]] = None,
+            max_exposure: Optional[float] = None,
+            max_exposure_per_team: Optional[Dict[str, float]] = None,
+    ):
+        formatted_positions_stacks = tuple(
+            [cast(Tuple[str, ...], (position,) if isinstance(position, str) else tuple(position))
+             for position in positions]
+        )
+        self.positions = formatted_positions_stacks
+        self.for_teams = for_teams
+        self.max_exposure = max_exposure
+        self.max_exposure_per_team = max_exposure_per_team or {}
+
+    def build_stacks(self, players: List[Player], optimizer: 'LineupOptimizer') -> List[OptimizerStack]:
+        players_by_teams = get_players_grouped_by_teams(players, for_teams=self.for_teams)
+        all_positions = tuple(set(chain.from_iterable(self.positions)))
+        positions_for_optimizer = Counter(self.positions)
+        positions_for_optimizer[all_positions] = len(self.positions)
+        all_groups = []  # type: List[BaseGroup]
+        for team_name, team_players in players_by_teams.items():
+            groups = []
+            for positions, total in positions_for_optimizer.items():
+                groups.append(PlayersGroup(
+                    players=[player for player in team_players if list_intersection(player.positions, positions)],
+                    min_from_group=total,
+                ))
+            nested_group = NestedPlayersGroup(
+                groups=groups,
+                max_exposure=self.max_exposure_per_team.get(team_name, self.max_exposure),
+            )
+            all_groups.append(nested_group)
+        return [OptimizerStack(groups=all_groups)]
+
+    def validate(self, optimizer: 'LineupOptimizer') -> None:
+        if not all(self.positions):
+            raise LineupOptimizerException('Positions stack can\'t be empty')
+        settings = optimizer.settings
+        max_from_one_team = settings.max_from_one_team or settings.get_total_players()
+        if len(self.positions) > max_from_one_team:
+            raise LineupOptimizerException('You can\'t set more than %s players from one team.' %
+                                           max_from_one_team)
+        for position in set(chain.from_iterable(self.positions)):
+            if position not in optimizer.available_positions:
+                raise LineupOptimizerIncorrectPositionName('%s is incorrect position name.' % position)
+        for team in self.for_teams or []:
+            if team not in optimizer.available_teams:
+                raise LineupOptimizerIncorrectTeamName('%s is incorrect team name.' % team)

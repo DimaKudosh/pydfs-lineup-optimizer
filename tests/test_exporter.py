@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import sys
 import unittest
-from mock import mock_open, patch
+from unittest.mock import mock_open, patch
 from pydfs_lineup_optimizer import Site, Sport, get_optimizer, CSVLineupExporter, Player
 
 
