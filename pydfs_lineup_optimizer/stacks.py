@@ -217,38 +217,3 @@ class PositionsStack(BaseStack):
         for team in self.for_teams or []:
             if team not in optimizer.available_teams:
                 raise LineupOptimizerIncorrectTeamName('%s is incorrect team name.' % team)
-
-
-class MinExposureStack(BaseStack):
-    def __init__(self, total_lineups: int):
-        self.total_lineups = total_lineups
-        self.exposure_multiplier = 1 / self.total_lineups
-
-    def validate(self, optimizer: 'LineupOptimizer') -> None:
-        pass
-
-    def build_stacks(self, players: List[Player], optimizer: 'LineupOptimizer') -> List[OptimizerStack]:
-        stacks = []
-        current_max_exposure = 1.0
-        current_players = players
-        total_players = optimizer.settings.get_total_players()
-        players_with_min_exposures = sorted([p for p in players if p.min_exposure],
-                                            key=lambda p: -(p.min_exposure or 0))
-        for min_exposure_player in players_with_min_exposures:
-            min_exposure = self._normalize_exposure(cast(float, min_exposure_player.min_exposure))
-            current_players = [p for p in current_players if p != min_exposure_player]
-            if current_max_exposure <= min_exposure:
-                stacks.append(OptimizerStack(groups=[
-                    PlayersGroup(players=current_players, min_from_group=total_players, max_exposure=0),
-                ], can_intersect=True))
-            current_max_exposure -= min_exposure
-            if current_max_exposure <= 0:
-                current_max_exposure += 1
-                total_players -= 1
-            stacks.append(OptimizerStack(groups=[
-                PlayersGroup(players=current_players, min_from_group=total_players, max_exposure=current_max_exposure),
-            ], can_intersect=True))
-        return stacks
-
-    def _normalize_exposure(self, exposure: float) -> float:
-        return round(round(exposure * self.total_lineups) * self.exposure_multiplier, 3)

@@ -1,3 +1,4 @@
+from math import ceil
 from collections import defaultdict, Counter
 from itertools import product, groupby, permutations, chain
 from random import getrandbits, uniform
@@ -7,7 +8,6 @@ from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_op
     get_players_grouped_by_teams
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import Player
-from pydfs_lineup_optimizer.stacks import MinExposureStack
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -22,7 +22,7 @@ __all__ = [
     'RestrictPositionsForOpposingTeam', 'RosterSpacingRule', 'FanduelBaseballRosterRule',
     'TotalTeamsRule', 'FanduelSingleGameMVPRule', 'FanduelSingleGameMaxQBRule',
     'RestrictPositionsForSameTeamRule', 'ForcePositionsForOpposingTeamRule', 'GenericStacksRule',
-    'MinStartersRule',
+    'MinStartersRule', 'MinExposureRule',
 ]
 
 
@@ -268,11 +268,9 @@ class LateSwapRule(OptimizerRule):
 
 class GenericStacksRule(OptimizerRule):
     def __init__(self, optimizer, all_players, params):
-        super(GenericStacksRule, self).__init__(optimizer, all_players, params)
+        super().__init__(optimizer, all_players, params)
         self.total_lineups = params.get('n')
-        min_exposure_stack = MinExposureStack(self.total_lineups)
-        stacks = optimizer.stacks + [min_exposure_stack]
-        self.stacks = list(chain.from_iterable(stack.build_stacks(all_players, optimizer) for stack in stacks))
+        self.stacks = list(chain.from_iterable(stack.build_stacks(all_players, optimizer) for stack in optimizer.stacks))
         self.used_groups = defaultdict(int)  # type: Dict[str, int]
         self.with_exposures = any(stack.with_exposures for stack in self.stacks)
 
@@ -288,14 +286,11 @@ class GenericStacksRule(OptimizerRule):
             self,
             solver: Solver,
             players_dict: Dict[Player, Any],
-            exclude_groups: Optional[Set[str]] = None
     ):
         players_in_stack = defaultdict(set)  # type: Dict[Player, Set[Any]]
         for stack in self.stacks:
             combinations_variables = {}
             for group in stack.groups:
-                if exclude_groups and group in exclude_groups:
-                    continue
                 group_name = ('stack_%s_%s' % (stack.uuid, group.uuid)).replace('-', '_')
                 sub_groups = group.get_all_players_groups()
                 if group.max_exposure is not None and group.max_exposure <= self.used_groups[group_name] / self.total_lineups:
@@ -324,6 +319,48 @@ class GenericStacksRule(OptimizerRule):
     def post_optimize(self, solved_variables):
         for variable in solved_variables:
             self.used_groups[variable] += 1
+
+
+class MinExposureRule(OptimizerRule):
+    def __init__(self, optimizer, all_players, params):
+        super().__init__(optimizer, all_players, params)
+        self.total_lineups = params.get('n')
+        self.remaining_lineups = self.total_lineups
+        self.min_exposure_players = {
+            player: round(player.min_exposure * self.total_lineups)
+            for player in all_players if player.min_exposure
+        }
+        self.positions = {}
+        if self.min_exposure_players:
+            self.positions = get_positions_for_optimizer(optimizer.settings.positions, None)
+
+    def apply_for_iteration(self, solver, players_dict, result):
+        if not self.min_exposure_players:
+            return
+        if result:
+            for player in result:
+                if player not in self.min_exposure_players:
+                    continue
+                self.min_exposure_players[player] -= 1
+                if self.min_exposure_players[player] == 0:
+                    del self.min_exposure_players[player]
+            self.remaining_lineups -= 1
+        self._create_constraints(solver, players_dict)
+
+    def _create_constraints(self, solver: Solver, players_dict: Dict[Player, Any]) -> None:
+        for positions, total_for_positions in self.positions.items():
+            min_exposure_players = [p for p in self.min_exposure_players if list_intersection(p.positions, positions)]
+            if not min_exposure_players:
+                continue
+            total_force = sum(self.min_exposure_players[p] for p in min_exposure_players) - \
+                          total_for_positions * (self.remaining_lineups - 1)
+            if total_force > 0:
+                variables = [players_dict[p] for p in min_exposure_players]
+                total_force = min(total_force, ceil(total_force / self.remaining_lineups))
+                solver.add_constraint(variables, None, SolverSign.GTE, total_force)
+        for player, total_lineups in self.min_exposure_players.items():
+            if total_lineups >= self.remaining_lineups:
+                solver.add_constraint([players_dict[player]], None, SolverSign.EQ, 1)
 
 
 class RestrictPositionsForOpposingTeam(OptimizerRule):

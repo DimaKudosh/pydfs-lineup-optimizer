@@ -17,7 +17,8 @@ from pydfs_lineup_optimizer.stacks import BaseGroup, TeamStack, PositionsStack, 
 
 
 BASE_RULES = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamRule, LockedPlayersRule,
-              RemoveInjuredRule, UniquePlayerRule, UniqueLineupRule, TotalTeamsRule, GenericStacksRule}
+              RemoveInjuredRule, UniquePlayerRule, UniqueLineupRule, TotalTeamsRule, GenericStacksRule,
+              MinExposureRule}
 
 
 class LineupOptimizer:
