@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.0.1]
+- Fixed paring teams in DK
+
 ## [v3.0.0]
 - Added new stacking api
 - Fixed min exposure
