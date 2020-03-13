@@ -33,15 +33,15 @@ class FanDuelBasketballSettings(FanDuelSettings):
 class FanDuelFootballSettings(FanDuelSettings):
     sport = Sport.FOOTBALL
     positions = [
-        LineupPosition('QB', ('QB', )),
-        LineupPosition('RB', ('RB', )),
-        LineupPosition('RB', ('RB', )),
-        LineupPosition('WR', ('WR', )),
-        LineupPosition('WR', ('WR', )),
-        LineupPosition('WR', ('WR', )),
-        LineupPosition('TE', ('TE', )),
-        LineupPosition('TE', ('TE', )),
-        LineupPosition('TE', ('TE', )),
+        LineupPosition('HK', ('HK', )),
+        LineupPosition('FWD', ('FWD', )),
+        LineupPosition('FWD', ('FWD', )),
+        LineupPosition('FWD', ('FWD', )),
+        LineupPosition('FWD', ('FWD', )),
+        LineupPosition('HF', ('HF', )),
+        LineupPosition('OB', ('OB', )),
+        LineupPosition('OB', ('OB', )),
+        LineupPosition('OB', ('OB', )),
     ]
 
 
