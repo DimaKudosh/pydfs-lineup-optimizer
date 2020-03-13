@@ -1,11 +1,11 @@
-from pydfs_lineup_optimizer.sites.fanduel.classic.importer import *
-from pydfs_lineup_optimizer.sites.fanduel.classic.settings import *
-from pydfs_lineup_optimizer.sites.fanduel.single_game.importer import *
-from pydfs_lineup_optimizer.sites.fanduel.single_game.settings import *
+from pydfs_lineup_optimizer.sites.moneyball.classic.importer import *
+from pydfs_lineup_optimizer.sites.moneyball.classic.settings import *
+from pydfs_lineup_optimizer.sites.moneyball.single_game.importer import *
+from pydfs_lineup_optimizer.sites.moneyball.single_game.settings import *
 
 
 __all__ = [
-    'FanDuelCSVImporter', 'FanDuelBasketballSettings', 'FanDuelFootballSettings', 'FanDuelHockeySettings',
-    'FanDuelBaseballSettings', 'FanDuelWnbaSettings',
-    'FanDuelSingleGameCSVImporter', 'FanDuelSingleGameFootballSettings', 'FanDuelSingleGameBasketballSettings',
+    'moneyballCSVImporter', 'moneyballBasketballSettings', 'moneyballFootballSettings', 'moneyballHockeySettings',
+    'moneyballBaseballSettings', 'moneyballWnbaSettings',
+    'moneyballSingleGameCSVImporter', 'moneyballSingleGameFootballSettings', 'moneyballSingleGameBasketballSettings',
 ]

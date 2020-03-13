@@ -10,7 +10,7 @@ $ pip install pydfs-lineup-optimizer
 ## Support
 Now it supports following dfs sites:
 
-League | DraftKings | FanDuel | FantasyDraft | Yahoo | FanBall | DraftKing Captain Mode | FanDuel Single Game |
+League | DraftKings | moneyball | FantasyDraft | Yahoo | FanBall | DraftKing Captain Mode | moneyball Single Game |
 ------ | ---------- | ------- | ------------ | ----- | ------- | ---------------------- | ------------------- |
 NFL    | +          | +       | +            | +     | +       | +                      | +                   |
 NBA    | +          | +       | +            | +     | -       | +                      | +                   |

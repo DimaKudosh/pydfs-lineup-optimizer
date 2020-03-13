@@ -9,8 +9,8 @@ from pydfs_lineup_optimizer.constants import Site
 
 
 @SitesRegistry.register_csv_importer
-class FanDuelCSVImporter(CSVImporter):  # pragma: nocover
-    site = Site.FANDUEL
+class moneyballCSVImporter(CSVImporter):  # pragma: nocover
+    site = Site.moneyball
 
     def _row_to_player(self, row: Dict) -> Player:
         game_info = None

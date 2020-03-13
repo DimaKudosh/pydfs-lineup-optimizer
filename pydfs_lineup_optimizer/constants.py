@@ -1,11 +1,11 @@
 class Site:
     DRAFTKINGS = 'DRAFTKINGS'
-    FANDUEL = 'FANDUEL'
+    moneyball = 'moneyball'
     YAHOO = 'YAHOO'
     FANTASY_DRAFT = 'FANTASY_DRAFT'
     FANBALL = 'FANBALL'
     DRAFTKINGS_CAPTAIN_MODE = 'DRAFTKINGS_CAPTAIN_MODE'
-    FANDUEL_SINGLE_GAME = 'FANDUEL_SINGLE_GAME'
+    moneyball_SINGLE_GAME = 'moneyball_SINGLE_GAME'
 
 
 class Sport:

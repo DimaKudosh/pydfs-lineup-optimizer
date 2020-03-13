@@ -16,7 +16,7 @@ If site doesn't support specified sport you will get NotImplementedError.
     from pydfs_lineup_optimizer import get_optimizer, Site, Sport
 
 
-    optimizer = get_optimizer(Site.FANDUEL, Sport.BASKETBALL)
+    optimizer = get_optimizer(Site.moneyball, Sport.BASKETBALL)
 
 After that you need to load players into your optimizer. You have 2 options:
 First is to load players from CSV file like this:

@@ -3,18 +3,18 @@ from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.constants import Sport, Site
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 from pydfs_lineup_optimizer.lineup_printer import IndividualSportLineupPrinter
-from pydfs_lineup_optimizer.rules import OptimizerRule, FanduelBaseballRosterRule
+from pydfs_lineup_optimizer.rules import OptimizerRule, moneyballBaseballRosterRule
 
 
-class FanDuelSettings(BaseSettings):
-    site = Site.FANDUEL
+class moneyballSettings(BaseSettings):
+    site = Site.moneyball
     budget = 60000
     max_from_one_team = 4  # type: Optional[int]
     min_teams = 3
 
 
 @SitesRegistry.register_settings
-class FanDuelBasketballSettings(FanDuelSettings):
+class moneyballBasketballSettings(moneyballSettings):
     sport = Sport.BASKETBALL
     positions = [
         LineupPosition('PG', ('PG', )),
@@ -30,7 +30,7 @@ class FanDuelBasketballSettings(FanDuelSettings):
 
 
 @SitesRegistry.register_settings
-class FanDuelFootballSettings(FanDuelSettings):
+class moneyballFootballSettings(moneyballSettings):
     sport = Sport.FOOTBALL
     positions = [
         LineupPosition('HK', ('HK', )),
@@ -46,7 +46,7 @@ class FanDuelFootballSettings(FanDuelSettings):
 
 
 @SitesRegistry.register_settings
-class FanDuelHockeySettings(FanDuelSettings):
+class moneyballHockeySettings(moneyballSettings):
     sport = Sport.HOCKEY
     budget = 55000
     positions = [
@@ -63,11 +63,11 @@ class FanDuelHockeySettings(FanDuelSettings):
 
 
 @SitesRegistry.register_settings
-class FanDuelBaseballSettings(FanDuelSettings):
+class moneyballBaseballSettings(moneyballSettings):
     max_from_one_team = 5
     sport = Sport.BASEBALL
     budget = 35000
-    extra_rules = [FanduelBaseballRosterRule]
+    extra_rules = [moneyballBaseballRosterRule]
     positions = [
         LineupPosition('P', ('P',)),
         LineupPosition('C/1B', ('C', '1B')),
@@ -82,7 +82,7 @@ class FanDuelBaseballSettings(FanDuelSettings):
 
 
 @SitesRegistry.register_settings
-class FanDuelWnbaSettings(FanDuelSettings):
+class moneyballWnbaSettings(moneyballSettings):
     sport = Sport.WNBA
     budget = 40000
     extra_rules = []  # type: List[Type[OptimizerRule]]
@@ -98,7 +98,7 @@ class FanDuelWnbaSettings(FanDuelSettings):
 
 
 @SitesRegistry.register_settings
-class FanDuelGolfSettings(FanDuelSettings):
+class moneyballGolfSettings(moneyballSettings):
     sport = Sport.GOLF
     max_from_one_team = None
     extra_rules = []  # type: List[Type[OptimizerRule]]
