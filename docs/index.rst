@@ -12,7 +12,7 @@ pydfs-lineup-optimizer
 Currently it supports following dfs sites:
 
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+
-| League | DraftKings | moneyball | FantasyDraft | Yahoo | FanBall | DraftKings Captain Mode | moneyball Single Game |
+| League | DraftKings | MONEYBALL | FantasyDraft | Yahoo | FanBall | DraftKings Captain Mode | MONEYBALL Single Game |
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+
 | NFL    | \+         | \+      | \+           | \+    | \+      | \+                      | \+                  |
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+

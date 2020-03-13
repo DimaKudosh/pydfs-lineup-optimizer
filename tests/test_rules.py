@@ -457,7 +457,7 @@ class RosterSpacingTestCase(unittest.TestCase):
             self.optimizer.set_spacing_for_positions(self.positions, 0)
 
 
-class TestmoneyballMaxFromOneTeamTestCase(unittest.TestCase):
+class TestMONEYBALLMaxFromOneTeamTestCase(unittest.TestCase):
     def setUp(self):
         self.players = [
             Player('1', '1', '1', ['P'], 'HOU', 3000, 10),
@@ -472,7 +472,7 @@ class TestmoneyballMaxFromOneTeamTestCase(unittest.TestCase):
             Player('10', '10', '10', ['3B'], 'ARI', 3000, 5),
             Player('11', '11', '11', ['1B'], 'ARI', 3000, 5),
         ]
-        self.optimizer = get_optimizer(Site.moneyball, Sport.BASEBALL)
+        self.optimizer = get_optimizer(Site.MONEYBALL, Sport.BASEBALL)
         self.optimizer.load_players(self.players)
 
     def test_max_hitters_from_one_team(self):
@@ -543,7 +543,7 @@ class TotalTeamsTestCase(unittest.TestCase):
             Player('13', '13', '13', ['OF'], 'POR', 3000, 5),
             Player('13', '13', '13', ['OF'], 'MIN', 3000, 50),
         ]
-        self.optimizer = get_optimizer(Site.moneyball, Sport.BASEBALL)
+        self.optimizer = get_optimizer(Site.MONEYBALL, Sport.BASEBALL)
         self.optimizer.settings.min_teams = 3
         self.optimizer.settings.max_from_one_team = 5
         self.optimizer.load_players(self.players)
@@ -585,7 +585,7 @@ class TotalTeamsTestCase(unittest.TestCase):
         self.assertEqual(len(set(player.team for player in lineup if 'OF' in player.positions)), 1)
 
 
-class TestmoneyballSingleGameFootballTestCase(unittest.TestCase):
+class TestMONEYBALLSingleGameFootballTestCase(unittest.TestCase):
     def setUp(self):
         self.flex_players = [
             Player('1', '1', '1', ['QB'], 'HOU', 3000, 30),
@@ -601,7 +601,7 @@ class TestmoneyballSingleGameFootballTestCase(unittest.TestCase):
             mvp.fppg *= 1.5
             self.mvp_players.append(mvp)
         self.all_players = self.flex_players + self.mvp_players
-        self.optimizer = get_optimizer(Site.moneyball_SINGLE_GAME, Sport.FOOTBALL)
+        self.optimizer = get_optimizer(Site.MONEYBALL_SINGLE_GAME, Sport.FOOTBALL)
         self.optimizer.load_players(self.all_players)
 
     def test_minimum_teams(self):

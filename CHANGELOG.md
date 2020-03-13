@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 ## [v3.0.0]
 - Added new stacking api
 - Fixed min exposure
-- Added moneyball NBA Single Game
+- Added MONEYBALL NBA Single Game
 - Added sorting of players in lineup by game start time
 - Added export lineups for Fantasy Draft
 - Added confirmed starters rule
@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
 ## [v2.7.0]
 - Added rule for restricting players from same team
 - Added ability to specify several positions in stack
-- Added moneyball Golf
+- Added MONEYBALL Golf
 - Added ability to set player specific deviation for randomness mode
 - Added rule for forcing players from opposing team
 - Added ability to change default timezone
@@ -36,7 +36,7 @@ All notable changes to this project will be documented in this file.
 
 ## [v2.6.1]
 - Added soccer for DK Captain Mode
-- Added moneyball minimum teams restriction
+- Added MONEYBALL minimum teams restriction
 - Fixed export for DK
 
 ## [v2.6.0]
@@ -98,13 +98,13 @@ All notable changes to this project will be documented in this file.
 ## [v2.1.0]
 - Added projected ownership feature
 - Added FanBall football
-- Fixed moneyball MLB max player from one team constraint
+- Fixed MONEYBALL MLB max player from one team constraint
 
 ## [v2.0.3]
-- Fixed moneyball nfl settings
+- Fixed MONEYBALL nfl settings
 
 ## [v2.0.2]
-- Fixed moneyball mlb settings
+- Fixed MONEYBALL mlb settings
 
 ## [v2.0.0]
 - Added custom constraints creation

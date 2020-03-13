@@ -3,18 +3,18 @@ from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.constants import Sport, Site
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 from pydfs_lineup_optimizer.lineup_printer import IndividualSportLineupPrinter
-from pydfs_lineup_optimizer.rules import OptimizerRule, moneyballBaseballRosterRule
+from pydfs_lineup_optimizer.rules import OptimizerRule, MONEYBALLBaseballRosterRule
 
 
-class moneyballSettings(BaseSettings):
-    site = Site.moneyball
+class MONEYBALLSettings(BaseSettings):
+    site = Site.MONEYBALL
     budget = 60000
     max_from_one_team = 4  # type: Optional[int]
     min_teams = 3
 
 
 @SitesRegistry.register_settings
-class moneyballBasketballSettings(moneyballSettings):
+class MONEYBALLBasketballSettings(MONEYBALLSettings):
     sport = Sport.BASKETBALL
     positions = [
         LineupPosition('PG', ('PG', )),
@@ -30,7 +30,7 @@ class moneyballBasketballSettings(moneyballSettings):
 
 
 @SitesRegistry.register_settings
-class moneyballFootballSettings(moneyballSettings):
+class MONEYBALLFootballSettings(MONEYBALLSettings):
     sport = Sport.FOOTBALL
     positions = [
         LineupPosition('HK', ('HK', )),
@@ -46,7 +46,7 @@ class moneyballFootballSettings(moneyballSettings):
 
 
 @SitesRegistry.register_settings
-class moneyballHockeySettings(moneyballSettings):
+class MONEYBALLHockeySettings(MONEYBALLSettings):
     sport = Sport.HOCKEY
     budget = 55000
     positions = [
@@ -63,11 +63,11 @@ class moneyballHockeySettings(moneyballSettings):
 
 
 @SitesRegistry.register_settings
-class moneyballBaseballSettings(moneyballSettings):
+class MONEYBALLBaseballSettings(MONEYBALLSettings):
     max_from_one_team = 5
     sport = Sport.BASEBALL
     budget = 35000
-    extra_rules = [moneyballBaseballRosterRule]
+    extra_rules = [MONEYBALLBaseballRosterRule]
     positions = [
         LineupPosition('P', ('P',)),
         LineupPosition('C/1B', ('C', '1B')),
@@ -82,7 +82,7 @@ class moneyballBaseballSettings(moneyballSettings):
 
 
 @SitesRegistry.register_settings
-class moneyballWnbaSettings(moneyballSettings):
+class MONEYBALLWnbaSettings(MONEYBALLSettings):
     sport = Sport.WNBA
     budget = 40000
     extra_rules = []  # type: List[Type[OptimizerRule]]
@@ -98,7 +98,7 @@ class moneyballWnbaSettings(moneyballSettings):
 
 
 @SitesRegistry.register_settings
-class moneyballGolfSettings(moneyballSettings):
+class MONEYBALLGolfSettings(MONEYBALLSettings):
     sport = Sport.GOLF
     max_from_one_team = None
     extra_rules = []  # type: List[Type[OptimizerRule]]
