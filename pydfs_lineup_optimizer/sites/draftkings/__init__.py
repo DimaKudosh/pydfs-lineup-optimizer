@@ -4,9 +4,9 @@ from pydfs_lineup_optimizer.sites.draftkings.captain_mode.importer import DraftK
 from pydfs_lineup_optimizer.sites.draftkings.captain_mode.settings import *
 
 __all__ = [
-    'DraftKingsCSVImporter', 'DraftKingsBasketballSettings', 'DraftKingsFootballSettings',
+    'DraftKingsCSVImporter', 'DraftKingsBasketballSettings', 'DraftKingsNRLSettings',
     'DraftKingsHockeySettings', 'DraftKingsBaseballSettings', 'DraftKingsGolfSettings',
-    'DraftKingsSoccerSettings', 'DraftKingsCanadianFootballSettings', 'DraftKingsLOLSettings',
-    'DraftKingsCaptainModeCSVImporter', 'DraftKingsCaptainModeFootballSettings',
+    'DraftKingsSoccerSettings', 'DraftKingsCanadianNRLSettings', 'DraftKingsLOLSettings',
+    'DraftKingsCaptainModeCSVImporter', 'DraftKingsCaptainModeNRLSettings',
     'DraftKingsCaptainModeBasketballSettings',
 ]

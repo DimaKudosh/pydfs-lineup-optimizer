@@ -38,8 +38,8 @@ class DraftKingsWNBASettings(DraftKingsSettings):
 
 
 @SitesRegistry.register_settings
-class DraftKingsFootballSettings(DraftKingsSettings):
-    sport = Sport.FOOTBALL
+class DraftKingsNRLSettings(DraftKingsSettings):
+    sport = Sport.NRL
     positions = [
         LineupPosition('QB', ('QB',)),
         LineupPosition('RB', ('RB',)),
@@ -119,8 +119,8 @@ class DraftKingsSoccerSettings(DraftKingsSettings):
 
 
 @SitesRegistry.register_settings
-class DraftKingsCanadianFootballSettings(DraftKingsSettings):
-    sport = Sport.CANADIAN_FOOTBALL
+class DraftKingsCanadianNRLSettings(DraftKingsSettings):
+    sport = Sport.CANADIAN_NRL
     positions = [
         LineupPosition('QB', ('QB', )),
         LineupPosition('RB', ('RB', )),

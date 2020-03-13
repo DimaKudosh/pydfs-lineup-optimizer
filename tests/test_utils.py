@@ -10,7 +10,7 @@ from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.utils import ratio, get_positions_for_optimizer, link_players_with_positions, \
     list_intersection, process_percents, get_player_priority
 from pydfs_lineup_optimizer.sites.draftkings.classic.settings import DraftKingsBasketballSettings, \
-    DraftKingsFootballSettings, DraftKingsBaseballSettings, DraftKingsHockeySettings
+    DraftKingsNRLSettings, DraftKingsBaseballSettings, DraftKingsHockeySettings
 from pydfs_lineup_optimizer.tz import get_timezone, set_timezone
 from .utils import create_players
 
@@ -95,7 +95,7 @@ class LineupBuildingTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.link_nba_positions = partial(link_players_with_positions, positions=DraftKingsBasketballSettings.positions)
-        cls.link_nfl_positions = partial(link_players_with_positions, positions=DraftKingsFootballSettings.positions)
+        cls.link_nfl_positions = partial(link_players_with_positions, positions=DraftKingsNRLSettings.positions)
         cls.link_mlb_positions = partial(link_players_with_positions, positions=DraftKingsBaseballSettings.positions)
         cls.link_nhl_positions = partial(link_players_with_positions, positions=DraftKingsHockeySettings.positions)
 
@@ -114,10 +114,10 @@ class LineupBuildingTestCase(unittest.TestCase):
             # 3 C can't be linked
             self.link_nba_positions(create_players(['PG', 'SG', 'SF', 'PF', 'C', 'SG', 'C', 'C']))
 
-    def test_football_lineup_building_correct(self):
+    def test_NRL_lineup_building_correct(self):
         self.link_nfl_positions(create_players(['QB', 'WR', 'WR', 'WR', 'WR', 'RB', 'RB', 'TE', 'DST']))
 
-    def test_football_lineup_building_incorrect(self):
+    def test_NRL_lineup_building_incorrect(self):
         with self.assertRaises(LineupOptimizerException):
             # Lineup hasn't defense
             self.link_nfl_positions(create_players(['QB', 'WR', 'WR', 'WR', 'WR', 'WR', 'RB', 'RB', 'TE']))

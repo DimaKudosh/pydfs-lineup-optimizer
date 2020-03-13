@@ -27,8 +27,8 @@ class FantasyDraftBasketballSettings(FantasyDraftSettings):
 
 
 @SitesRegistry.register_settings
-class FantasyDraftFootballSettings(FantasyDraftSettings):
-    sport = Sport.FOOTBALL
+class FantasyDraftNRLSettings(FantasyDraftSettings):
+    sport = Sport.NRL
     positions = [
         LineupPosition('QB', ('QB', )),
         LineupPosition('RB', ('RB', )),

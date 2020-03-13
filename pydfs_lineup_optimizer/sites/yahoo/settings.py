@@ -25,8 +25,8 @@ class YahooBasketballSettings(YahooSettings):
 
 
 @SitesRegistry.register_settings
-class YahooFootballSettings(YahooSettings):
-    sport = Sport.FOOTBALL
+class YahooNRLSettings(YahooSettings):
+    sport = Sport.NRL
     positions = [
         LineupPosition('QB', ('QB', )),
         LineupPosition('WR', ('WR', )),

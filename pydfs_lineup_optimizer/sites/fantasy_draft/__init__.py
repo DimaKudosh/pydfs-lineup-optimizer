@@ -3,6 +3,6 @@ from pydfs_lineup_optimizer.sites.fantasy_draft.settings import *
 
 
 __all__ = [
-    'FantasyDraftCSVImporter', 'FantasyDraftBasketballSettings', 'FantasyDraftFootballSettings',
+    'FantasyDraftCSVImporter', 'FantasyDraftBasketballSettings', 'FantasyDraftNRLSettings',
     'FantasyDraftHockeySettings', 'FantasyDraftBaseballSettings', 'FantasyDraftGolfSettings',
 ]

@@ -3,7 +3,7 @@ import unittest
 from pydfs_lineup_optimizer import get_optimizer, Player
 from pydfs_lineup_optimizer.constants import Site, Sport
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
-from pydfs_lineup_optimizer.sites.yahoo.settings import YahooFootballSettings
+from pydfs_lineup_optimizer.sites.yahoo.settings import YahooNRLSettings
 from .utils import create_players, load_players
 
 
@@ -78,8 +78,8 @@ class OptimizerMethodsTestCase(unittest.TestCase):
         self.assertEqual(len(list(gen)), 1)
 
     def test_get_optimizer(self):
-        optimizer = get_optimizer(Site.YAHOO, Sport.FOOTBALL)
-        self.assertIsInstance(optimizer._settings, YahooFootballSettings)
+        optimizer = get_optimizer(Site.YAHOO, Sport.NRL)
+        self.assertIsInstance(optimizer._settings, YahooNRLSettings)
         with self.assertRaises(NotImplementedError):
             get_optimizer(Site.DRAFTKINGS, 'Some sport')
 

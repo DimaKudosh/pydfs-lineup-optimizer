@@ -14,8 +14,8 @@ class FANDUELSingleGameSettings(BaseSettings):
 
 
 @SitesRegistry.register_settings
-class FANDUELSingleGameFootballSettings(FANDUELSingleGameSettings):
-    sport = Sport.FOOTBALL
+class FANDUELSingleGameNRLSettings(FANDUELSingleGameSettings):
+    sport = Sport.NRL
     extra_rules = [FANDUELSingleGameMVPRule, FANDUELSingleGameMaxQBRule]
     positions = [
         LineupPosition('MVP', ('QB', 'WR', 'RB', 'TE', 'K')),

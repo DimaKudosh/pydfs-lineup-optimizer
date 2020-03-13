@@ -30,8 +30,8 @@ class FANDUELBasketballSettings(FANDUELSettings):
 
 
 @SitesRegistry.register_settings
-class FANDUELFootballSettings(FANDUELSettings):
-    sport = Sport.FOOTBALL
+class FANDUELNRLSettings(FANDUELSettings):
+    sport = Sport.NRL
     positions = [
         LineupPosition('HK', ('HK', )),
         LineupPosition('FWD', ('FWD', )),
