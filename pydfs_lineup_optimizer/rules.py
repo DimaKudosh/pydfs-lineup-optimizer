@@ -19,8 +19,8 @@ __all__ = [
     'LineupBudgetRule', 'LockedPlayersRule', 'PositionsRule', 'TeamMatesRule', 'MaxFromOneTeamRule',
     'MinSalaryCapRule', 'RemoveInjuredRule', 'MaxRepeatingPlayersRule',
     'ProjectedOwnershipRule', 'UniquePlayerRule', 'LateSwapRule',
-    'RestrictPositionsForOpposingTeam', 'RosterSpacingRule', 'MONEYBALLBaseballRosterRule',
-    'TotalTeamsRule', 'MONEYBALLSingleGameMVPRule', 'MONEYBALLSingleGameMaxQBRule',
+    'RestrictPositionsForOpposingTeam', 'RosterSpacingRule', 'FANDUELBaseballRosterRule',
+    'TotalTeamsRule', 'FANDUELSingleGameMVPRule', 'FANDUELSingleGameMaxQBRule',
     'RestrictPositionsForSameTeamRule', 'ForcePositionsForOpposingTeamRule', 'GenericStacksRule',
     'MinStartersRule', 'MinExposureRule',
 ]
@@ -452,7 +452,7 @@ class RosterSpacingRule(OptimizerRule):
                     solver.add_constraint([first_variable, second_variable], None, SolverSign.LTE, 1)
 
 
-class MONEYBALLBaseballRosterRule(OptimizerRule):
+class FANDUELBaseballRosterRule(OptimizerRule):
     HITTERS = ('1B', '2B', '3B', 'SS', 'C', 'OF')
     MAXIMUM_HITTERS_FROM_ONE_TEAM = 4
 
@@ -489,13 +489,13 @@ class TotalTeamsRule(OptimizerRule):
             solver.add_constraint(teams_variables, None, SolverSign.GTE, min_teams)
 
 
-class MONEYBALLSingleGameMVPRule(OptimizerRule):
+class FANDUELSingleGameMVPRule(OptimizerRule):
     def apply(self, solver, players_dict):
         variables = [var for player, var in players_dict.items() if player.is_mvp]
         solver.add_constraint(variables, None, SolverSign.EQ, 1)
 
 
-class MONEYBALLSingleGameBasketballRule(OptimizerRule):
+class FANDUELSingleGameBasketballRule(OptimizerRule):
     def apply(self, solver, players_dict):
         variables = [var for player, var in players_dict.items() if player.is_mvp]
         solver.add_constraint(variables, None, SolverSign.EQ, 1)
@@ -505,7 +505,7 @@ class MONEYBALLSingleGameBasketballRule(OptimizerRule):
         solver.add_constraint(variables, None, SolverSign.EQ, 1)
 
 
-class MONEYBALLSingleGameMaxQBRule(OptimizerRule):
+class FANDUELSingleGameMaxQBRule(OptimizerRule):
     def apply(self, solver, players_dict):
         variables = [var for player, var in players_dict.items() if 'QB' in player.positions]
         solver.add_constraint(variables, None, SolverSign.LTE, 2)

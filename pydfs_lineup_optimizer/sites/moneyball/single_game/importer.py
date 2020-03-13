@@ -1,12 +1,12 @@
 from copy import deepcopy
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 from pydfs_lineup_optimizer.constants import Site
-from pydfs_lineup_optimizer.sites.MONEYBALL.classic.importer import MONEYBALLCSVImporter
+from pydfs_lineup_optimizer.sites.FANDUEL.classic.importer import FANDUELCSVImporter
 
 
 @SitesRegistry.register_csv_importer
-class MONEYBALLSingleGameCSVImporter(MONEYBALLCSVImporter):  # pragma: nocover
-    site = Site.MONEYBALL_SINGLE_GAME
+class FANDUELSingleGameCSVImporter(FANDUELCSVImporter):  # pragma: nocover
+    site = Site.FANDUEL_SINGLE_GAME
 
     def import_players(self):
         players = super().import_players()
@@ -21,8 +21,8 @@ class MONEYBALLSingleGameCSVImporter(MONEYBALLCSVImporter):  # pragma: nocover
 
 
 @SitesRegistry.register_csv_importer
-class MONEYBALLBasketballSingleGameCSVImporter(MONEYBALLCSVImporter):  # pragma: nocover
-    site = Site.MONEYBALL_SINGLE_GAME
+class FANDUELBasketballSingleGameCSVImporter(FANDUELCSVImporter):  # pragma: nocover
+    site = Site.FANDUEL_SINGLE_GAME
 
     def import_players(self):
         players = super().import_players()
