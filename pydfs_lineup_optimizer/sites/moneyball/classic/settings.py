@@ -10,7 +10,7 @@ class FANDUELSettings(BaseSettings):
     site = Site.FANDUEL
     budget = 60000
     max_from_one_team = 8  # type: Optional[int]
-    min_teams = 2
+    min_teams = 1
 
 
 @SitesRegistry.register_settings
