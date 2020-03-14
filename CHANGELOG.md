@@ -97,7 +97,7 @@ All notable changes to this project will be documented in this file.
 
 ## [v2.1.0]
 - Added projected ownership feature
-- Added FanBall NRL
+- Added FanBall FOOTBALL
 - Fixed FANDUEL MLB max player from one team constraint
 
 ## [v2.0.3]

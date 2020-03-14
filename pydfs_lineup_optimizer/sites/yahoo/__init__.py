@@ -3,6 +3,6 @@ from pydfs_lineup_optimizer.sites.yahoo.settings import *
 
 
 __all__ = [
-    'YahooCSVImporter', 'YahooBasketballSettings', 'YahooNRLSettings', 'YahooHockeySettings',
+    'YahooCSVImporter', 'YahooBasketballSettings', 'YahooFOOTBALLSettings', 'YahooHockeySettings',
     'YahooBaseballSettings', 'YahooGolfSettings', 'YahooSoccerSettings',
 ]

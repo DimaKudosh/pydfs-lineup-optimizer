@@ -585,7 +585,7 @@ class TotalTeamsTestCase(unittest.TestCase):
         self.assertEqual(len(set(player.team for player in lineup if 'OF' in player.positions)), 1)
 
 
-class TestFANDUELSingleGameNRLTestCase(unittest.TestCase):
+class TestFANDUELSingleGameFOOTBALLTestCase(unittest.TestCase):
     def setUp(self):
         self.flex_players = [
             Player('1', '1', '1', ['QB'], 'HOU', 3000, 30),
@@ -601,7 +601,7 @@ class TestFANDUELSingleGameNRLTestCase(unittest.TestCase):
             mvp.fppg *= 1.5
             self.mvp_players.append(mvp)
         self.all_players = self.flex_players + self.mvp_players
-        self.optimizer = get_optimizer(Site.FANDUEL_SINGLE_GAME, Sport.NRL)
+        self.optimizer = get_optimizer(Site.FANDUEL_SINGLE_GAME, Sport.FOOTBALL)
         self.optimizer.load_players(self.all_players)
 
     def test_minimum_teams(self):

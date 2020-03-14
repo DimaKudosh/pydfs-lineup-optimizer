@@ -5,7 +5,7 @@ from pydfs_lineup_optimizer.sites.FANDUEL.single_game.settings import *
 
 
 __all__ = [
-    'FANDUELCSVImporter', 'FANDUELBasketballSettings', 'FANDUELNRLSettings', 'FANDUELHockeySettings',
+    'FANDUELCSVImporter', 'FANDUELBasketballSettings', 'FANDUELFOOTBALLSettings', 'FANDUELHockeySettings',
     'FANDUELBaseballSettings', 'FANDUELWnbaSettings',
-    'FANDUELSingleGameCSVImporter', 'FANDUELSingleGameNRLSettings', 'FANDUELSingleGameBasketballSettings',
+    'FANDUELSingleGameCSVImporter', 'FANDUELSingleGameFOOTBALLSettings', 'FANDUELSingleGameBasketballSettings',
 ]

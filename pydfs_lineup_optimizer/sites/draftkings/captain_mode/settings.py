@@ -28,8 +28,8 @@ class DraftKingsCaptainModeSettings(BaseSettings):
 
 
 @SitesRegistry.register_settings
-class DraftKingsCaptainModeNRLSettings(DraftKingsCaptainModeSettings):
-    sport = Sport.NRL
+class DraftKingsCaptainModeFOOTBALLSettings(DraftKingsCaptainModeSettings):
+    sport = Sport.FOOTBALL
     positions = POSITIONS_WITH_FLEX[:]
 
 

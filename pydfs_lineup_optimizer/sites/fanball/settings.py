@@ -9,8 +9,8 @@ class FanBallSettings(BaseSettings):
 
 
 @SitesRegistry.register_settings
-class FanBallNRLSettings(FanBallSettings):
-    sport = Sport.NRL
+class FanBallFOOTBALLSettings(FanBallSettings):
+    sport = Sport.FOOTBALL
     positions = [
         LineupPosition('QB', ('QB',)),
         LineupPosition('WR1', ('WR',)),

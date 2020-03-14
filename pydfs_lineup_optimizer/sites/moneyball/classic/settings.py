@@ -10,7 +10,7 @@ class FANDUELSettings(BaseSettings):
     site = Site.FANDUEL
     budget = 60000
     max_from_one_team = 4  # type: Optional[int]
-    min_teams = 3
+    min_teams = 2
 
 
 @SitesRegistry.register_settings
@@ -30,8 +30,8 @@ class FANDUELBasketballSettings(FANDUELSettings):
 
 
 @SitesRegistry.register_settings
-class FANDUELNRLSettings(FANDUELSettings):
-    sport = Sport.NRL
+class FANDUELFOOTBALLSettings(FANDUELSettings):
+    sport = Sport.FOOTBALL
     positions = [
         LineupPosition('HK', ('HK', )),
         LineupPosition('FWD', ('FWD', )),
