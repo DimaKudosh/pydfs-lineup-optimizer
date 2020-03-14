@@ -9,7 +9,7 @@ from pydfs_lineup_optimizer.rules import OptimizerRule, FANDUELBaseballRosterRul
 class FANDUELSettings(BaseSettings):
     site = Site.FANDUEL
     budget = 60000
-    max_from_one_team = 4  # type: Optional[int]
+    max_from_one_team = 8  # type: Optional[int]
     min_teams = 2
 
 
