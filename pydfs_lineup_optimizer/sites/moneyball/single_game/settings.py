@@ -10,13 +10,13 @@ class FANDUELSingleGameSettings(BaseSettings):
     site = Site.FANDUEL_SINGLE_GAME
     budget = 60000
     max_from_one_team = 9
-    extra_rules = [FANDUELSingleGameMVPRule]  # type: List[Type[OptimizerRule]]
+    #extra_rules = [FANDUELSingleGameMVPRule]  # type: List[Type[OptimizerRule]]
 
 
 @SitesRegistry.register_settings
 class FANDUELSingleGameFOOTBALLSettings(FANDUELSingleGameSettings):
     sport = Sport.FOOTBALL
-    extra_rules = [FANDUELSingleGameMVPRule, FANDUELSingleGameMaxQBRule]
+
     positions = [
         LineupPosition('HK', ('HK', )),
         LineupPosition('FWD', ('FWD', )),
