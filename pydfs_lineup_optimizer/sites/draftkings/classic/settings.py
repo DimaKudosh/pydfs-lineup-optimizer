@@ -6,7 +6,7 @@ from pydfs_lineup_optimizer.lineup_printer import IndividualSportLineupPrinter
 
 class DraftKingsSettings(BaseSettings):
     site = Site.DRAFTKINGS
-    budget = 50000
+    budget = 60000
 
 
 @SitesRegistry.register_settings
@@ -41,15 +41,16 @@ class DraftKingsWNBASettings(DraftKingsSettings):
 class DraftKingsFOOTBALLSettings(DraftKingsSettings):
     sport = Sport.FOOTBALL
     positions = [
-        LineupPosition('QB', ('QB',)),
-        LineupPosition('RB', ('RB',)),
-        LineupPosition('RB', ('RB',)),
-        LineupPosition('WR', ('WR',)),
-        LineupPosition('WR', ('WR',)),
-        LineupPosition('WR', ('WR',)),
-        LineupPosition('TE', ('TE',)),
-        LineupPosition('FLEX', ('WR', 'RB', 'TE')),
-        LineupPosition('DST', ('DST',))
+        LineupPosition('FWD', ('FWD', )),
+        LineupPosition('FWD', ('FWD', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('DEF', ('DEF', )),
+        LineupPosition('DEF', ('DEF', )),
+        LineupPosition('RK', ('RK', )),
+        LineupPosition('FLEX', ('FWD', 'MID', 'DEF', 'RK'))
+    
     ]
 
 
