@@ -51,12 +51,12 @@ class FANDUELHockeySettings(FANDUELSettings):
     budget = 100000
     positions = [
         LineupPosition('FWD', ('FWD', )),
-        LineupPosition('FWD', ('FWD', ),
+        LineupPosition('FWD', ('FWD', )),
         LineupPosition('MID', ('MID', )),
-         LineupPosition('MID', ('MID', )),
-         LineupPosition('MID', ('MID', )),
-         LineupPosition('MID', ('MID', )),
-         LineupPosition('DEF', ('DEF', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('DEF', ('DEF', )),
         LineupPosition('DEF', ('DEF', )),
         LineupPosition('RK', ('RK', )),
     ]
