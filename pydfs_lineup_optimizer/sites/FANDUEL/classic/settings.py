@@ -32,16 +32,17 @@ class FANDUELBasketballSettings(FANDUELSettings):
 @SitesRegistry.register_settings
 class FANDUELFOOTBALLSettings(FANDUELSettings):
     sport = Sport.FOOTBALL
+    budget = 100000
     positions = [
-        LineupPosition('HK', ('HK', )),
         LineupPosition('FWD', ('FWD', )),
         LineupPosition('FWD', ('FWD', )),
-        LineupPosition('FWD', ('FWD', )),
-        LineupPosition('FWD', ('FWD', )),
-        LineupPosition('HF', ('HF', )),
-        LineupPosition('OB', ('OB', )),
-        LineupPosition('OB', ('OB', )),
-        LineupPosition('OB', ('OB', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('DEF', ('DEF', )),
+        LineupPosition('DEF', ('DEF', )),
+        LineupPosition('RK', ('RK', )),
     ]
 
 
