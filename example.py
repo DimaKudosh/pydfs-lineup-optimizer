@@ -15,7 +15,7 @@ from pydfs_lineup_optimizer.settings import BaseSettings
 from pydfs_lineup_optimizer.player import Player, LineupPlayer, GameInfo
 from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions, process_percents, get_remaining_positions
 from pydfs_lineup_optimizer.rules import *
-from pydfs_lineup_optimizer.stacks import BaseGroup, TeamStack, PositionsStack, BaseStack, Stack
+from pydfs_lineup_optimizer.stacks import BaseGroup, TeamStack, PositionsStack, BaseStack, Stack, PlayersGroup, Player
 from collections import namedtuple
 from datetime import datetime
 from pytz import timezone
@@ -31,24 +31,51 @@ import requests
 from urllib.request import urlopen
 
 #%%
+#DraftStars AFL Lineup Generator
 from pydfs_lineup_optimizer import Site, Sport, get_optimizer, CSVLineupExporter
 import pandas as pd
 
 optimizer = get_optimizer(Site.FANDUEL, Sport.FOOTBALL)
-optimizer.load_players_from_csv("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/nrl_data.csv")
-lineup_generator = optimizer.optimize(20)
-for lineup in lineup_generator:
-    print(lineup)
+optimizer.load_players_from_csv("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_ds_data.csv")
 
+#player groups
+group_1 = PlayersGroup([optimizer.get_player_by_name(name) for name in ('Kade Simpson', 'Sam Docherty')], max_exposure=0.1)
+group_2 = PlayersGroup([optimizer.get_player_by_name(name) for name in ('Sam Docherty', 'Will Setterfield')], max_exposure=0.1)
+group_3 = PlayersGroup([optimizer.get_player_by_name(name) for name in ('Sam Docherty', 'Nic Newman')], max_exposure=0.1)
+optimizer.add_stack(Stack([group_1, group_2, group_3]))
 
+x=50
+lineups = CSVLineupExporter(optimizer.optimize(n=x,max_exposure=0.70,randomness=True))
+lineups.export("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_ds_upload.csv")
+
+# Datasets from folder Data
+afl = pd.read_csv("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_ds_upload.csv")
+
+afl.head()
+#Drop columns not required for exposure
+afl_mod = afl.drop(['FPPG', 'Budget'] , axis='columns')
+#Compute exposure
+print(afl_mod.stack().value_counts()/x)
 
 # %%
+#Load AFl Data for Moneyball
 from pydfs_lineup_optimizer import Site, Sport, get_optimizer, CSVLineupExporter
 import pandas as pd
 
-optimizer = get_optimizer(Site.FANDUEL, Sport.FOOTBALL)
-optimizer.load_players_from_csv("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_data.csv")
+optimizer = get_optimizer(Site.DRAFTKINGS, Sport.FOOTBALL)
+optimizer.load_players_from_csv("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_moneyball_data_v1.csv")
 
+x=50
+lineups = CSVLineupExporter(optimizer.optimize(n=x,max_exposure=0.65,randomness=True))
+lineups.export("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_moneyball_upload.csv")
+
+# Datasets from folder Data
+afl = pd.read_csv("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_moneyball_upload.csv")
+afl.head()
+#Drop columns not required for exposure
+afl_mod = afl.drop(['FPPG', 'Budget'] , axis='columns')
+#Compute exposure
+print(afl_mod.stack().value_counts()/x)
 
 
 
@@ -68,7 +95,7 @@ print(afl_mod.stack().value_counts()/x)
 
 # %%
 afl = pd.read_csv("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_upload.csv")
-
+afl.head()
 def afl_exposure (df):
     d = {}
     d['Count'] = df['FWD'].count()
@@ -76,22 +103,22 @@ def afl_exposure (df):
     d['Count'] = df['MID'].count()
     d['Count'] = df['MID.1'].count()
     d['Count'] = df['MID.2'].count()
-    d['Count'] = df['MID.3'].count()
+    d['Count'] = df['FLEX'].count()
     d['Count'] = df['DEF'].count()
     d['Count'] = df['DEF.1'].count()
     d['Count'] = df['RK'].count()
    
-    return(pd.Series(df, index=[i for i in df]))
+    return(pd.Series(d, index=[i for i in d]))
 
-afl.groupby(['FWD']).apply(nba_exposure).round(4)
-afl.groupby(['FWD.1']).apply(nba_exposure).round(4)
-afl.groupby(['MID']).apply(nba_exposure).round(4)
-afl.groupby(['MID.1']).apply(nba_exposure).round(4)
-afl.groupby(['MID.2']).apply(nba_exposure).round(4)
-afl.groupby(['MID.3']).apply(nba_exposure).round(4)
-afl.groupby(['DEF']).apply(nba_exposure).round(4)
-afl.groupby(['DEF.1']).apply(nba_exposure).round(4)
-afl.groupby(['RK']).apply(nba_exposure).round(4)
+afl.groupby(['FWD']).apply(afl_exposure).round(4)
+afl.groupby(['FWD.1']).apply(afl_exposure).round(4)
+afl.groupby(['MID']).apply(afl_exposure).round(4)
+afl.groupby(['MID.1']).apply(afl_exposure).round(4)
+afl.groupby(['MID.2']).apply(afl_exposure).round(4)
+afl.groupby(['FLEX']).apply(afl_exposure).round(4)
+afl.groupby(['DEF']).apply(afl_exposure).round(4)
+afl.groupby(['DEF.1']).apply(afl_exposure).round(4)
+afl.groupby(['RK']).apply(afl_exposure).round(4)
 
 
 # %%
@@ -131,3 +158,4 @@ player_13.max_exposure = 0.10
 player_14.max_exposure = 0.12
 player_15.max_exposure = 0.20
 player_16.max_exposure = 0.10
+
