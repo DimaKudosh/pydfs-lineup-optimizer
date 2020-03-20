@@ -43,12 +43,12 @@ class DraftKingsFOOTBALLSettings(DraftKingsSettings):
     positions = [
         LineupPosition('FWD', ('FWD', )),
         LineupPosition('FWD', ('FWD', )),
-        LineupPosition('MID', ('MID', )),
-        LineupPosition('MID', ('MID', )),
-        LineupPosition('MID', ('MID', )),
-        LineupPosition('DEF', ('DEF', )),
-        LineupPosition('DEF', ('DEF', )),
         LineupPosition('RU', ('RU', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('MID', ('MID', )),
+        LineupPosition('DEF', ('DEF', )),
+        LineupPosition('DEF', ('DEF', )),
         LineupPosition('FLEX', ('FWD', 'MID', 'DEF', 'RU'))
     
     ]
