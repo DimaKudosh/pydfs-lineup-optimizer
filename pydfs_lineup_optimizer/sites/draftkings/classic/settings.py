@@ -49,7 +49,7 @@ class DraftKingsFOOTBALLSettings(DraftKingsSettings):
         LineupPosition('DEF', ('DEF', )),
         LineupPosition('DEF', ('DEF', )),
         LineupPosition('RU', ('RU', )),
-        LineupPosition('FLEX', ('FWD', 'MID', 'DEF', 'RK'))
+        LineupPosition('FLEX', ('FWD', 'MID', 'DEF', 'RU'))
     
     ]
 

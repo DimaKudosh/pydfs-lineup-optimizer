@@ -63,7 +63,7 @@ from pydfs_lineup_optimizer import Site, Sport, get_optimizer, CSVLineupExporter
 import pandas as pd
 
 optimizer = get_optimizer(Site.DRAFTKINGS, Sport.FOOTBALL)
-optimizer.load_players_from_csv("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_moneyball_data_v1.csv")
+optimizer.load_players_from_csv("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_moneyball_data.csv")
 
 x=50
 lineups = CSVLineupExporter(optimizer.optimize(n=x,max_exposure=0.65,randomness=True))
