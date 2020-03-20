@@ -66,7 +66,7 @@ optimizer = get_optimizer(Site.DRAFTKINGS, Sport.FOOTBALL)
 optimizer.load_players_from_csv("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_moneyball_data.csv")
 
 x=50
-lineups = CSVLineupExporter(optimizer.optimize(n=x,max_exposure=0.65,randomness=True))
+lineups = CSVLineupExporter(optimizer.optimize(n=x,max_exposure=0.90,randomness=True))
 lineups.export("/Users/raymond.huynh/Desktop/python/Ray_Python/data/fantasy/afl_moneyball_upload.csv")
 
 # Datasets from folder Data
