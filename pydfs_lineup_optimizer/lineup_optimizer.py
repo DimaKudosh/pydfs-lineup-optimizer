@@ -7,7 +7,6 @@ from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.solvers import Solver, PuLPSolver, SolverException
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
     LineupOptimizerIncorrectPositionName
-from pydfs_lineup_optimizer.sites import SitesRegistry
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings
 from pydfs_lineup_optimizer.player import Player, LineupPlayer, GameInfo
@@ -128,13 +127,13 @@ class LineupOptimizer:
         """
         csv_importer = self._csv_importer
         if not csv_importer:
-            csv_importer = SitesRegistry.get_csv_importer(self._settings.site)
+            csv_importer = self._settings.csv_importer
         self._players = csv_importer(filename).import_players()
 
     def load_lineups_from_csv(self, filename: str) -> List[Lineup]:
         csv_importer = self._csv_importer
         if not csv_importer:
-            csv_importer = SitesRegistry.get_csv_importer(self._settings.site)
+            csv_importer = self._settings.csv_importer
         return csv_importer(filename).import_lineups(self.players)
 
     def load_players(self, players: List[Player]):

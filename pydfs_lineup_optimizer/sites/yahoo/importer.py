@@ -2,14 +2,9 @@ import csv
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerIncorrectCSV
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.player import Player, GameInfo
-from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
-from pydfs_lineup_optimizer.constants import Site
 
 
-@SitesRegistry.register_csv_importer
 class YahooCSVImporter(CSVImporter):  # pragma: nocover
-    site = Site.YAHOO
-
     def import_players(self):
         players = []
         with open(self.filename, 'r') as csvfile:
@@ -30,7 +25,7 @@ class YahooCSVImporter(CSVImporter):  # pragma: nocover
                         row['Team'],
                         float(row['Salary']),
                         float(row['FPPG']),
-                        True if row['Injury Status'].strip() else False,
+                        is_injured=True if row['Injury Status'].strip() else False,
                         game_info=game_info,
                         **self.get_player_extra(row)
                     )

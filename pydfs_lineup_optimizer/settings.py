@@ -1,13 +1,18 @@
-from collections import namedtuple
-from typing import Optional, Type, List, TYPE_CHECKING
+from typing import Optional, Type, List, Sequence, TYPE_CHECKING
 from pydfs_lineup_optimizer.lineup_printer import LineupPrinter, BaseLineupPrinter
+from pydfs_lineup_optimizer.constants import PlayerRank
 
 
 if TYPE_CHECKING:  # pragma: no cover
     from pydfs_lineup_optimizer.rules import OptimizerRule
+    from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 
 
-LineupPosition = namedtuple('LineupPosition', ['name', 'positions'])
+class LineupPosition:
+    def __init__(self, name: str, positions: Sequence[str], for_rank: PlayerRank = PlayerRank.REGULAR):
+        self.name = name
+        self.positions = positions
+        self.for_rank = for_rank
 
 
 class BaseSettings:
@@ -20,6 +25,7 @@ class BaseSettings:
     total_teams_exclude_positions = []  # type: List[str]
     lineup_printer = LineupPrinter  # type: Type[BaseLineupPrinter]
     extra_rules = []  # type: List[Type['OptimizerRule']]
+    csv_importer = None  # type: Type['CSVImporter']
 
     @classmethod
     def get_total_players(cls) -> int:

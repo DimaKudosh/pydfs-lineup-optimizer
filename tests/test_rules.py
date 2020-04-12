@@ -6,7 +6,7 @@ from datetime import datetime
 from math import ceil
 from parameterized import parameterized
 from pydfs_lineup_optimizer import get_optimizer
-from pydfs_lineup_optimizer.constants import Site, Sport
+from pydfs_lineup_optimizer.constants import Site, Sport, PlayerRank
 from pydfs_lineup_optimizer.player import Player, GameInfo
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.rules import ProjectedOwnershipRule
@@ -597,7 +597,7 @@ class TestFanduelSingleGameFootballTestCase(unittest.TestCase):
         self.mvp_players = []
         for player in self.flex_players:
             mvp = deepcopy(player)
-            mvp.is_mvp = True
+            mvp.rank = PlayerRank.MVP
             mvp.fppg *= 1.5
             self.mvp_players.append(mvp)
         self.all_players = self.flex_players + self.mvp_players
@@ -606,7 +606,7 @@ class TestFanduelSingleGameFootballTestCase(unittest.TestCase):
 
     def test_minimum_teams(self):
         lineup = next(self.optimizer.optimize(1))
-        self.assertEqual([player.positions[0] for player in lineup if player.is_mvp][0], 'QB')
+        self.assertEqual([player.positions[0] for player in lineup if player.rank == PlayerRank.MVP][0], 'QB')
         self.assertEqual(len([player for player in lineup if 'QB' in player.positions]), 2)
 
 

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.1.0]
+- Added LOL for FanDuel
+- Fixed FanDuel Single Game incorrect lineups
+
 ## [v3.0.1]
 - Fixed paring teams in DK
 

@@ -7,5 +7,5 @@ from pydfs_lineup_optimizer.sites.fanduel.single_game.settings import *
 __all__ = [
     'FanDuelCSVImporter', 'FanDuelBasketballSettings', 'FanDuelFootballSettings', 'FanDuelHockeySettings',
     'FanDuelBaseballSettings', 'FanDuelWnbaSettings',
-    'FanDuelSingleGameCSVImporter', 'FanDuelSingleGameFootballSettings', 'FanDuelSingleGameBasketballSettings',
+    'FanDuelMVPCSVImporter', 'FanDuelSingleGameFootballSettings', 'FanDuelSingleGameBasketballSettings',
 ]

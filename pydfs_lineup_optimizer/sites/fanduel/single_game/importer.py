@@ -1,46 +1,30 @@
 from copy import deepcopy
-from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
-from pydfs_lineup_optimizer.constants import Site
+from typing import Type
+from pydfs_lineup_optimizer.constants import PlayerRank
 from pydfs_lineup_optimizer.sites.fanduel.classic.importer import FanDuelCSVImporter
 
 
-@SitesRegistry.register_csv_importer
-class FanDuelSingleGameCSVImporter(FanDuelCSVImporter):  # pragma: nocover
-    site = Site.FANDUEL_SINGLE_GAME
-
-    def import_players(self):
-        players = super().import_players()
-        mvps = []
-        for player in players:
-            mvp_player = deepcopy(player)
-            mvp_player.fppg *= 1.5
-            mvp_player.is_mvp = True
-            mvps.append(mvp_player)
-        players.extend(mvps)
-        return players
-
-
-@SitesRegistry.register_csv_importer
-class FanDuelBasketballSingleGameCSVImporter(FanDuelCSVImporter):  # pragma: nocover
-    site = Site.FANDUEL_SINGLE_GAME
-
-    def import_players(self):
-        players = super().import_players()
-        mvps = []
-        stars = []
-        pros = []
-        for player in players:
-            mvp_player = deepcopy(player)
-            mvp_player.fppg *= 2
-            mvp_player.is_mvp = True
-            mvps.append(mvp_player)
-            star_player = deepcopy(player)
-            star_player.fppg *= 1.5
-            star_player.is_star = True
-            stars.append(star_player)
-            pro_player = deepcopy(player)
-            pro_player.fppg *= 1.2
-            pro_player.is_pro = True
-            pros.append(pro_player)
-        players.extend(mvps + stars + pros)
-        return players
+def build_fanduel_single_game_importer(mvp=True, star=False, pro=False) -> Type[FanDuelCSVImporter]:
+    class FanDuelSingleGameCSVImporter(FanDuelCSVImporter):  # pragma: nocover
+        def import_players(self):
+            players = super().import_players()
+            extra_players = []
+            for player in players:
+                if mvp:
+                    mvp_player = deepcopy(player)
+                    mvp_player.fppg *= 2
+                    mvp_player.rank = PlayerRank.MVP
+                    extra_players.append(mvp_player)
+                if star:
+                    star_player = deepcopy(player)
+                    star_player.fppg *= 1.5
+                    star_player.rank = PlayerRank.STAR
+                    extra_players.append(star_player)
+                if pro:
+                    pro_player = deepcopy(player)
+                    pro_player.fppg *= 1.2
+                    pro_player.rank = PlayerRank.PRO
+                    extra_players.append(pro_player)
+            players.extend(extra_players)
+            return players
+    return FanDuelSingleGameCSVImporter

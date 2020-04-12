@@ -4,8 +4,6 @@ from pydfs_lineup_optimizer.lineup import Lineup
 
 
 class CSVImporter:
-    site = None  # type: str
-
     def __init__(self, filename: str):
         self.filename = filename
 
