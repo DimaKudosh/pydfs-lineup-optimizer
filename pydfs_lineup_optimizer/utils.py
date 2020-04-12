@@ -135,12 +135,5 @@ def process_percents(percent: Optional[float]) -> Optional[float]:
 
 
 def get_player_priority(player: 'Player') -> Tuple[int, float]:
-    priority = 1
-    if player.is_mvp:
-        priority = 4
-    elif player.is_star:
-        priority = 3
-    elif player.is_pro:
-        priority = 2
     game_starts_at = player.game_info.starts_at.timestamp() if player.game_info and player.game_info.starts_at else 0
-    return (-priority, game_starts_at)
+    return (-player.rank.value, game_starts_at)

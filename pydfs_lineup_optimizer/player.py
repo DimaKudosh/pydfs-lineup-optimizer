@@ -4,6 +4,7 @@ from pytz import timezone
 from typing import List, Optional
 from pydfs_lineup_optimizer.utils import process_percents
 from pydfs_lineup_optimizer.tz import get_timezone
+from pydfs_lineup_optimizer.constants import PlayerRank
 
 
 GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at', 'game_started'])
@@ -18,6 +19,7 @@ class Player:
                  team: str,
                  salary: float,
                  fppg: float,
+                 rank: PlayerRank = PlayerRank.REGULAR,
                  is_injured: bool = False,
                  max_exposure: Optional[float] = None,
                  min_exposure: Optional[float] = None,
@@ -38,9 +40,7 @@ class Player:
         self.is_injured = is_injured
         self.game_info = game_info
         self.roster_order = roster_order
-        self.is_mvp = False  # type: bool
-        self.is_star = False  # type: bool
-        self.is_pro = False  # type: bool
+        self.rank = rank
         self._min_exposure = None  # type: Optional[float]
         self._max_exposure = None  # type: Optional[float]
         self._min_deviation = None  # type: Optional[float]

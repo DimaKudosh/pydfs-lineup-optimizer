@@ -33,27 +33,6 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual(process_percents(0.3), 0.3)
         self.assertEqual(process_percents(30), 0.3)
 
-    @parameterized.expand([
-        (True, False, False, -4),
-        (False, True, False, -3),
-        (False, False, True, -2),
-        (False, False, False, -1),
-    ])
-    def test_player_priority(self, is_mvp, is_star, is_pro, expected):
-        player = Player(
-            player_id='test',
-            first_name='test',
-            last_name='test',
-            positions=['test'],
-            team='test',
-            salary=1000,
-            fppg=10,
-        )
-        player.is_mvp = is_mvp
-        player.is_star = is_star
-        player.is_pro = is_pro
-        self.assertEqual(get_player_priority(player)[0], expected)
-
 
 class PositionsConverterTestCase(unittest.TestCase):
     class TestSettings(settings.BaseSettings):

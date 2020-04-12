@@ -1,17 +1,14 @@
 import csv
+from copy import deepcopy
 from itertools import islice
 from typing import List, Dict
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerIncorrectCSV
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.player import Player, GameInfo
-from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
-from pydfs_lineup_optimizer.constants import Site
+from pydfs_lineup_optimizer.constants import PlayerRank
 
 
-@SitesRegistry.register_csv_importer
 class FanDuelCSVImporter(CSVImporter):  # pragma: nocover
-    site = Site.FANDUEL
-
     def _row_to_player(self, row: Dict) -> Player:
         game_info = None
         try:
@@ -28,7 +25,7 @@ class FanDuelCSVImporter(CSVImporter):  # pragma: nocover
                 row['Team'],
                 float(row['Salary']),
                 float(row['FPPG']),
-                True if row['Injury Indicator'].strip() else False,
+                is_injured=True if row['Injury Indicator'].strip() else False,
                 game_info=game_info,
                 **self.get_player_extra(row)
             )
@@ -50,3 +47,16 @@ class FanDuelCSVImporter(CSVImporter):  # pragma: nocover
                     raise LineupOptimizerIncorrectCSV
                 else:
                     start_line += 1
+
+
+class FanDuelMVPCSVImporter(FanDuelCSVImporter):
+    def import_players(self):
+        players = super().import_players()
+        mvps = []
+        for player in players:
+            mvp_player = deepcopy(player)
+            mvp_player.fppg *= 1.5
+            mvp_player.rank = PlayerRank.MVP
+            mvps.append(mvp_player)
+        players.extend(mvps)
+        return players

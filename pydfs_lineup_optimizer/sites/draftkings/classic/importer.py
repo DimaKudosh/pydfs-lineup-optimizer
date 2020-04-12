@@ -7,15 +7,10 @@ from pydfs_lineup_optimizer.exceptions import LineupOptimizerIncorrectCSV
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.player import Player, LineupPlayer, GameInfo
 from pydfs_lineup_optimizer.lineup import Lineup
-from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
-from pydfs_lineup_optimizer.constants import Site
 from pydfs_lineup_optimizer.tz import get_timezone
 
 
-@SitesRegistry.register_csv_importer
 class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
-    site = Site.DRAFTKINGS
-
     def _parse_game_info(self, row: Dict) -> Optional[GameInfo]:
         game_info = row.get('Game Info')
         if not game_info:
