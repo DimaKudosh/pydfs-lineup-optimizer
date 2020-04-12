@@ -124,11 +124,10 @@ class Player:
 
 
 class LineupPlayer:
-    __slots__ = ['_player', 'lineup_position']
-
-    def __init__(self, player: Player, lineup_position: str):
+    def __init__(self, player: Player, lineup_position: str, used_fppg: Optional[float] = None):
         self._player = player
         self.lineup_position = lineup_position
+        self.used_fppg = used_fppg
 
     def __getattr__(self, attr_name):
         return getattr(self._player, attr_name)

@@ -138,6 +138,12 @@ It works only if both fields are specified.
 
     With randomness = True optimizer generate lineups without ordering by max points projection.
 
+After optimization you can print to console list with statistic about players used in lineups.
+
+.. code-block::
+
+    optimizer.print_statistic()
+
 Example of advanced usage
 -------------------------
 

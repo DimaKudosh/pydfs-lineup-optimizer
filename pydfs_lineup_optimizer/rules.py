@@ -9,6 +9,7 @@ from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_op
     get_players_grouped_by_teams
 from pydfs_lineup_optimizer.lineup import Lineup
 from pydfs_lineup_optimizer.player import Player
+from pydfs_lineup_optimizer.context import OptimizationContext
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -29,10 +30,9 @@ __all__ = [
 
 
 class OptimizerRule:
-    def __init__(self, optimizer: 'LineupOptimizer', all_players: List[Player], params: Dict[str, Any]):
-        self.params = params
+    def __init__(self, optimizer: 'LineupOptimizer', context: OptimizationContext):
         self.optimizer = optimizer
-        self.all_players = all_players
+        self.context = context
 
     def apply(self, solver: Solver, players_dict: Dict[Player, Any]):
         pass
@@ -69,13 +69,14 @@ class RandomObjective(OptimizerRule):
                     player.max_deviation if player.max_deviation is not None else optimizer_max_deviation
                 )
                 random_fppg = player.fppg * (1 + (-1 if bool(getrandbits(1)) else 1) * multiplier)
+            self.context.players_used_fppg[player] = random_fppg
             coefficients.append(random_fppg)
         solver.set_objective(variables, coefficients)
 
 
 class UniqueLineupRule(OptimizerRule):
-    def __init__(self, optimizer, all_players, params):
-        super(UniqueLineupRule, self).__init__(optimizer, all_players, params)
+    def __init__(self, optimizer, context):
+        super(UniqueLineupRule, self).__init__(optimizer, context)
         self.used_combinations = []  # type: List[Any]
 
     def apply_for_iteration(self, solver, players_dict, result):
@@ -104,23 +105,20 @@ class LineupBudgetRule(OptimizerRule):
 
 
 class LockedPlayersRule(OptimizerRule):
-    def __init__(self, optimizer, all_players, params):
-        super(LockedPlayersRule, self).__init__(optimizer, all_players, params)
+    def __init__(self, optimizer, context):
+        super(LockedPlayersRule, self).__init__(optimizer, context)
         self.used_players = defaultdict(int)  # type: DefaultDict[Player, int]
-        self.total_lineups = params.get('n')
-        self.remaining_iteration = params.get('n') + 1
 
     def apply_for_iteration(self, solver, players_dict, result):
         force_variables = []
         exclude_variables = []
-        self.remaining_iteration -= 1
         if result:
             for player in result.lineup:
                 self.used_players[player] += 1
         removed_players = []
         for player, used in self.used_players.items():
-            max_exposure = player.max_exposure if player.max_exposure is not None else self.params.get('max_exposure')
-            if max_exposure is not None and max_exposure <= used / self.total_lineups:
+            max_exposure = player.max_exposure if player.max_exposure is not None else self.context.max_exposure
+            if max_exposure is not None and max_exposure <= used / self.context.total_lineups:
                 removed_players.append(player)
                 exclude_variables.append(players_dict[player])
         for player in self.optimizer.locked_players:
@@ -189,8 +187,8 @@ class RemoveInjuredRule(OptimizerRule):
 
 
 class MaxRepeatingPlayersRule(OptimizerRule):
-    def __init__(self, optimizer, all_players, params):
-        super(MaxRepeatingPlayersRule, self).__init__(optimizer, all_players, params)
+    def __init__(self, optimizer, context):
+        super(MaxRepeatingPlayersRule, self).__init__(optimizer, context)
         self.exclude_combinations = []  # type: List[Any]
 
     def apply_for_iteration(self, solver, players_dict, result):
@@ -241,10 +239,10 @@ class UniquePlayerRule(OptimizerRule):
 
 
 class LateSwapRule(OptimizerRule):
-    def __init__(self, optimizer, all_players, params):
-        super(LateSwapRule, self).__init__(optimizer, all_players, params)
+    def __init__(self, optimizer, context):
+        super(LateSwapRule, self).__init__(optimizer, context)
         self.current_iteration = 0
-        self.lineups = params.get('lineups')  # type: List[Lineup]
+        self.lineups = context.existed_lineups
 
     def apply_for_iteration(self, solver, players_dict, result):
         current_lineup = self.lineups[self.current_iteration]
@@ -274,10 +272,10 @@ class LateSwapRule(OptimizerRule):
 
 
 class GenericStacksRule(OptimizerRule):
-    def __init__(self, optimizer, all_players, params):
-        super().__init__(optimizer, all_players, params)
-        self.total_lineups = params.get('n')
-        self.stacks = list(chain.from_iterable(stack.build_stacks(all_players, optimizer) for stack in optimizer.stacks))
+    def __init__(self, optimizer, context):
+        super().__init__(optimizer, context)
+        self.stacks = list(chain.from_iterable(stack.build_stacks(context.players, optimizer)
+                                               for stack in optimizer.stacks))
         self.used_groups = defaultdict(int)  # type: Dict[str, int]
         self.with_exposures = any(stack.with_exposures for stack in self.stacks)
 
@@ -295,7 +293,7 @@ class GenericStacksRule(OptimizerRule):
 
     def _is_reached_exposure(self, group: 'BaseGroup') -> bool:
         return group.max_exposure is not None and \
-               group.max_exposure <= self.used_groups[self._build_group_name(group)] / self.total_lineups
+               group.max_exposure <= self.used_groups[self._build_group_name(group)] / self.context.total_lineups
 
     def _create_constraints(
             self,
@@ -346,13 +344,11 @@ class GenericStacksRule(OptimizerRule):
 
 
 class MinExposureRule(OptimizerRule):
-    def __init__(self, optimizer, all_players, params):
-        super().__init__(optimizer, all_players, params)
-        self.total_lineups = params.get('n')
-        self.remaining_lineups = self.total_lineups
+    def __init__(self, optimizer, context):
+        super().__init__(optimizer, context)
         self.min_exposure_players = {
-            player: round(player.min_exposure * self.total_lineups)
-            for player in all_players if player.min_exposure
+            player: round(player.min_exposure * context.total_lineups)
+            for player in context.players if player.min_exposure
         }
         self.positions = {}
         if self.min_exposure_players:
@@ -368,22 +364,22 @@ class MinExposureRule(OptimizerRule):
                 self.min_exposure_players[player] -= 1
                 if self.min_exposure_players[player] == 0:
                     del self.min_exposure_players[player]
-            self.remaining_lineups -= 1
         self._create_constraints(solver, players_dict)
 
     def _create_constraints(self, solver: Solver, players_dict: Dict[Player, Any]) -> None:
+        remaining_lineups = self.context.remaining_lineups
         for positions, total_for_positions in self.positions.items():
             min_exposure_players = [p for p in self.min_exposure_players if list_intersection(p.positions, positions)]
             if not min_exposure_players:
                 continue
             total_force = sum(self.min_exposure_players[p] for p in min_exposure_players) - \
-                          total_for_positions * (self.remaining_lineups - 1)
+                          total_for_positions * (remaining_lineups - 1)
             if total_force > 0:
                 variables = [players_dict[p] for p in min_exposure_players]
-                total_force = min(total_force, ceil(total_force / self.remaining_lineups))
+                total_force = min(total_force, ceil(total_force / remaining_lineups))
                 solver.add_constraint(variables, None, SolverSign.GTE, total_force)
         for player, total_lineups in self.min_exposure_players.items():
-            if total_lineups >= self.remaining_lineups:
+            if total_lineups >= remaining_lineups:
                 solver.add_constraint([players_dict[player]], None, SolverSign.EQ, 1)
 
 
