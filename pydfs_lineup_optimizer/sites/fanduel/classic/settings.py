@@ -3,8 +3,9 @@ from pydfs_lineup_optimizer.settings import BaseSettings, LineupPosition
 from pydfs_lineup_optimizer.constants import Sport, Site, PlayerRank
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 from pydfs_lineup_optimizer.lineup_printer import IndividualSportLineupPrinter
-from pydfs_lineup_optimizer.rules import OptimizerRule, FanduelBaseballRosterRule, FanduelSingleGameMVPRule
-from pydfs_lineup_optimizer.sites.fanduel.classic.importer import FanDuelCSVImporter, FanDuelMVPCSVImporter
+from pydfs_lineup_optimizer.rules import OptimizerRule, FanduelBaseballRosterRule, FanduelSingleGameStarRule
+from pydfs_lineup_optimizer.sites.fanduel.classic.importer import FanDuelCSVImporter
+from pydfs_lineup_optimizer.sites.fanduel.single_game.importer import build_fanduel_single_game_importer
 
 
 class FanDuelSettings(BaseSettings):
@@ -118,16 +119,16 @@ class FanDuelGolfSettings(FanDuelSettings):
 @SitesRegistry.register_settings
 class FanDuelLOLSettings(FanDuelSettings):
     sport = Sport.LEAGUE_OF_LEGENDS
-    max_from_one_team = None
-    min_teams = None
-    csv_importer = FanDuelMVPCSVImporter
-    extra_rules = [FanduelSingleGameMVPRule]  # type: List[Type[OptimizerRule]]
+    max_from_one_team = 4
+    min_teams = 3
+    csv_importer = build_fanduel_single_game_importer(mvp=False, star=True, pro=False)
+    extra_rules = [FanduelSingleGameStarRule]  # type: List[Type[OptimizerRule]]
     positions = [
-        LineupPosition('MVP', ('TOP', 'MID', 'ADC', 'JNG', 'SUP', 'TEAM'), for_rank=PlayerRank.MVP),
+        LineupPosition('STAR', ('TOP', 'MID', 'ADC', 'JNG', 'SUP'), for_rank=PlayerRank.STAR),
         LineupPosition('TOP', ('TOP',)),
+        LineupPosition('JNG', ('JNG',)),
         LineupPosition('MID', ('MID',)),
         LineupPosition('ADC', ('ADC',)),
-        LineupPosition('JNG', ('JNG',)),
         LineupPosition('SUP', ('SUP',)),
         LineupPosition('TEAM', ('TEAM',)),
     ]
