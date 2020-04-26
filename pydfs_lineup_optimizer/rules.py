@@ -284,6 +284,14 @@ class GenericStacksRule(OptimizerRule):
         if self.with_exposures:
             self._create_constraints(solver, players_dict)
 
+    @staticmethod
+    def _build_group_name(group):
+        return 'stack_%s' % group.uuid.hex
+
+    def _is_reached_exposure(self, group):
+        return group.max_exposure is not None and \
+               group.max_exposure <= self.used_groups[self._build_group_name(group)] / self.total_lineups
+
     def _create_constraints(
             self,
             solver: Solver,
@@ -293,9 +301,9 @@ class GenericStacksRule(OptimizerRule):
         for stack in self.stacks:
             combinations_variables = {}
             for group in stack.groups:
-                group_name = ('stack_%s_%s' % (stack.uuid, group.uuid)).replace('-', '_')
+                group_name = self._build_group_name(group)
                 sub_groups = group.get_all_players_groups()
-                if group.max_exposure is not None and group.max_exposure <= self.used_groups[group_name] / self.total_lineups:
+                if self._is_reached_exposure(group) or (group.parent and self._is_reached_exposure(group.parent)):
                     max_group = sorted(sub_groups, key=lambda t: t[1])[0]
                     variables = [players_dict[p] for p in max_group[0]]
                     solver.add_constraint(variables, None, SolverSign.LTE, max_group[1] - 1)

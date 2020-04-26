@@ -331,9 +331,11 @@ class StacksRuleTestCase(unittest.TestCase):
         self.optimizer.settings.max_from_one_team = 4
         self.test_team = 'TEST'
         self.spacing_players = [
-            Player('1', '1', '1', ['PG'], self.test_team, 100, 40, roster_order=1),
-            Player('2', '2', '2', ['SG'], self.test_team, 100, 30, roster_order=2),
-            Player('3', '3', '3', ['SF'], self.test_team, 100, 50, roster_order=3),
+            Player('1', '1', '1', ['PG'], self.test_team, 100, 4, roster_order=1),
+            Player('2', '2', '2', ['SG'], self.test_team, 100, 3, roster_order=2),
+            Player('3', '3', '3', ['SG'], self.test_team, 100, 3, roster_order=2),
+            Player('4', '4', '4', ['SF'], self.test_team, 100, 5, roster_order=3),
+            Player('5', '5', '5', ['PF'], self.test_team, 100, 1, roster_order=4),
         ]
         self.optimizer.load_players(self.players + self.spacing_players)
 
@@ -360,7 +362,7 @@ class StacksRuleTestCase(unittest.TestCase):
     @parameterized.expand([
         (3, [1, 3]),
         (2, [2, 3]),
-        (1, [3]),
+        (1, [2, 2]),
     ])
     def test_stacks_with_spacing(self, spacing, expected):
         self.optimizer.add_stack(TeamStack(2, spacing=spacing))
