@@ -81,11 +81,15 @@ Restrict players from opposing team
 -----------------------------------
 In some cases you would want to restrict creating of lineup with players from opposing teams,
 for example prevent of pitchers and hitters from same game. For this you can use `restrict_positions_for_opposing_team`
-method of optimizer, it accepts 2 arguments with list of positions for one team and list of positions for another.
+method of optimizer, it accepts 2 arguments with list of positions for one team and list of positions for another and
+optional argument that specify max allowed players from opposing team. By default this argument is 0 but you can change
+it in some cases. For example if you participate in tournament with a few games.
+
 
 .. code-block:: python
 
-    optimizer.restrict_positions_for_opposing_team(['P'], ['1B', '2B', '3B'])
+    optimizer.restrict_positions_for_opposing_team(['P'], ['C', 'SS', 'OF', '1B', '2B', '3B'])
+    optimizer.restrict_positions_for_opposing_team(['P'], ['C', 'SS', 'OF', '1B', '2B', '3B'], 1)  # 1 hitter from opposing team is allowed
 
 .. note::
 

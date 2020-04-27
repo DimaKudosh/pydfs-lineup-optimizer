@@ -404,6 +404,17 @@ class PositionsForOpposingTeamTestCase(unittest.TestCase):
                          if list_intersection(player.positions, second_team_positions)}
         self.assertFalse(pitcher_games.intersection(hitters_games))
 
+    def test_restrict_positions_for_opposing_team_correctness_max_allowed(self):
+        first_team_positions = ['SP', 'RP']
+        second_team_positions = ['1B', '2B', '3B']
+        self.optimizer.restrict_positions_for_opposing_team(first_team_positions, second_team_positions, 1)
+        lineup = next(self.optimizer.optimize(1))
+        pitcher_games = {player.game_info for player in lineup
+                         if list_intersection(player.positions, first_team_positions)}
+        hitters_games = {player.game_info for player in lineup
+                         if list_intersection(player.positions, second_team_positions)}
+        self.assertEqual(len(pitcher_games.intersection(hitters_games)), 1)
+
     def test_restrict_positions_if_game_not_specified(self):
         for player in self.players:
             player.game_info = None

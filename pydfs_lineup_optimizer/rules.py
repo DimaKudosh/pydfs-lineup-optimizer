@@ -374,6 +374,8 @@ class MinExposureRule(OptimizerRule):
 
 
 class RestrictPositionsForOpposingTeam(OptimizerRule):
+    MULTIPLIER = 1000
+
     def apply(self, solver, players_dict):
         if not self.optimizer.opposing_teams_position_restriction:
             return
@@ -388,8 +390,10 @@ class RestrictPositionsForOpposingTeam(OptimizerRule):
                                         if list_intersection(player.positions, first_team_positions)]
                 second_team_variables = [variable for player, variable in second_team_players.items()
                                          if list_intersection(player.positions, second_team_positions)]
-                for variables in product(first_team_variables, second_team_variables):
-                    solver.add_constraint(variables, None, SolverSign.LTE, 1)
+                coefficients = [1] * len(second_team_variables)
+                for var in first_team_variables:
+                    solver.add_constraint([var, *second_team_variables], [self.MULTIPLIER, *coefficients],
+                                          SolverSign.LTE, self.MULTIPLIER + self.optimizer.opposing_teams_max_allowed)
 
 
 class RestrictPositionsForSameTeamRule(OptimizerRule):

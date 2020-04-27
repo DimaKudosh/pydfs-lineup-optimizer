@@ -47,6 +47,7 @@ class LineupOptimizer:
         self.team_stacks_for_positions = None  # type: Optional[List[str]]
         self.same_team_restrict_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
         self.opposing_team_force_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
+        self.opposing_teams_max_allowed = 0
         self.total_teams = None  # type: Optional[int]
         self.stacks = []  # type: List[BaseStack]
         self.min_starters = None  # type: Optional[int]
@@ -287,10 +288,16 @@ class LineupOptimizer:
             for stack in team_stacks:
                 self.add_stack(stack)
 
-    def restrict_positions_for_opposing_team(self, first_team_positions: List[str], second_team_positions: List[str]):
+    def restrict_positions_for_opposing_team(
+            self,
+            first_team_positions: List[str],
+            second_team_positions: List[str],
+            max_allowed: int = 0,
+    ):
         if not self.games:
             raise LineupOptimizerException('Game Info isn\'t specified for players')
         self.opposing_teams_position_restriction = (first_team_positions, second_team_positions)
+        self.opposing_teams_max_allowed = max_allowed
         self.add_new_rule(RestrictPositionsForOpposingTeam)
 
     def restrict_positions_for_same_team(self, *restrict_positions: Tuple[str, str]):
