@@ -1,4 +1,4 @@
-from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatusOptimal, LpBinary
+from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatusOptimal, LpBinary, LpInteger
 from .base import Solver
 from .constants import SolverSign
 from .exceptions import SolverException
@@ -13,7 +13,9 @@ class PuLPSolver(Solver):
     def setup_solver(self):
         pass
 
-    def add_variable(self, name):
+    def add_variable(self, name, min_value=None, max_value=None):
+        if any([min_value, max_value]):
+            return LpVariable(name, lowBound=min_value, upBound=max_value, cat=LpInteger)
         return LpVariable(name, cat=LpBinary)
 
     def set_objective(self, variables, coefficients):
@@ -46,7 +48,7 @@ class PuLPSolver(Solver):
             result = []
             for variable in self.prob.variables():
                 val = variable.value()
-                if val is not None and round(val) == 1.0:
+                if val is not None and round(val) >= 1.0:
                     result.append(variable)
             return result
         else:

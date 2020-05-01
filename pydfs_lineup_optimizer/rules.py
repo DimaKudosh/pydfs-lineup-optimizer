@@ -304,10 +304,16 @@ class GenericStacksRule(OptimizerRule):
                 group_name = self._build_group_name(group)
                 sub_groups = group.get_all_players_groups()
                 if self._is_reached_exposure(group) or (group.parent and self._is_reached_exposure(group.parent)):
+                    for group_players, _, max_from_group in sub_groups:
+                        if max_from_group is None:
+                            continue
+                        solver.add_constraint([players_dict[p] for p in group_players], None, SolverSign.EQ, 0)
                     max_group = sorted(sub_groups, key=lambda t: t[1])[0]
-                    variables = [players_dict[p] for p in max_group[0]]
-                    solver.add_constraint(variables, None, SolverSign.LTE, max_group[1] - 1)
+                    if max_group[1]:
+                        solver.add_constraint([players_dict[p] for p in max_group[0]], None, SolverSign.LTE,
+                                              max_group[1] - 1)
                     continue
+                solver_variable = None
                 if any(sub_group[1] is not None for sub_group in sub_groups):
                     solver_variable = solver.add_variable(group_name)
                     combinations_variables[group_name] = solver_variable
@@ -318,8 +324,11 @@ class GenericStacksRule(OptimizerRule):
                             for player in group_players:
                                 players_in_stack[player].add(solver_variable)
                         solver.add_constraint(variables, None, SolverSign.GTE, group_min * solver_variable)
-                    if group_max is not None:
-                        solver.add_constraint(variables, None, SolverSign.LTE, group_max)
+                        if group_max is not None:
+                            solver.add_constraint(variables, None, SolverSign.LTE, group_max)
+                    elif group_max is not None:
+                        solver_variable = solver.add_variable(group_name, min_value=0, max_value=group_max)
+                        solver.add_constraint(variables, None, SolverSign.EQ, solver_variable)
             if combinations_variables:
                 solver.add_constraint(combinations_variables.values(), None, SolverSign.GTE, 1)
         for player, stacks_vars in players_in_stack.items():

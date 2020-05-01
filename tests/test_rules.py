@@ -723,6 +723,20 @@ class PlayersGroupsRuleTestCase(unittest.TestCase):
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len([player for player in self.high_fppg_group if player in lineup]), 1)
 
+    def test_group_player_max_exposure(self):
+        group = PlayersGroup(self.group, max_exposure=0.5)
+        self.optimizer.add_players_group(group)
+        lineups = list(self.optimizer.optimize(2))
+        self.assertEqual(len([player for player in self.group if player in lineups[0]]), len(self.group))
+        self.assertEqual(len([player for player in self.group if player in lineups[1]]), 0)
+
+    def test_group_player_max_from_group_max_exposure(self):
+        group = PlayersGroup(self.high_fppg_group, max_from_group=1, max_exposure=0.5)
+        self.optimizer.add_players_group(group)
+        lineups = list(self.optimizer.optimize(2))
+        self.assertEqual(len([player for player in self.high_fppg_group if player in lineups[0]]), 1)
+        self.assertEqual(len([player for player in self.high_fppg_group if player in lineups[1]]), 0)
+
 
 class MinExposureTestCase(unittest.TestCase):
     def setUp(self):
