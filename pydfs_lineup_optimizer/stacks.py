@@ -158,11 +158,11 @@ class TeamStack(BaseStack):
                     else:
                         allowed_roster_orders.append(((roster_position + i) % (max_spacing + 1)) + 1)
                 all_allowed_roster_orders.add(tuple(sorted(allowed_roster_orders)))
-            for allowed_roster_orders in all_allowed_roster_orders:
+            for roster_orders in all_allowed_roster_orders:
                 spacing_groups.append(PlayersGroup(
                     players=list(chain.from_iterable(
                         players for players_spacing, players in players_by_roster_positions.items()
-                        if players_spacing in allowed_roster_orders
+                        if players_spacing in roster_orders
                     )),
                     min_from_group=self.size,
                     parent=parent_group,

@@ -13,6 +13,7 @@ from pydfs_lineup_optimizer.player import Player
 
 if TYPE_CHECKING:  # pragma: no cover
     from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
+    from pydfs_lineup_optimizer.stacks import BaseGroup
 
 
 __all__ = [
@@ -289,10 +290,10 @@ class GenericStacksRule(OptimizerRule):
             self._create_constraints(solver, players_dict)
 
     @staticmethod
-    def _build_group_name(group):
+    def _build_group_name(group: 'BaseGroup'):
         return 'stack_%s' % group.uuid.hex
 
-    def _is_reached_exposure(self, group):
+    def _is_reached_exposure(self, group: 'BaseGroup') -> bool:
         return group.max_exposure is not None and \
                group.max_exposure <= self.used_groups[self._build_group_name(group)] / self.total_lineups
 

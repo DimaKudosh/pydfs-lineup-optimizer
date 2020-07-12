@@ -31,7 +31,7 @@ class LineupOptimizer:
             position.positions for position in self._settings.positions))
         self._removed_players = []  # type: List[Player]
         self._search_threshold = 0.8
-        self._min_deviation = 0
+        self._min_deviation = 0.0
         self._max_deviation = 0.12
         self.players_from_one_team = {}  # type: Dict[str, int]
         self.players_with_same_position = {}  # type: Dict[str, int]
