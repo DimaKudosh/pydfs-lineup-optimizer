@@ -56,6 +56,22 @@ class OptimizerRulesTestCase(unittest.TestCase):
         random_lineup = next(self.lineup_optimizer.optimize(1, randomness=True))
         self.assertListEqual(optimized_lineup.players, random_lineup.players)
 
+    def test_player_fppg_range(self):
+        test_player = Player(
+            player_id='1',
+            first_name='test',
+            last_name='test',
+            positions=['PG'],
+            team='Test',
+            salary=2000,
+            fppg=0,
+            fppg_ceil=10000,
+            fppg_floor=10000,
+        )
+        self.lineup_optimizer.extend_players([test_player])
+        random_lineup = next(self.lineup_optimizer.optimize(1, randomness=True))
+        self.assertIn(test_player, random_lineup.players)
+
     def test_lineup_with_players_from_same_positions(self):
         self.lineup_optimizer.load_players(create_players(['PG', 'SG', 'SF', 'PF', 'C', 'PG', 'SF', 'PF']))
         self.lineup_optimizer.extend_players([

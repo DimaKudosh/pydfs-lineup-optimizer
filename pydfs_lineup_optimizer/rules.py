@@ -60,11 +60,15 @@ class RandomObjective(OptimizerRule):
         optimizer_min_deviation, optimizer_max_deviation = self.optimizer.get_deviation()
         for player, variable in players_dict.items():
             variables.append(variable)
-            multiplier = uniform(
-                player.min_deviation if player.min_deviation is not None else optimizer_min_deviation,
-                player.max_deviation if player.max_deviation is not None else optimizer_max_deviation
-            )
-            coefficients.append(player.fppg * (1 + (-1 if bool(getrandbits(1)) else 1) * multiplier))
+            if player.fppg_floor is not None and player.fppg_ceil is not None:
+                random_fppg = uniform(player.fppg_floor, player.fppg_ceil)
+            else:
+                multiplier = uniform(
+                    player.min_deviation if player.min_deviation is not None else optimizer_min_deviation,
+                    player.max_deviation if player.max_deviation is not None else optimizer_max_deviation
+                )
+                random_fppg = player.fppg * (1 + (-1 if bool(getrandbits(1)) else 1) * multiplier)
+            coefficients.append(random_fppg)
         solver.set_objective(variables, coefficients)
 
 

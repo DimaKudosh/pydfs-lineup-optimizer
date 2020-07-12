@@ -112,9 +112,12 @@ pass max_exposure parameter to optimize method
 
 Optimizer also have randomness feature. It adds some deviation for players projection for
 creating less optimized but more randomized lineups. For activating randomness feature you should set randomness parameter to True.
-By default min deviation is 6% and max deviation is 12%. You can change it with set_deviation method.
+By default min deviation is 0 and max deviation is 12%. You can change it with set_deviation method.
 You also can specify player specific deviation using `min_deviation` and `max_deviation` attributes for player,
 or using additional columns `Min Deviation` and `Max Deviation` in import csv.
+Also you can randomize players fppg by specifying projection range using `fppg_floor` and `fppg_ceil` attributes for player or
+`Projection Floor` and `Projection Ceil` csv columns. In this case this method has priority over deviation.
+It works only if both fields are specified.
 
 .. code-block:: python
 
@@ -126,6 +129,9 @@ or using additional columns `Min Deviation` and `Max Deviation` in import csv.
     westbrook = optimizer.get_player_by_name('Westbrook')
     westbrook.min_deviation = 0  # Disable randomness for this player
     westbrook.max_deviation = 0
+    doncic = optimizer.get_player_by_name('Doncic')
+    doncic.fppg_floor = 0  # Randomize using projection range
+    doncic.fppg_ceil = 0
     lineups = optimizer.optimize(n=10, randomness=True)
 
 .. note::

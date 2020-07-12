@@ -29,6 +29,8 @@ class Player:
                  min_deviation: Optional[float] = None,
                  max_deviation: Optional[float] = None,
                  is_confirmed_starter: Optional[bool] = None,
+                 fppg_floor: Optional[float] = None,
+                 fppg_ceil: Optional[float] = None,
                  ):
         self.id = player_id
         self.first_name = first_name
@@ -52,6 +54,8 @@ class Player:
         self.max_deviation = max_deviation
         self.projected_ownership = projected_ownership
         self.is_confirmed_starter = is_confirmed_starter
+        self.fppg_floor = fppg_floor
+        self.fppg_ceil = fppg_ceil
 
     def __repr__(self):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)
