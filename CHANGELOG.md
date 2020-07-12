@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.2.0]
+- Added randomize with projections range
+- Added max allowed parameter for restrict positions from opposing team
+- Fixed team stacking with spacing
+- Fixed ignore max_exposure in groups
+- Fixed FD Golf
+- Fixed yahoo import
+- Fixed FD NFL positions names
+
 ## [v3.1.1]
 - Fixed position names and ordering for FanDuel LOL classic
 
