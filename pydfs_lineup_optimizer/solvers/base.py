@@ -11,7 +11,7 @@ class Solver:  # pragma: no cover
     def set_objective(self, variables: Iterable[Any], coefficients: Iterable[float]):
         raise NotImplementedError
 
-    def add_variable(self, name: str) -> Any:
+    def add_variable(self, name: str, min_value: Optional[int] = None, max_value: Optional[int] = None) -> Any:
         raise NotImplementedError
 
     def add_constraint(self, variables: Iterable[Any], coefficients: Optional[Iterable[float]], sign: str, rhs: float):

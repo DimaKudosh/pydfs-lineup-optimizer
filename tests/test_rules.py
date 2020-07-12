@@ -56,6 +56,22 @@ class OptimizerRulesTestCase(unittest.TestCase):
         random_lineup = next(self.lineup_optimizer.optimize(1, randomness=True))
         self.assertListEqual(optimized_lineup.players, random_lineup.players)
 
+    def test_player_fppg_range(self):
+        test_player = Player(
+            player_id='1',
+            first_name='test',
+            last_name='test',
+            positions=['PG'],
+            team='Test',
+            salary=2000,
+            fppg=0,
+            fppg_ceil=10000,
+            fppg_floor=10000,
+        )
+        self.lineup_optimizer.extend_players([test_player])
+        random_lineup = next(self.lineup_optimizer.optimize(1, randomness=True))
+        self.assertIn(test_player, random_lineup.players)
+
     def test_lineup_with_players_from_same_positions(self):
         self.lineup_optimizer.load_players(create_players(['PG', 'SG', 'SF', 'PF', 'C', 'PG', 'SF', 'PF']))
         self.lineup_optimizer.extend_players([
@@ -331,9 +347,11 @@ class StacksRuleTestCase(unittest.TestCase):
         self.optimizer.settings.max_from_one_team = 4
         self.test_team = 'TEST'
         self.spacing_players = [
-            Player('1', '1', '1', ['PG'], self.test_team, 100, 40, roster_order=1),
-            Player('2', '2', '2', ['SG'], self.test_team, 100, 30, roster_order=2),
-            Player('3', '3', '3', ['SF'], self.test_team, 100, 50, roster_order=3),
+            Player('1', '1', '1', ['PG'], self.test_team, 100, 4, roster_order=1),
+            Player('2', '2', '2', ['SG'], self.test_team, 100, 3, roster_order=2),
+            Player('3', '3', '3', ['SG'], self.test_team, 100, 3, roster_order=2),
+            Player('4', '4', '4', ['SF'], self.test_team, 100, 5, roster_order=3),
+            Player('5', '5', '5', ['PF'], self.test_team, 100, 1, roster_order=4),
         ]
         self.optimizer.load_players(self.players + self.spacing_players)
 
@@ -360,7 +378,7 @@ class StacksRuleTestCase(unittest.TestCase):
     @parameterized.expand([
         (3, [1, 3]),
         (2, [2, 3]),
-        (1, [3]),
+        (1, [2, 2]),
     ])
     def test_stacks_with_spacing(self, spacing, expected):
         self.optimizer.add_stack(TeamStack(2, spacing=spacing))
@@ -401,6 +419,17 @@ class PositionsForOpposingTeamTestCase(unittest.TestCase):
         hitters_games = {player.game_info for player in lineup
                          if list_intersection(player.positions, second_team_positions)}
         self.assertFalse(pitcher_games.intersection(hitters_games))
+
+    def test_restrict_positions_for_opposing_team_correctness_max_allowed(self):
+        first_team_positions = ['SP', 'RP']
+        second_team_positions = ['1B', '2B', '3B']
+        self.optimizer.restrict_positions_for_opposing_team(first_team_positions, second_team_positions, 1)
+        lineup = next(self.optimizer.optimize(1))
+        pitcher_games = {player.game_info for player in lineup
+                         if list_intersection(player.positions, first_team_positions)}
+        hitters_games = {player.game_info for player in lineup
+                         if list_intersection(player.positions, second_team_positions)}
+        self.assertEqual(len(pitcher_games.intersection(hitters_games)), 1)
 
     def test_restrict_positions_if_game_not_specified(self):
         for player in self.players:
@@ -709,6 +738,20 @@ class PlayersGroupsRuleTestCase(unittest.TestCase):
         self.optimizer.add_players_group(group)
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len([player for player in self.high_fppg_group if player in lineup]), 1)
+
+    def test_group_player_max_exposure(self):
+        group = PlayersGroup(self.group, max_exposure=0.5)
+        self.optimizer.add_players_group(group)
+        lineups = list(self.optimizer.optimize(2))
+        self.assertEqual(len([player for player in self.group if player in lineups[0]]), len(self.group))
+        self.assertEqual(len([player for player in self.group if player in lineups[1]]), 0)
+
+    def test_group_player_max_from_group_max_exposure(self):
+        group = PlayersGroup(self.high_fppg_group, max_from_group=1, max_exposure=0.5)
+        self.optimizer.add_players_group(group)
+        lineups = list(self.optimizer.optimize(2))
+        self.assertEqual(len([player for player in self.high_fppg_group if player in lineups[0]]), 1)
+        self.assertEqual(len([player for player in self.high_fppg_group if player in lineups[1]]), 0)
 
 
 class MinExposureTestCase(unittest.TestCase):

@@ -43,8 +43,8 @@ class FanDuelFootballSettings(FanDuelSettings):
         LineupPosition('WR', ('WR', )),
         LineupPosition('WR', ('WR', )),
         LineupPosition('TE', ('TE', )),
-        LineupPosition('D', ('D', )),
         LineupPosition('FLEX', ('RB', 'WR', 'TE')),
+        LineupPosition('DEF', ('D', )),
     ]
 
 
@@ -104,6 +104,7 @@ class FanDuelWnbaSettings(FanDuelSettings):
 class FanDuelGolfSettings(FanDuelSettings):
     sport = Sport.GOLF
     max_from_one_team = None
+    min_teams = None
     extra_rules = []  # type: List[Type[OptimizerRule]]
     lineup_printer = IndividualSportLineupPrinter
     positions = [

@@ -18,6 +18,15 @@ class BaseGroup(metaclass=ABCMeta):
     max_from_group = None  # type: Optional[int]
     max_exposure = None  # type: Optional[float]
 
+    def __init__(
+            self,
+            max_exposure: Optional[float] = None,
+            parent: Optional['BaseGroup'] = None,
+    ):
+        self.uuid = uuid4()
+        self.max_exposure = max_exposure
+        self.parent = parent
+
     @abstractmethod
     def get_all_players_groups(self) -> List[Tuple[List[Player], Optional[int], Optional[int]]]:
         pass
@@ -29,9 +38,10 @@ class PlayersGroup(BaseGroup):
             players: List[Player],
             min_from_group: Optional[int] = None,
             max_from_group: Optional[int] = None,
-            max_exposure: Optional[float] = None
+            max_exposure: Optional[float] = None,
+            parent: Optional[BaseGroup] = None,
     ):
-        self.uuid = uuid4()
+        super().__init__(max_exposure, parent)
         self.players = list(set(players))
         self.max_from_group = max_from_group
         self.min_from_group = None  # type: Optional[int]
@@ -39,7 +49,6 @@ class PlayersGroup(BaseGroup):
             self.min_from_group = min_from_group
         elif max_from_group is None:
             self.min_from_group = len(players)
-        self.max_exposure = max_exposure
 
     def get_all_players_groups(self) -> List[Tuple[List[Player], Optional[int], Optional[int]]]:
         return [(self.players, self.min_from_group, self.max_from_group)]
@@ -54,16 +63,16 @@ class NestedPlayersGroup(BaseGroup):
             groups: List[PlayersGroup],
             min_from_group: Optional[int] = None,
             max_from_group: Optional[int] = None,
-            max_exposure: Optional[float] = None
+            max_exposure: Optional[float] = None,
+            parent: Optional[BaseGroup] = None,
     ):
-        self.uuid = uuid4()
+        super().__init__(max_exposure, parent)
         self.groups = groups
         self.min_from_group = None  # type: Optional[int]
         if min_from_group is not None:
             self.min_from_group = min_from_group
         elif max_from_group is None:
             self.min_from_group = len(groups)
-        self.max_exposure = max_exposure
 
     def get_all_players_groups(self):
         return list(chain.from_iterable(group.get_all_players_groups() for group in self.groups))
@@ -122,35 +131,46 @@ class TeamStack(BaseStack):
         players_by_teams = get_players_grouped_by_teams(
             players, for_teams=self.for_teams, for_positions=self.for_positions)
         groups = []  # type: List[BaseGroup]
+        spacing_groups = []  # type: List[BaseGroup]
         for team, players in players_by_teams.items():
-            groups.append(PlayersGroup(
+            parent_group = PlayersGroup(
                 players=players,
                 min_from_group=self.size,
                 max_exposure=self.max_exposure_per_team.get(team, self.max_exposure)
-            ))
-            if self.spacing:
-                sub_groups = []
-                players_by_roster_positions = defaultdict(list)  # type: Dict[int, List[Player]]
-                for player in players:
-                    if player.roster_order is None:
-                        continue
-                    players_by_roster_positions[player.roster_order].append(player)
-                for roster_position, players in players_by_roster_positions.items():
-                    next_restricted_roster_position = roster_position + self.spacing
-                    restricted_players = chain.from_iterable(
+            )
+            groups.append(parent_group)
+            if not self.spacing:
+                continue
+            players_by_roster_positions = defaultdict(list)  # type: Dict[int, List[Player]]
+            for player in players:
+                if player.roster_order is None:
+                    continue
+                players_by_roster_positions[player.roster_order].append(player)
+            if not players_by_roster_positions:
+                continue
+            all_allowed_roster_orders = set()
+            max_spacing = max(players_by_roster_positions.keys())
+            for roster_position in players_by_roster_positions.keys():
+                allowed_roster_orders = []
+                for i in range(self.spacing):
+                    if roster_position + i <= max_spacing:
+                        allowed_roster_orders.append(roster_position + i)
+                    else:
+                        allowed_roster_orders.append(((roster_position + i) % (max_spacing + 1)) + 1)
+                all_allowed_roster_orders.add(tuple(sorted(allowed_roster_orders)))
+            for roster_orders in all_allowed_roster_orders:
+                spacing_groups.append(PlayersGroup(
+                    players=list(chain.from_iterable(
                         players for players_spacing, players in players_by_roster_positions.items()
-                        if players_spacing >= next_restricted_roster_position
-                    )
-                    for first_player in restricted_players:
-                        for second_player in players:
-                            sub_groups.append(PlayersGroup(
-                                players=[first_player, second_player],
-                                max_from_group=1,
-                            ))
-                groups.append(NestedPlayersGroup(
-                    groups=sub_groups,
+                        if players_spacing in roster_orders
+                    )),
+                    min_from_group=self.size,
+                    parent=parent_group,
                 ))
-        return [OptimizerStack(groups=groups)]
+        stacks = [OptimizerStack(groups=groups)]
+        if spacing_groups:
+            stacks.append(OptimizerStack(groups=spacing_groups, can_intersect=True))
+        return stacks
 
     def validate(self, optimizer: 'LineupOptimizer') -> None:
         settings = optimizer.settings

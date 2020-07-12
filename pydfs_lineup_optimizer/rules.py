@@ -13,6 +13,7 @@ from pydfs_lineup_optimizer.player import Player
 
 if TYPE_CHECKING:  # pragma: no cover
     from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
+    from pydfs_lineup_optimizer.stacks import BaseGroup
 
 
 __all__ = [
@@ -60,11 +61,15 @@ class RandomObjective(OptimizerRule):
         optimizer_min_deviation, optimizer_max_deviation = self.optimizer.get_deviation()
         for player, variable in players_dict.items():
             variables.append(variable)
-            multiplier = uniform(
-                player.min_deviation if player.min_deviation is not None else optimizer_min_deviation,
-                player.max_deviation if player.max_deviation is not None else optimizer_max_deviation
-            )
-            coefficients.append(player.fppg * (1 + (-1 if bool(getrandbits(1)) else 1) * multiplier))
+            if player.fppg_floor is not None and player.fppg_ceil is not None:
+                random_fppg = uniform(player.fppg_floor, player.fppg_ceil)
+            else:
+                multiplier = uniform(
+                    player.min_deviation if player.min_deviation is not None else optimizer_min_deviation,
+                    player.max_deviation if player.max_deviation is not None else optimizer_max_deviation
+                )
+                random_fppg = player.fppg * (1 + (-1 if bool(getrandbits(1)) else 1) * multiplier)
+            coefficients.append(random_fppg)
         solver.set_objective(variables, coefficients)
 
 
@@ -284,6 +289,14 @@ class GenericStacksRule(OptimizerRule):
         if self.with_exposures:
             self._create_constraints(solver, players_dict)
 
+    @staticmethod
+    def _build_group_name(group: 'BaseGroup'):
+        return 'stack_%s' % group.uuid.hex
+
+    def _is_reached_exposure(self, group: 'BaseGroup') -> bool:
+        return group.max_exposure is not None and \
+               group.max_exposure <= self.used_groups[self._build_group_name(group)] / self.total_lineups
+
     def _create_constraints(
             self,
             solver: Solver,
@@ -293,13 +306,19 @@ class GenericStacksRule(OptimizerRule):
         for stack in self.stacks:
             combinations_variables = {}
             for group in stack.groups:
-                group_name = ('stack_%s_%s' % (stack.uuid, group.uuid)).replace('-', '_')
+                group_name = self._build_group_name(group)
                 sub_groups = group.get_all_players_groups()
-                if group.max_exposure is not None and group.max_exposure <= self.used_groups[group_name] / self.total_lineups:
+                if self._is_reached_exposure(group) or (group.parent and self._is_reached_exposure(group.parent)):
+                    for group_players, _, max_from_group in sub_groups:
+                        if max_from_group is None:
+                            continue
+                        solver.add_constraint([players_dict[p] for p in group_players], None, SolverSign.EQ, 0)
                     max_group = sorted(sub_groups, key=lambda t: t[1])[0]
-                    variables = [players_dict[p] for p in max_group[0]]
-                    solver.add_constraint(variables, None, SolverSign.LTE, max_group[1] - 1)
+                    if max_group[1]:
+                        solver.add_constraint([players_dict[p] for p in max_group[0]], None, SolverSign.LTE,
+                                              max_group[1] - 1)
                     continue
+                solver_variable = None
                 if any(sub_group[1] is not None for sub_group in sub_groups):
                     solver_variable = solver.add_variable(group_name)
                     combinations_variables[group_name] = solver_variable
@@ -310,8 +329,11 @@ class GenericStacksRule(OptimizerRule):
                             for player in group_players:
                                 players_in_stack[player].add(solver_variable)
                         solver.add_constraint(variables, None, SolverSign.GTE, group_min * solver_variable)
-                    if group_max is not None:
-                        solver.add_constraint(variables, None, SolverSign.LTE, group_max)
+                        if group_max is not None:
+                            solver.add_constraint(variables, None, SolverSign.LTE, group_max)
+                    elif group_max is not None:
+                        solver_variable = solver.add_variable(group_name, min_value=0, max_value=group_max)
+                        solver.add_constraint(variables, None, SolverSign.EQ, solver_variable)
             if combinations_variables:
                 solver.add_constraint(combinations_variables.values(), None, SolverSign.GTE, 1)
         for player, stacks_vars in players_in_stack.items():
@@ -366,6 +388,8 @@ class MinExposureRule(OptimizerRule):
 
 
 class RestrictPositionsForOpposingTeam(OptimizerRule):
+    MULTIPLIER = 1000
+
     def apply(self, solver, players_dict):
         if not self.optimizer.opposing_teams_position_restriction:
             return
@@ -380,8 +404,10 @@ class RestrictPositionsForOpposingTeam(OptimizerRule):
                                         if list_intersection(player.positions, first_team_positions)]
                 second_team_variables = [variable for player, variable in second_team_players.items()
                                          if list_intersection(player.positions, second_team_positions)]
-                for variables in product(first_team_variables, second_team_variables):
-                    solver.add_constraint(variables, None, SolverSign.LTE, 1)
+                coefficients = [1] * len(second_team_variables)
+                for var in first_team_variables:
+                    solver.add_constraint([var, *second_team_variables], [self.MULTIPLIER, *coefficients],
+                                          SolverSign.LTE, self.MULTIPLIER + self.optimizer.opposing_teams_max_allowed)
 
 
 class RestrictPositionsForSameTeamRule(OptimizerRule):

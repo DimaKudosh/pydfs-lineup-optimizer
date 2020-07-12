@@ -18,7 +18,7 @@ class YahooCSVImporter(CSVImporter):  # pragma: nocover
                     pass
                 try:
                     player = Player(
-                        row['Id'],
+                        row['ID'],
                         row['First Name'],
                         row['Last Name'],
                         row['Position'].split('/'),
