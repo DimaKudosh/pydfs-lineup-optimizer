@@ -131,3 +131,20 @@ class FanDuelLOLSettings(FanDuelSettings):
         LineupPosition('SUP', ('SUP',)),
         LineupPosition('TEAM', ('TEAM',)),
     ]
+    
+    
+@SitesRegistry.register_settings
+class FanDuelNascarSettings(FanDuelSettings):
+    sport = Sport.NASCAR
+    budget = 50000
+    max_from_one_team = None
+    min_teams = None
+    lineup_printer = IndividualSportLineupPrinter
+    positions = [
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+        LineupPosition('D', ('D', )),
+    ]
+
