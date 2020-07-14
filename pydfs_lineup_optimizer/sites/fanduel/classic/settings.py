@@ -150,3 +150,22 @@ class FanDuelNascarSettings(FanDuelSettings):
         LineupPosition('D', ('D', )),
     ]
 
+
+@SitesRegistry.register_settings
+class FanDuelMMASettings(FanDuelSettings):
+    sport = Sport.MMA
+    max_from_one_team = None
+    min_teams = None
+    budget = 100
+    csv_importer = build_fanduel_single_game_importer(mvp=False, star=True, pro=False)
+    extra_rules = [FanduelSingleGameStarRule]  # type: List[Type[OptimizerRule]]
+    lineup_printer = IndividualSportLineupPrinter
+    positions = [
+        LineupPosition('MVP', 'F', for_rank=PlayerRank.STAR),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+    ]
+
