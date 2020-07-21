@@ -463,11 +463,11 @@ class RosterSpacingRule(OptimizerRule):
             if player.roster_order is None or not list_intersection(player.positions, positions):
                 continue
             players_by_roster_positions[player.roster_order].append((player, variable))
+        max_order = max(players_by_roster_positions.keys())
         for roster_position, players in players_by_roster_positions.items():
-            next_restricted_roster_position = roster_position + spacing
             restricted_players = chain.from_iterable(
                 players for players_spacing, players in players_by_roster_positions.items()
-                if players_spacing >= next_restricted_roster_position
+                if max_order - spacing + roster_position >= players_spacing >= roster_position + spacing
             )
             for first_player, first_variable in restricted_players:
                 for second_player, second_variable in players:

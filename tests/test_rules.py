@@ -448,7 +448,7 @@ class RosterSpacingTestCase(unittest.TestCase):
             Player('5', '5', '5', ['OF'], 'MIL', 3000, 15, ),
             Player('6', '6', '6', ['OF'], 'MIL', 3000, 15, ),
             Player('7', '7', '7', ['OF'], 'MIL', 3000, 15, ),
-            Player('8', '8', '8', ['1B'], 'BOS', 3000, 15, roster_order=1),
+            Player('8', '8', '8', ['1B'], 'BOS', 3000, 10, roster_order=1),
             Player('9', '9', '9', ['2B'], 'BOS', 3000, 20, roster_order=2),
             Player('10', '10', '10', ['3B'], 'BOS', 3000, 25, roster_order=3),
             Player('11', '11', '11', ['1B'], 'NY', 3000, 30, roster_order=4),
@@ -469,6 +469,15 @@ class RosterSpacingTestCase(unittest.TestCase):
         self.optimizer.set_spacing_for_positions(self.positions, 3)
         lineup = next(self.optimizer.optimize(1))
         self.assertIn(self.players_dict['11'], lineup)
+        self.assertIn(self.players_dict['12'], lineup)
+        self.assertIn(self.players_dict['13'], lineup)
+
+    def test_roster_spacing_correctness_cyclic(self):
+        self.optimizer.set_spacing_for_positions(self.positions, 3)
+        player = Player('14', '14', '14', ['1B'], 'NY', 3000, 50, roster_order=1)
+        self.optimizer.extend_players([player])
+        lineup = next(self.optimizer.optimize(1))
+        self.assertIn(player, lineup)
         self.assertIn(self.players_dict['12'], lineup)
         self.assertIn(self.players_dict['13'], lineup)
 
