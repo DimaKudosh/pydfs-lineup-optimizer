@@ -1,21 +1,24 @@
 import csv
-from typing import Iterable, Callable, cast
-from pydfs_lineup_optimizer.lineup import Lineup
-from pydfs_lineup_optimizer.player import LineupPlayer
+from typing import Iterable, Callable, TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from pydfs_lineup_optimizer.lineup import Lineup
+    from pydfs_lineup_optimizer.player import LineupPlayer
 
 
 class LineupExporter:
-    def __init__(self, lineups: Iterable[Lineup]):
+    def __init__(self, lineups: Iterable['Lineup']):
         self.lineups = lineups
 
     @staticmethod
-    def render_player(player: LineupPlayer) -> str:
+    def render_player(player: 'LineupPlayer') -> str:
         result = player.full_name  # type: str
         if player.id:
             result += '(%s)' % player.id
         return result
 
-    def export(self, filename: str, render_func: Callable[[LineupPlayer], str] = None):
+    def export(self, filename: str, render_func: Callable[['LineupPlayer'], str] = None):
         raise NotImplementedError
 
 
@@ -53,3 +56,9 @@ class FantasyDraftCSVLineupExporter(LineupExporter):
         with open(filename, 'w') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(lines)
+
+
+class YahooCSVLineupExporter(CSVLineupExporter):
+    @staticmethod
+    def render_player(player: 'LineupPlayer') -> str:
+        return str(player.id)

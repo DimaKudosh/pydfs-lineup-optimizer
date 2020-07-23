@@ -96,3 +96,8 @@ class OptimizerMethodsTestCase(unittest.TestCase):
         optimizer = get_optimizer(Site.YAHOO, Sport.FOOTBALL)
         with self.assertRaises(LineupOptimizerException):
             optimizer.print_statistic()
+
+    def test_export_before_optimization(self):
+        optimizer = get_optimizer(Site.YAHOO, Sport.FOOTBALL)
+        with self.assertRaises(LineupOptimizerException):
+            optimizer.export('temp.csv')

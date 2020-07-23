@@ -473,10 +473,15 @@ class LineupOptimizer:
                 raise LineupOptimizerException('Can\'t generate lineups')
         self.last_context = context
 
-    def print_statistic(self):
+    def print_statistic(self) -> None:
         if self.last_context is None:
-            raise LineupOptimizerException('You should generate stats before printing statistic')
+            raise LineupOptimizerException('You should generate lineups before printing statistic')
         Statistic(self).print_report()
+
+    def export(self, filename: str) -> None:
+        if self.last_context is None:
+            raise LineupOptimizerException('You should generate lineups before printing statistic')
+        self.settings.csv_exporter(self.last_context.lineups).export(filename)
 
     def _build_lineup(
             self,

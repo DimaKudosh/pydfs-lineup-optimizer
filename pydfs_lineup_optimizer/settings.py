@@ -1,6 +1,7 @@
 from typing import Optional, Type, List, Sequence, TYPE_CHECKING
 from pydfs_lineup_optimizer.lineup_printer import LineupPrinter, BaseLineupPrinter
 from pydfs_lineup_optimizer.constants import PlayerRank
+from pydfs_lineup_optimizer.lineup_exporter import LineupExporter, CSVLineupExporter
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -26,6 +27,7 @@ class BaseSettings:
     lineup_printer = LineupPrinter  # type: Type[BaseLineupPrinter]
     extra_rules = []  # type: List[Type['OptimizerRule']]
     csv_importer = None  # type: Type['CSVImporter']
+    csv_exporter = CSVLineupExporter  # type: Type[LineupExporter]
 
     @classmethod
     def get_total_players(cls) -> int:

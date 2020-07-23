@@ -190,3 +190,17 @@ You can change it using `set_timezone` function:
     from pydfs_lineup_optimizer import set_timezone
 
     set_timezone('UTC')
+
+Export lineups
+==============
+
+You can export lineups into a csv file. For this you should call export method of the optimizer after you generate all lineups.
+
+.. code-block:: python
+
+    from pydfs_lineup_optimizer import get_optimizer, Site, Sport, CSVLineupExporter
+
+    optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+    optimizer.load_players_from_csv("players.csv")
+    optimizer.optimize(10)
+    optimizer.export('result.csv')
