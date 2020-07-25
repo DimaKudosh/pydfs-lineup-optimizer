@@ -25,7 +25,7 @@ class LineupPrinter(BaseLineupPrinter):
             index=index,
             lineup_position=player.lineup_position,
             name='%s%s' % (player.full_name, '(%s)' % player.roster_order if player.roster_order else ''),
-            positions='/'.join(player.positions),
+            positions='/'.join(player.original_positions),
             team=player.team,
             game=self._print_game_info(player),
             fppg=round(player.fppg, 3) if player.used_fppg is None else

@@ -5,7 +5,6 @@ from typing import List, Dict
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerIncorrectCSV
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.player import Player, GameInfo
-from pydfs_lineup_optimizer.constants import PlayerRank
 
 
 class FanDuelCSVImporter(CSVImporter):  # pragma: nocover
@@ -56,7 +55,24 @@ class FanDuelMVPCSVImporter(FanDuelCSVImporter):
         for player in players:
             mvp_player = deepcopy(player)
             mvp_player.fppg *= 1.5
-            mvp_player.rank = PlayerRank.MVP
+            mvp_player._original_positions = player.positions
+            mvp_player.positions = ['MVP']
             mvps.append(mvp_player)
         players.extend(mvps)
+        return players
+
+
+class FanDuelLOLCSVImporter(FanDuelCSVImporter):
+    def import_players(self):
+        players = super().import_players()
+        stars = []
+        for player in players:
+            if 'TEAM' in player.positions:
+                continue
+            star_player = deepcopy(player)
+            star_player.fppg *= 1.5
+            star_player._original_positions = player.positions
+            star_player.positions = ['STAR']
+            stars.append(star_player)
+        players.extend(stars)
         return players

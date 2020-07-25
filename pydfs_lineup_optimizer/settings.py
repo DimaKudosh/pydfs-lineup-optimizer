@@ -1,6 +1,5 @@
 from typing import Optional, Type, List, Sequence, TYPE_CHECKING
 from pydfs_lineup_optimizer.lineup_printer import LineupPrinter, BaseLineupPrinter
-from pydfs_lineup_optimizer.constants import PlayerRank
 from pydfs_lineup_optimizer.lineup_exporter import LineupExporter, CSVLineupExporter
 
 
@@ -10,10 +9,9 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class LineupPosition:
-    def __init__(self, name: str, positions: Sequence[str], for_rank: PlayerRank = PlayerRank.REGULAR):
+    def __init__(self, name: str, positions: Sequence[str]):
         self.name = name
         self.positions = positions
-        self.for_rank = for_rank
 
 
 class BaseSettings:

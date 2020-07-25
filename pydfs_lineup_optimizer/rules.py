@@ -3,7 +3,6 @@ from collections import defaultdict, Counter
 from itertools import product, groupby, permutations, chain
 from random import getrandbits, uniform
 from typing import List, Dict, DefaultDict, Set, Tuple, Any, Optional, TYPE_CHECKING
-from pydfs_lineup_optimizer.constants import PlayerRank
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
 from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer, get_remaining_positions, \
     get_players_grouped_by_teams
@@ -23,9 +22,9 @@ __all__ = [
     'MinSalaryCapRule', 'RemoveInjuredRule', 'MaxRepeatingPlayersRule',
     'ProjectedOwnershipRule', 'UniquePlayerRule', 'LateSwapRule',
     'RestrictPositionsForOpposingTeam', 'RosterSpacingRule', 'FanduelBaseballRosterRule',
-    'TotalTeamsRule', 'FanduelSingleGameMVPRule', 'FanduelSingleGameMaxQBRule',
+    'TotalTeamsRule', 'FanduelSingleGameMaxQBRule',
     'RestrictPositionsForSameTeamRule', 'ForcePositionsForOpposingTeamRule', 'GenericStacksRule',
-    'MinStartersRule', 'MinExposureRule', 'FanduelSingleGameProRule', 'FanduelSingleGameStarRule',
+    'MinStartersRule', 'MinExposureRule',
 ]
 
 
@@ -136,22 +135,20 @@ class PositionsRule(OptimizerRule):
         extra_positions = optimizer.players_with_same_position
         positions_combinations = set([tuple(sorted(player.positions)) for player in players_dict.keys()
                                       if len(player.positions) > 1])
-        for rank, rank_positions in groupby(optimizer.settings.positions, lambda pos: pos.for_rank):
-            positions = get_positions_for_optimizer(list(rank_positions), positions_combinations)
-            unique_positions = optimizer.available_positions
-            players_by_positions = {
-                position: {variable for player, variable in players_dict.items()
-                           if player.rank == rank and position in player.positions} for position in unique_positions
-            }
-            for position, places in positions.items():
-                extra = 0
-                if len(position) == 1:
-                    extra = extra_positions.get(position[0], 0)
-                players_with_position = set()
-                for pos in position:
-                    players_with_position.update(players_by_positions[pos])
-                solver.add_constraint(players_with_position, None, SolverSign.GTE, places + extra)
-
+        positions = get_positions_for_optimizer(optimizer.settings.positions, positions_combinations)
+        unique_positions = optimizer.available_positions
+        players_by_positions = {
+            position: {variable for player, variable in players_dict.items()
+                       if position in player.positions} for position in unique_positions
+        }
+        for position, places in positions.items():
+            extra = 0
+            if len(position) == 1:
+                extra = extra_positions.get(position[0], 0)
+            players_with_position = set()
+            for pos in position:
+                players_with_position.update(players_by_positions[pos])
+            solver.add_constraint(players_with_position, None, SolverSign.GTE, places + extra)
 
 class TeamMatesRule(OptimizerRule):
     def apply(self, solver, players_dict):
@@ -513,27 +510,9 @@ class TotalTeamsRule(OptimizerRule):
             solver.add_constraint(teams_variables, None, SolverSign.GTE, min_teams)
 
 
-class FanduelSingleGameMVPRule(OptimizerRule):
-    def apply(self, solver, players_dict):
-        variables = [var for player, var in players_dict.items() if player.rank == PlayerRank.MVP]
-        solver.add_constraint(variables, None, SolverSign.EQ, 1)
-
-
-class FanduelSingleGameStarRule(OptimizerRule):
-    def apply(self, solver, players_dict):
-        variables = [var for player, var in players_dict.items() if player.rank == PlayerRank.STAR]
-        solver.add_constraint(variables, None, SolverSign.EQ, 1)
-
-
-class FanduelSingleGameProRule(OptimizerRule):
-    def apply(self, solver, players_dict):
-        variables = [var for player, var in players_dict.items() if player.rank == PlayerRank.PRO]
-        solver.add_constraint(variables, None, SolverSign.EQ, 1)
-
-
 class FanduelSingleGameMaxQBRule(OptimizerRule):
     def apply(self, solver, players_dict):
-        variables = [var for player, var in players_dict.items() if 'QB' in player.positions]
+        variables = [var for player, var in players_dict.items() if 'QB' in player.original_positions]
         solver.add_constraint(variables, None, SolverSign.LTE, 2)
 
 

@@ -4,7 +4,6 @@ from pytz import timezone
 from typing import List, Optional
 from pydfs_lineup_optimizer.utils import process_percents
 from pydfs_lineup_optimizer.tz import get_timezone
-from pydfs_lineup_optimizer.constants import PlayerRank
 
 
 GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at', 'game_started'])
@@ -19,7 +18,6 @@ class Player:
                  team: str,
                  salary: float,
                  fppg: float,
-                 rank: PlayerRank = PlayerRank.REGULAR,
                  is_injured: bool = False,
                  max_exposure: Optional[float] = None,
                  min_exposure: Optional[float] = None,
@@ -31,6 +29,7 @@ class Player:
                  is_confirmed_starter: Optional[bool] = None,
                  fppg_floor: Optional[float] = None,
                  fppg_ceil: Optional[float] = None,
+                 original_positions: Optional[List[str]] = None,
                  ):
         self.id = player_id
         self.first_name = first_name
@@ -42,7 +41,6 @@ class Player:
         self.is_injured = is_injured
         self.game_info = game_info
         self.roster_order = roster_order
-        self.rank = rank
         self._min_exposure = None  # type: Optional[float]
         self._max_exposure = None  # type: Optional[float]
         self._min_deviation = None  # type: Optional[float]
@@ -56,6 +54,7 @@ class Player:
         self.is_confirmed_starter = is_confirmed_starter
         self.fppg_floor = fppg_floor
         self.fppg_ceil = fppg_ceil
+        self._original_positions = original_positions
 
     def __repr__(self):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)
@@ -121,6 +120,10 @@ class Player:
             if starts_at and time_now > starts_at:
                 return True
         return False
+
+    @property
+    def original_positions(self) -> List[str]:
+        return self._original_positions or self.positions
 
 
 class LineupPlayer:
