@@ -15,6 +15,7 @@ from pydfs_lineup_optimizer.rules import *
 from pydfs_lineup_optimizer.stacks import BaseGroup, TeamStack, PositionsStack, BaseStack, Stack
 from pydfs_lineup_optimizer.context import OptimizationContext
 from pydfs_lineup_optimizer.statistics import Statistic
+from pydfs_lineup_optimizer.exposure_strategy import BaseExposureStrategy, TotalExposureStrategy
 
 
 BASE_RULES = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamRule, LockedPlayersRule,
@@ -372,7 +373,8 @@ class LineupOptimizer:
             n: int,
             max_exposure: Optional[float] = None,
             randomness: bool = False,
-            with_injured: bool = False
+            with_injured: bool = False,
+            exposure_strategy: Type[BaseExposureStrategy] = TotalExposureStrategy,
     ) -> Generator[Lineup, None, None]:
         players = [player for player in self.players if player.max_exposure is None or player.max_exposure > 0]
         context = OptimizationContext(
@@ -381,6 +383,7 @@ class LineupOptimizer:
             max_exposure=max_exposure,
             randomness=randomness,
             with_injured=with_injured,
+            exposure_strategy=exposure_strategy,
         )
         rules = self._rules.copy()
         rules.update(self.settings.extra_rules)
@@ -395,24 +398,23 @@ class LineupOptimizer:
         players_dict = OrderedDict(
             [(player, base_solver.add_variable('Player_%d' % i)) for i, player in enumerate(players)])
         variables_dict = {v: k for k, v in players_dict.items()}
-        constraints = [constraint(self, context) for constraint in rules]
+        constraints = [constraint(self, players_dict, context) for constraint in rules]
         for constraint in constraints:
-            constraint.apply(base_solver, players_dict)
+            constraint.apply(base_solver)
         previous_lineup = None
         for _ in range(n):
             solver = base_solver.copy()  # type: Solver
             for constraint in constraints:
-                constraint.apply_for_iteration(solver, players_dict, previous_lineup)
+                constraint.apply_for_iteration(solver, previous_lineup)
             try:
                 solved_variables = solver.solve()
                 lineup_players = []
-                extra_variables_names = []
+                variables_names = []
                 for solved_variable in solved_variables:
                     player = variables_dict.get(solved_variable)
                     if player:
                         lineup_players.append(player)
-                    else:
-                        extra_variables_names.append(solved_variable.name)
+                    variables_names.append(solved_variable.name)
                 lineup = self._build_lineup(lineup_players, context)
                 previous_lineup = lineup
                 context.add_lineup(lineup)
@@ -420,7 +422,7 @@ class LineupOptimizer:
                 if len(self.locked_players) == self.total_players:
                     return
                 for constraint in constraints:
-                    constraint.post_optimize(extra_variables_names)
+                    constraint.post_optimize(variables_names)
             except SolverException:
                 raise LineupOptimizerException('Can\'t generate lineups')
         self.last_context = context
@@ -442,25 +444,24 @@ class LineupOptimizer:
         players_dict = OrderedDict(
             [(player, base_solver.add_variable('Player_%d' % i)) for i, player in enumerate(players)])
         variables_dict = {v: k for k, v in players_dict.items()}
-        constraints = [constraint(self, context) for constraint in rules]
+        constraints = [constraint(self, players_dict, context) for constraint in rules]
         for constraint in constraints:
-            constraint.apply(base_solver, players_dict)
+            constraint.apply(base_solver)
         previous_lineup = None
         for lineup in lineups:
             solver = base_solver.copy()  # type: Solver
             for constraint in constraints:
-                constraint.apply_for_iteration(solver, players_dict, previous_lineup)
+                constraint.apply_for_iteration(solver, previous_lineup)
             try:
                 solved_variables = solver.solve()
                 unswappable_players = lineup.get_unswappable_players()
                 lineup_players = []
-                extra_variables_names = []
+                variables_names = []
                 for solved_variable in solved_variables:
                     player = variables_dict.get(solved_variable)
                     if player:
                         lineup_players.append(player)
-                    else:
-                        extra_variables_names.append(solved_variable.name)
+                    variables_names.append(solved_variable.name)
                 generated_lineup = self._build_lineup(lineup_players, context, unswappable_players)
                 previous_lineup = generated_lineup
                 context.add_lineup(lineup)
@@ -468,7 +469,7 @@ class LineupOptimizer:
                 if len(self.locked_players) == self.total_players:
                     return
                 for constraint in constraints:
-                    constraint.post_optimize(extra_variables_names)
+                    constraint.post_optimize(variables_names)
             except SolverException:
                 raise LineupOptimizerException('Can\'t generate lineups')
         self.last_context = context

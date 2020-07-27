@@ -110,6 +110,21 @@ pass max_exposure parameter to optimize method
    Player max exposure has higher priority than max_exposure passed in optimize method.
    Exposure percentage rounds to ceil.
 
+By default, the optimizer generates lineups based on the total number of lineups. It means if you have a player with a
+huge projection it will be selected only in first n lineups.
+You can change this behavior to another algorithm where exposure calculates
+after each generated lineup. For example, if you have a player with a huge projection and
+set his max_exposure to 0.5 optimizer will select him in the first lineup then skip 2 lineups with this player
+(because he has 100% exposure after the first lineup and 50% after the second lineup that is not less than specified value)
+and will add this player to the fourth lineup. In this case, lineups can be unordered.
+
+.. code-block:: python
+
+    from pydfs_lineup_optimizer import AfterEachExposureStrategy
+
+    lineups = optimizer.optimize(n=10, max_exposure=0.3, exposure_strategy=AfterEachExposureStrategy)
+
+
 Optimizer also have randomness feature. It adds some deviation for players projection for
 creating less optimized but more randomized lineups. For activating randomness feature you should set randomness parameter to True.
 By default min deviation is 0 and max deviation is 12%. You can change it with set_deviation method.
