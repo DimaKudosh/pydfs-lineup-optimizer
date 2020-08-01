@@ -1,3 +1,4 @@
+from uuid import uuid4
 from math import ceil
 from collections import defaultdict, Counter
 from itertools import product, groupby, permutations, chain
@@ -394,19 +395,20 @@ class RestrictPositionsForOpposingTeam(OptimizerRule):
         if not self.optimizer.opposing_teams_position_restriction:
             return
         for game in self.optimizer.games:
-            first_team_players = {player: variable for player, variable in self.players_dict.items()
+            home_team_players = {player: variable for player, variable in self.players_dict.items()
                                   if player.team == game.home_team}
-            second_team_players = {player: variable for player, variable in self.players_dict.items()
+            away_team_players = {player: variable for player, variable in self.players_dict.items()
                                    if player.team == game.away_team}
-            for first_team_positions, second_team_positions in \
-                    permutations(self.optimizer.opposing_teams_position_restriction, 2):
+            first_team_positions, second_team_positions = self.optimizer.opposing_teams_position_restriction
+            for first_team_players, second_team_players in permutations([home_team_players, away_team_players], 2):
                 first_team_variables = [variable for player, variable in first_team_players.items()
                                         if list_intersection(player.positions, first_team_positions)]
                 second_team_variables = [variable for player, variable in second_team_players.items()
                                          if list_intersection(player.positions, second_team_positions)]
-                coefficients = [1] * len(second_team_variables)
+                aggregated_var = solver.add_variable(str(uuid4()), min_value=0, max_value=len(second_team_variables))
+                solver.add_constraint(second_team_variables, None, SolverSign.EQ, aggregated_var)
                 for var in first_team_variables:
-                    solver.add_constraint([var, *second_team_variables], [self.MULTIPLIER, *coefficients],
+                    solver.add_constraint([var, aggregated_var], [self.MULTIPLIER, 1],
                                           SolverSign.LTE, self.MULTIPLIER + self.optimizer.opposing_teams_max_allowed)
 
 
