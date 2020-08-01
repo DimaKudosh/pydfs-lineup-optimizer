@@ -25,7 +25,7 @@ __all__ = [
     'RestrictPositionsForOpposingTeam', 'RosterSpacingRule', 'FanduelBaseballRosterRule',
     'TotalTeamsRule', 'FanduelSingleGameMaxQBRule',
     'RestrictPositionsForSameTeamRule', 'ForcePositionsForOpposingTeamRule', 'GenericStacksRule',
-    'MinStartersRule', 'MinExposureRule',
+    'MinStartersRule', 'MinExposureRule', 'MinGamesRule', 'DraftKingsBaseballRosterRule',
 ]
 
 
@@ -532,3 +532,36 @@ class MinStartersRule(OptimizerRule):
             return
         variables = [variable for player, variable in self.players_dict.items() if player.is_confirmed_starter]
         solver.add_constraint(variables, None, SolverSign.GTE, min_starters)
+
+
+class MinGamesRule(OptimizerRule):
+    def apply(self, solver):
+        min_games = self.optimizer.settings.min_games
+        if not min_games:
+            return
+        total_players = self.optimizer.settings.get_total_players()
+        players_by_games = defaultdict(list)
+        for player in self.optimizer.players:
+            if player.game_info:
+                players_by_games[player.game_info].append(player)
+        game_variables = []
+        for game, game_players in players_by_games.items():
+            variable = solver.add_variable('total_game_%s_%s' % (game.home_team, game.away_team))
+            game_variables.append(variable)
+            variables = [self.players_dict[player] for player in game_players]
+            solver.add_constraint(variables, None, SolverSign.LTE, variable * total_players)
+            solver.add_constraint(variables, None, SolverSign.GTE, variable)
+        if len(game_variables) >= min_games:
+            solver.add_constraint(game_variables, None, SolverSign.GTE, min_games)
+
+
+class DraftKingsBaseballRosterRule(OptimizerRule):
+    HITTERS = ('1B', '2B', '3B', 'SS', 'C', 'OF')
+    MAXIMUM_HITTERS_FROM_ONE_TEAM = 5
+
+    def apply(self, solver):
+        players_dict = {player: variable for player, variable in self.players_dict.items() if
+                        list_intersection(player.positions, self.HITTERS)}
+        for team in self.optimizer.available_teams:
+            players_from_team = [variable for player, variable in players_dict.items() if player.team == team]
+            solver.add_constraint(players_from_team, None, SolverSign.LTE, self.MAXIMUM_HITTERS_FROM_ONE_TEAM)

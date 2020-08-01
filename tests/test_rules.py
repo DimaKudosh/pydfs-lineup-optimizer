@@ -820,3 +820,65 @@ class MinStartersTestCase(unittest.TestCase):
     def test_min_starters_greater_than_total_players(self):
         with self.assertRaises(LineupOptimizerException):
             self.lineup_optimizer.set_min_starters(9)
+
+
+class TestDraftKingsMaxFromOneTeamTestCase(unittest.TestCase):
+    def setUp(self):
+        self.players = [
+            Player('1', '1', '1', ['SP'], 'ARI', 3000, 20),
+            Player('2', '2', '2', ['SP'], 'NY', 3000, 20),
+            Player('3', '3', '3', ['C'], 'BOS', 3000, 30),
+            Player('4', '4', '4', ['SS'], 'HOU', 3000, 30),
+            Player('5', '5', '5', ['OF'], 'HOU', 3000, 30),
+            Player('6', '6', '6', ['OF'], 'HOU', 3000, 30),
+            Player('7', '7', '7', ['OF'], 'HOU', 3000, 30),
+            Player('8', '8', '8', ['1B'], 'HOU', 3000, 30),
+            Player('9', '9', '9', ['2B'], 'HOU', 3000, 30),
+            Player('10', '10', '10', ['3B'], 'ARI', 3000, 5),
+            Player('11', '11', '11', ['1B'], 'ARI', 3000, 5),
+            Player('12', '12', '12', ['SP'], 'HOU', 3000, 10),
+        ]
+        self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASEBALL)
+        self.optimizer.load_players(self.players)
+
+    def test_max_hitters_from_one_team(self):
+        lineup = next(self.optimizer.optimize(1))
+        hou_players_positions = [player.lineup_position for player in lineup if player.team == 'HOU']
+        self.assertEqual(len(hou_players_positions), 5)
+        self.assertNotIn('P', hou_players_positions)
+
+    def test_max_hitters_from_one_team_with_stacking(self):
+        self.optimizer.add_stack(TeamStack(6))
+        lineup = next(self.optimizer.optimize(1))
+        hou_players_positions = [player.lineup_position for player in lineup if player.team == 'HOU']
+        self.assertEqual(len(hou_players_positions), 6)
+        self.assertIn('P', hou_players_positions)
+
+
+class MinimumGamesTestCase(unittest.TestCase):
+    def setUp(self):
+        first_game_info = GameInfo('HOU', 'BOS', datetime.now(), False)
+        second_game_info = GameInfo('ARI', 'NY', datetime.now(), False)
+        self.players = [
+            Player('1', '1', '1', ['SP'], 'HOU', 3000, 30, game_info=first_game_info),
+            Player('2', '2', '2', ['RP'], 'BOS', 3000, 30, game_info=first_game_info),
+            Player('3', '3', '3', ['C'], 'BOS', 3000, 30, game_info=first_game_info),
+            Player('4', '4', '4', ['SS'], 'HOU', 3000, 30, game_info=first_game_info),
+            Player('5', '5', '5', ['OF'], 'HOU', 3000, 30, game_info=first_game_info),
+            Player('6', '6', '6', ['OF'], 'HOU', 3000, 30, game_info=first_game_info),
+            Player('7', '7', '7', ['OF'], 'HOU', 3000, 30, game_info=first_game_info),
+            Player('8', '8', '8', ['1B'], 'BOS', 3000, 30, game_info=first_game_info),
+            Player('9', '9', '9', ['2B'], 'BOS', 3000, 30, game_info=first_game_info),
+            Player('10', '10', '10', ['3B'], 'BOS', 3000, 30, game_info=first_game_info),
+            Player('11', '11', '11', ['SP'], 'ARI', 3000, 5, game_info=second_game_info),
+            Player('12', '12', '12', ['SS'], 'NY', 3000, 5, game_info=second_game_info),
+            Player('13', '13', '13', ['OF'], 'ARI', 3000, 5, game_info=second_game_info),
+            Player('13', '13', '13', ['OF'], 'NY', 3000, 5, game_info=second_game_info),
+        ]
+        self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASEBALL)
+        self.optimizer.settings.min_games = 2
+        self.optimizer.load_players(self.players)
+
+    def test_minimum_games(self):
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len(set(player.game_info for player in lineup)), 2)

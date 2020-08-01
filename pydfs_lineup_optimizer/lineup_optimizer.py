@@ -20,7 +20,7 @@ from pydfs_lineup_optimizer.exposure_strategy import BaseExposureStrategy, Total
 
 BASE_RULES = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamRule, LockedPlayersRule,
               RemoveInjuredRule, UniquePlayerRule, UniqueLineupRule, TotalTeamsRule, GenericStacksRule,
-              MinExposureRule}
+              MinExposureRule, MinGamesRule}
 
 
 class LineupOptimizer:
