@@ -17,7 +17,7 @@ class LineupPosition:
 class BaseSettings:
     site = None  # type: str
     sport = None  # type: str
-    budget = 0  # type: float
+    budget = 0  # type: Optional[float]
     positions = []  # type: List[LineupPosition]
     max_from_one_team = None  # type: Optional[int]
     min_teams = None  # type: Optional[int]

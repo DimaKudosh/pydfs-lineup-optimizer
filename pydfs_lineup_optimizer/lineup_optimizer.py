@@ -57,7 +57,7 @@ class LineupOptimizer:
         self.last_context = None  # type: Optional[OptimizationContext]
 
     @property
-    def budget(self) -> float:
+    def budget(self) -> Optional[float]:
         return self._settings.budget
 
     @property
@@ -65,7 +65,9 @@ class LineupOptimizer:
         return self._settings.get_total_players()
 
     @property
-    def remaining_budget(self) -> float:
+    def remaining_budget(self) -> Optional[float]:
+        if self.budget is None:
+            return None
         return self.budget - sum(player.salary for player in self.locked_players)
 
     @property
@@ -121,7 +123,7 @@ class LineupOptimizer:
         self._csv_importer = csv_importer
 
     def set_min_salary_cap(self, min_salary: float):
-        if min_salary > self.budget:
+        if self.budget and min_salary > self.budget:
             raise LineupOptimizerException('Min salary greater than max budget')
         self.add_new_rule(MinSalaryCapRule)
         self.min_salary_cap = min_salary
@@ -209,7 +211,7 @@ class LineupOptimizer:
             raise LineupOptimizerException('Can\'t add this player to line up! Player has max exposure set to 0.')
         if player in self._lineup:
             raise LineupOptimizerException('This player already in your line up!')
-        if player.salary > self.remaining_budget:
+        if self.remaining_budget and player.salary > self.remaining_budget:
             raise LineupOptimizerException('Can\'t add this player to line up! Your team is over budget!')
         if self.remaining_players < 1:
             raise LineupOptimizerException('Can\'t add this player to line up! You already select all %s players!' %
@@ -419,7 +421,7 @@ class LineupOptimizer:
                 previous_lineup = lineup
                 context.add_lineup(lineup)
                 yield lineup
-                if len(self.locked_players) == self.total_players:
+                if self.total_players and len(self.locked_players) == self.total_players:
                     return
                 for constraint in constraints:
                     constraint.post_optimize(variables_names)
@@ -492,6 +494,10 @@ class LineupOptimizer:
     ) -> Lineup:
         lineup = []
         positions = self._settings.positions[:]
+        if not positions:
+            for player in sorted(players, key=lambda p: p.positions[0]):
+                lineup.append(LineupPlayer(player, player.positions[0], used_fppg=context.players_used_fppg.get(player)))
+            return Lineup(lineup, self._settings.lineup_printer)
         if unswappable_players:
             players = [player for player in players if player not in unswappable_players]
             positions = get_remaining_positions(positions, unswappable_players)

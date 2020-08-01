@@ -38,7 +38,8 @@ class LineupPrinter(BaseLineupPrinter):
         actual_projection = lineup.actual_fantasy_points_projection
         footer = 'Fantasy Points %.2f%s\n' % (
             original_projection, '(%.2f)' % actual_projection if actual_projection != original_projection else '')
-        footer += 'Salary %.2f\n' % lineup.salary_costs
+        if lineup.salary_costs:
+            footer += 'Salary %.2f\n' % lineup.salary_costs
         ownerships = [player.projected_ownership for player in lineup if player.projected_ownership]
         if ownerships:
             footer += 'Average Ownership %.1f%%\n' % (sum(ownerships) * 100 / len(ownerships))
@@ -55,3 +56,7 @@ class LineupPrinter(BaseLineupPrinter):
 
 class IndividualSportLineupPrinter(LineupPrinter):
     OUTPUT_FORMAT = '{index:>2}. {lineup_position:<5} {name:<30}{fppg:<15}{salary:<10}\n'
+
+
+class DraftKingTiersLineupPrinter(LineupPrinter):
+    OUTPUT_FORMAT = '{index:>2}. {lineup_position:<5} {name:<30}{fppg:<15}\n'

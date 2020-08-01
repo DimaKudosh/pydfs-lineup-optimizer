@@ -882,3 +882,22 @@ class MinimumGamesTestCase(unittest.TestCase):
     def test_minimum_games(self):
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len(set(player.game_info for player in lineup)), 2)
+
+
+class DraftKingsTiersTestCase(unittest.TestCase):
+    def setUp(self):
+        self.players = [
+            Player('1', '1', '1', ['T1'], 'HOU', 0, 30),
+            Player('2', '2', '2', ['T1'], 'BOS', 0, 30),
+            Player('3', '3', '3', ['T2'], 'BOS', 0, 30),
+            Player('4', '4', '4', ['T2'], 'HOU', 0, 30),
+            Player('5', '5', '5', ['T3'], 'HOU', 0, 30),
+            Player('6', '6', '6', ['T3'], 'HOU', 0, 30),
+        ]
+        self.optimizer = get_optimizer(Site.DRAFTKINGS_TIERS, Sport.BASEBALL)
+        self.optimizer.load_players(self.players)
+
+    def test_tiers(self):
+        lineup = next(self.optimizer.optimize(1))
+        self.assertEqual(len(lineup.lineup), 3)
+        self.assertEqual({p.lineup_position for p in lineup}, {'T1', 'T2', 'T3'})

@@ -26,6 +26,7 @@ __all__ = [
     'TotalTeamsRule', 'FanduelSingleGameMaxQBRule',
     'RestrictPositionsForSameTeamRule', 'ForcePositionsForOpposingTeamRule', 'GenericStacksRule',
     'MinStartersRule', 'MinExposureRule', 'MinGamesRule', 'DraftKingsBaseballRosterRule',
+    'DraftKingsTiersRule',
 ]
 
 
@@ -84,19 +85,22 @@ class UniqueLineupRule(OptimizerRule):
         if not result:
             return
         self.used_combinations.append([self.players_dict[player] for player in result])
-        total_players = self.optimizer.total_players
+        total_players = self.optimizer.total_players or len(self.used_combinations[0])
         for variables in self.used_combinations:
             solver.add_constraint(variables, None, SolverSign.LTE, total_players - 1)
 
 
 class TotalPlayersRule(OptimizerRule):
     def apply(self, solver):
-        variables = self.players_dict.values()
-        solver.add_constraint(variables, None, SolverSign.EQ, self.optimizer.total_players)
+        if self.optimizer.total_players:
+            variables = self.players_dict.values()
+            solver.add_constraint(variables, None, SolverSign.EQ, self.optimizer.total_players)
 
 
 class LineupBudgetRule(OptimizerRule):
     def apply(self, solver):
+        if not self.optimizer.budget:
+            return
         variables = []
         coefficients = []
         for player, variable in self.players_dict.items():
@@ -139,6 +143,8 @@ class LockedPlayersRule(OptimizerRule):
 class PositionsRule(OptimizerRule):
     def apply(self, solver):
         optimizer = self.optimizer
+        if not optimizer.available_positions:
+            return
         extra_positions = optimizer.players_with_same_position
         positions_combinations = set([tuple(sorted(player.positions)) for player in self.players_dict.keys()
                                       if len(player.positions) > 1])
@@ -539,7 +545,7 @@ class MinGamesRule(OptimizerRule):
         min_games = self.optimizer.settings.min_games
         if not min_games:
             return
-        total_players = self.optimizer.settings.get_total_players()
+        total_players = self.optimizer.settings.get_total_players() or 100
         players_by_games = defaultdict(list)
         for player in self.optimizer.players:
             if player.game_info:
@@ -565,3 +571,14 @@ class DraftKingsBaseballRosterRule(OptimizerRule):
         for team in self.optimizer.available_teams:
             players_from_team = [variable for player, variable in players_dict.items() if player.team == team]
             solver.add_constraint(players_from_team, None, SolverSign.LTE, self.MAXIMUM_HITTERS_FROM_ONE_TEAM)
+
+
+class DraftKingsTiersRule(OptimizerRule):
+    @staticmethod
+    def sort_player(player):
+        return player.positions[0]
+
+    def apply(self, solver):
+        for tier, players in groupby(sorted(self.players_dict.keys(), key=self.sort_player), key=self.sort_player):
+            variables = [self.players_dict[player] for player in players]
+            solver.add_constraint(variables, None, SolverSign.EQ, 1)
