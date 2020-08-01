@@ -14,9 +14,10 @@ class LateSwapTestCase(unittest.TestCase):
     def setUp(self):
         self.future_game_info = GameInfo(home_team='H', away_team='A', game_started=False,
                                          starts_at=datetime.now(timezone('EST')) + timedelta(days=1))
-        self.finished_game_info = GameInfo(home_team='H', away_team='A', game_started=False,
+        self.finished_game_info = GameInfo(home_team='H2', away_team='A2', game_started=False,
                                            starts_at=datetime.now(timezone('EST')) - timedelta(days=1))
         self.lineup_optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+        self.lineup_optimizer.settings.min_games = None
         positions = ['PG', 'SG', 'SF', 'PF', 'C', 'PG/SG', 'SF/PF', 'C']
         self.active_players = create_players(positions, game_info=self.future_game_info, salary=5000, fppg=20)
         self.inactive_players = create_players(positions, game_info=self.finished_game_info, salary=4500, fppg=10)

@@ -16,6 +16,7 @@ class DraftKingsSettings(BaseSettings):
 @SitesRegistry.register_settings
 class DraftKingsBasketballSettings(DraftKingsSettings):
     sport = Sport.BASKETBALL
+    min_games = 2
     positions = [
         LineupPosition('PG', ('PG', )),
         LineupPosition('SG', ('SG', )),
@@ -31,6 +32,7 @@ class DraftKingsBasketballSettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsWNBASettings(DraftKingsSettings):
     sport = Sport.WNBA
+    min_games = 2
     positions = [
         LineupPosition('G', ('PG', 'SG')),
         LineupPosition('G', ('PG', 'SG')),
@@ -44,6 +46,7 @@ class DraftKingsWNBASettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsFootballSettings(DraftKingsSettings):
     sport = Sport.FOOTBALL
+    min_games = 2
     positions = [
         LineupPosition('QB', ('QB',)),
         LineupPosition('RB', ('RB',)),
@@ -112,6 +115,7 @@ class DraftKingsGolfSettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsSoccerSettings(DraftKingsSettings):
     sport = Sport.SOCCER
+    min_teams = 3
     positions = [
         LineupPosition('GK', ('GK', )),
         LineupPosition('D', ('D', )),
@@ -127,6 +131,7 @@ class DraftKingsSoccerSettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsCanadianFootballSettings(DraftKingsSettings):
     sport = Sport.CANADIAN_FOOTBALL
+    min_games = 2
     positions = [
         LineupPosition('QB', ('QB', )),
         LineupPosition('RB', ('RB', )),
