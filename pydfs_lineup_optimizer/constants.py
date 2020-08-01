@@ -24,3 +24,4 @@ class Sport:
     MMA = 'MMA'
     NASCAR = 'NASCAR'
     TENNIS = 'TENNIS'
+    CS = 'CS'
