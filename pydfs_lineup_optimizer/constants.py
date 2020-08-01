@@ -9,6 +9,7 @@ class Site:
     FANBALL = 'FANBALL'
     DRAFTKINGS_CAPTAIN_MODE = 'DRAFTKINGS_CAPTAIN_MODE'
     FANDUEL_SINGLE_GAME = 'FANDUEL_SINGLE_GAME'
+    DRAFTKINGS_TIERS = 'DRAFTKINGS_TIERS'
 
 
 class Sport:
@@ -24,10 +25,4 @@ class Sport:
     MMA = 'MMA'
     NASCAR = 'NASCAR'
     TENNIS = 'TENNIS'
-
-
-class PlayerRank(Enum):
-    REGULAR = 1
-    PRO = 2
-    STAR = 3
-    MVP = 4
+    CS = 'CS'

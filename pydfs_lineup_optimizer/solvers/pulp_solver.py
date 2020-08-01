@@ -1,11 +1,11 @@
-from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatusOptimal, LpBinary, LpInteger
+from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatusOptimal, LpBinary, LpInteger, PULP_CBC_CMD
 from .base import Solver
 from .constants import SolverSign
 from .exceptions import SolverException
 
 
 class PuLPSolver(Solver):
-    LP_SOLVER = None
+    LP_SOLVER = PULP_CBC_CMD(verbose=False, msg=False)
 
     def __init__(self):
         self.prob = LpProblem('Daily Fantasy Sports', LpMaximize)

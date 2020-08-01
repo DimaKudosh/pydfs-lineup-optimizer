@@ -3,6 +3,8 @@ from pydfs_lineup_optimizer.constants import Sport, Site
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 from pydfs_lineup_optimizer.lineup_printer import IndividualSportLineupPrinter
 from pydfs_lineup_optimizer.sites.draftkings.classic.importer import DraftKingsCSVImporter
+from pydfs_lineup_optimizer.sites.draftkings.captain_mode.importer import DraftKingsCaptainModeCSVImporter
+from pydfs_lineup_optimizer.rules import DraftKingsBaseballRosterRule
 
 
 class DraftKingsSettings(BaseSettings):
@@ -14,6 +16,7 @@ class DraftKingsSettings(BaseSettings):
 @SitesRegistry.register_settings
 class DraftKingsBasketballSettings(DraftKingsSettings):
     sport = Sport.BASKETBALL
+    min_games = 2
     positions = [
         LineupPosition('PG', ('PG', )),
         LineupPosition('SG', ('SG', )),
@@ -29,6 +32,7 @@ class DraftKingsBasketballSettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsWNBASettings(DraftKingsSettings):
     sport = Sport.WNBA
+    min_games = 2
     positions = [
         LineupPosition('G', ('PG', 'SG')),
         LineupPosition('G', ('PG', 'SG')),
@@ -42,6 +46,7 @@ class DraftKingsWNBASettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsFootballSettings(DraftKingsSettings):
     sport = Sport.FOOTBALL
+    min_games = 2
     positions = [
         LineupPosition('QB', ('QB',)),
         LineupPosition('RB', ('RB',)),
@@ -76,7 +81,9 @@ class DraftKingsHockeySettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsBaseballSettings(DraftKingsSettings):
     sport = Sport.BASEBALL
-    max_from_one_team = 5
+    min_games = 2
+    max_from_one_team = None
+    extra_rules = [DraftKingsBaseballRosterRule]
     positions = [
         LineupPosition('P', ('SP', 'RP')),
         LineupPosition('P', ('SP', 'RP')),
@@ -108,6 +115,7 @@ class DraftKingsGolfSettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsSoccerSettings(DraftKingsSettings):
     sport = Sport.SOCCER
+    min_teams = 3
     positions = [
         LineupPosition('GK', ('GK', )),
         LineupPosition('D', ('D', )),
@@ -123,6 +131,7 @@ class DraftKingsSoccerSettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsCanadianFootballSettings(DraftKingsSettings):
     sport = Sport.CANADIAN_FOOTBALL
+    min_games = 2
     positions = [
         LineupPosition('QB', ('QB', )),
         LineupPosition('RB', ('RB', )),
@@ -173,4 +182,21 @@ class DraftKingsTennisSettings(DraftKingsSettings):
         LineupPosition('P', ('P',)),
         LineupPosition('P', ('P',)),
         LineupPosition('P', ('P',)),
+    ]
+
+
+@SitesRegistry.register_settings
+class DraftKingsCSGOSettings(DraftKingsSettings):
+    sport = Sport.CS
+    max_from_one_team = 3
+    min_games = 2
+    csv_importer = DraftKingsCaptainModeCSVImporter
+    lineup_printer = IndividualSportLineupPrinter
+    positions = [
+        LineupPosition('CPT', ('CPT',)),
+        LineupPosition('FLEX', ('FLEX',)),
+        LineupPosition('FLEX', ('FLEX',)),
+        LineupPosition('FLEX', ('FLEX',)),
+        LineupPosition('FLEX', ('FLEX',)),
+        LineupPosition('FLEX', ('FLEX',)),
     ]

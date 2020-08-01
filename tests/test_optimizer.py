@@ -91,3 +91,13 @@ class OptimizerMethodsTestCase(unittest.TestCase):
     def test_get_player_by_incorrect_id(self):
         player = self.lineup_optimizer.get_player_by_id('incorrect_id')
         self.assertIsNone(player)
+
+    def test_print_stats_before_optimization(self):
+        optimizer = get_optimizer(Site.YAHOO, Sport.FOOTBALL)
+        with self.assertRaises(LineupOptimizerException):
+            optimizer.print_statistic()
+
+    def test_export_before_optimization(self):
+        optimizer = get_optimizer(Site.YAHOO, Sport.FOOTBALL)
+        with self.assertRaises(LineupOptimizerException):
+            optimizer.export('temp.csv')

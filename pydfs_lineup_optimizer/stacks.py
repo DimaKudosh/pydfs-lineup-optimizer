@@ -224,7 +224,7 @@ class PositionsStack(BaseStack):
         return [OptimizerStack(groups=all_groups)]
 
     def validate(self, optimizer: 'LineupOptimizer') -> None:
-        if not all(self.positions):
+        if not self.positions or not all(self.positions):
             raise LineupOptimizerException('Positions stack can\'t be empty')
         settings = optimizer.settings
         max_from_one_team = settings.max_from_one_team or settings.get_total_players()

@@ -1,14 +1,11 @@
-from __future__ import absolute_import, division
 import unittest
 from functools import partial
-from parameterized import parameterized
 from pydfs_lineup_optimizer import settings
-from pydfs_lineup_optimizer.player import Player
 from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 from pydfs_lineup_optimizer.settings import LineupPosition
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.utils import ratio, get_positions_for_optimizer, link_players_with_positions, \
-    list_intersection, process_percents, get_player_priority
+    list_intersection, process_percents
 from pydfs_lineup_optimizer.sites.draftkings.classic.settings import DraftKingsBasketballSettings, \
     DraftKingsFootballSettings, DraftKingsBaseballSettings, DraftKingsHockeySettings
 from pydfs_lineup_optimizer.tz import get_timezone, set_timezone

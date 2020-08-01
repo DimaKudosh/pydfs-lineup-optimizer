@@ -10,21 +10,21 @@ $ pip install pydfs-lineup-optimizer
 ## Support
 Now it supports following dfs sites:
 
-League | DraftKings | FanDuel | FantasyDraft | Yahoo | FanBall | DraftKing Captain Mode | FanDuel Single Game |
------- | ---------- | ------- | ------------ | ----- | ------- | ---------------------- | ------------------- |
-NFL    | +          | +       | +            | +     | +       | +                      | +                   |
-NBA    | +          | +       | +            | +     | -       | +                      | +                   |
-NHL    | +          | +       | +            | +     | -       | -                      | -                   |
-MLB    | +          | +       | +            | +     | -       | +                      | -                   |
-WNBA   | +          | +       | -            | -     | -       | +                      | -                   |
-Golf   | +          | +       | +            | +     | -       | -                      | -                   |
-Soccer | +          | -       | -            | +     | -       | +                      | -                   |
-CFL    | +          | -       | -            | -     | -       | -                      | -                   |
-LOL    | -          | +       | -            | -     | -       | +                      | +                   |
-MMA    | +          | -       | -            | -     | -       | -                      | -                   |
-NASCAR | +          | -       | -            | -     | -       | -                      | -                   |
-Tennis | +          | -       | -            | -     | -       | -                      | -                   |
-
+League | DraftKings | FanDuel | FantasyDraft | Yahoo | FanBall | DraftKings Captain Mode | FanDuel Single Game | DraftKings Tiers |
+------ | ---------- | ------- | ------------ | ----- | ------- | ----------------------- | ------------------- | ---------------- |
+NFL    | +          | +       | +            | +     | +       | +                       | +                   | -                |
+NBA    | +          | +       | +            | +     | -       | +                       | +                   | +                |
+NHL    | +          | +       | +            | +     | -       | -                       | -                   | +                |
+MLB    | +          | +       | +            | +     | -       | +                       | -                   | +                |
+WNBA   | +          | +       | -            | -     | -       | +                       | -                   | -                |
+Golf   | +          | +       | +            | +     | -       | -                       | -                   | -                |
+Soccer | +          | -       | -            | +     | -       | +                       | -                   | -                |
+CFL    | +          | -       | -            | -     | -       | -                       | -                   | -                |
+LOL    | -          | +       | -            | -     | -       | +                       | +                   | -                |
+MMA    | +          | +       | -            | -     | -       | -                       | -                   | -                |
+NASCAR | +          | +       | -            | -     | -       | -                       | -                   | -                |
+Tennis | +          | -       | -            | -     | -       | -                       | -                   | -                |
+CSGO   | +          | -       | -            | -     | -       | -                       | -                   | -                |
 
 ## Documentation
 Documentation is available at https://pydfs-lineup-optimizer.readthedocs.io/en/latest

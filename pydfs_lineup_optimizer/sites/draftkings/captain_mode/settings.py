@@ -44,6 +44,7 @@ class DraftKingsCaptainModeBasketballSettings(DraftKingsCaptainModeSettings):
 class DraftKingsLOLSettings(DraftKingsCaptainModeSettings):
     sport = Sport.LEAGUE_OF_LEGENDS
     max_from_one_team = 4
+    min_games = 2
     positions = [
         LineupPosition('CPT', ('CPT', )),
         LineupPosition('TOP', ('TOP', )),

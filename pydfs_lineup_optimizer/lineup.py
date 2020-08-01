@@ -35,6 +35,10 @@ class Lineup:
         return round(sum(player.fppg for player in self.players), 3)
 
     @property
+    def actual_fantasy_points_projection(self) -> float:
+        return round(sum(player.used_fppg or player.fppg for player in self.players), 3)
+
+    @property
     def salary_costs(self) -> int:
         return sum(player.salary for player in self.players)
 
