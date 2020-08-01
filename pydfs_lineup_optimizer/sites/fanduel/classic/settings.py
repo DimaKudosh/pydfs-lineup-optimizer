@@ -4,7 +4,8 @@ from pydfs_lineup_optimizer.constants import Sport, Site
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 from pydfs_lineup_optimizer.lineup_printer import IndividualSportLineupPrinter
 from pydfs_lineup_optimizer.rules import OptimizerRule, FanduelBaseballRosterRule
-from pydfs_lineup_optimizer.sites.fanduel.classic.importer import FanDuelCSVImporter, FanDuelLOLCSVImporter
+from pydfs_lineup_optimizer.sites.fanduel.classic.importer import FanDuelCSVImporter, FanDuelLOLCSVImporter, \
+    FanDuelMVPCSVImporter
 
 
 class FanDuelSettings(BaseSettings):
@@ -155,11 +156,10 @@ class FanDuelMMASettings(FanDuelSettings):
     max_from_one_team = None
     min_teams = None
     budget = 100
-    csv_importer = build_fanduel_single_game_importer(mvp=False, star=True, pro=False)
-    extra_rules = [FanduelSingleGameStarRule]  # type: List[Type[OptimizerRule]]
+    csv_importer = FanDuelMVPCSVImporter
     lineup_printer = IndividualSportLineupPrinter
     positions = [
-        LineupPosition('MVP', 'F', for_rank=PlayerRank.STAR),
+        LineupPosition('MVP', ('MVP', )),
         LineupPosition('F', ('F', )),
         LineupPosition('F', ('F', )),
         LineupPosition('F', ('F', )),
