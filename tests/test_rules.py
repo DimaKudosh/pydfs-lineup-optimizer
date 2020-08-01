@@ -11,7 +11,7 @@ from pydfs_lineup_optimizer.player import Player, GameInfo
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.rules import ProjectedOwnershipRule
 from pydfs_lineup_optimizer.utils import list_intersection
-from pydfs_lineup_optimizer.stacks import PlayersGroup, TeamStack
+from pydfs_lineup_optimizer.stacks import PlayersGroup, TeamStack, PositionsStack
 from .utils import create_players, load_players, count_players_in_lineups
 
 
@@ -167,31 +167,32 @@ class TestPositionsFromSameTeamTestCase(unittest.TestCase):
     ])
     def test_positions_from_same_team(self, combination):
         self.optimizer.stacks = []
-        self.optimizer.set_positions_for_same_team(combination)
+        self.optimizer.add_stack(PositionsStack(combination))
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len([p for p in lineup.lineup if p.team == self.first_team]), len(combination))
 
     def test_multiple_positions_from_same_team(self):
         from_same_team = (['PG', 'C'], ['SG', 'SF'])
-        self.optimizer.set_positions_for_same_team(*from_same_team)
+        for position_stack in from_same_team:
+            self.optimizer.add_stack(PositionsStack(position_stack))
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len([p for p in lineup.lineup if p.team == self.first_team]), len(from_same_team[0]))
         self.assertEqual(len([p for p in lineup.lineup if p.team == self.second_team]), len(from_same_team[1]))
 
     def test_positions_stack_greater_than_max_from_one_team(self):
         with self.assertRaises(LineupOptimizerException):
-            self.optimizer.set_positions_for_same_team(['PG', 'PG', 'SG', 'SG', 'SF', 'PF', 'C'])
+            self.optimizer.add_stack(PositionsStack(['PG', 'PG', 'SG', 'SG', 'SF', 'PF', 'C']))
 
     def test_incorrect_position_names(self):
         with self.assertRaises(LineupOptimizerException):
-            self.optimizer.set_positions_for_same_team(['G'])
+            self.optimizer.add_stack(PositionsStack(['G']))
 
     def test_empty_positions_stacks_tuple(self):
         with self.assertRaises(LineupOptimizerException):
-            self.optimizer.set_positions_for_same_team([tuple()])
+            self.optimizer.add_stack(PositionsStack([]))
 
     def test_positions_from_same_team_with_combo_position(self):
-        self.optimizer.set_positions_for_same_team(['PG', ('SF', 'C')])
+        self.optimizer.add_stack(PositionsStack(['PG', ('SF', 'C')]))
         lineups = list(self.optimizer.optimize(2))
         for stack in [('PG', 'SF'), ('PG', 'C')]:
             players_in_stack = max([
@@ -357,20 +358,19 @@ class StacksRuleTestCase(unittest.TestCase):
 
     def test_stacks_correctness(self):
         stacks = [4, 2]
-        self.optimizer.set_team_stacking(stacks)
+        for stack in stacks:
+            self.optimizer.add_stack(TeamStack(stack))
         lineup = next(self.optimizer.optimize(n=1))
         teams = Counter([player.team for player in lineup])
         self.assertListEqual(stacks, [stack[1] for stack in Counter(teams).most_common(len(stacks))])
 
     def test_stack_greater_than_max_from_one_team(self):
-        stacks = [5]
         with self.assertRaises(LineupOptimizerException):
-            self.optimizer.set_team_stacking(stacks)
+            self.optimizer.add_stack(TeamStack(5))
 
     def test_stacks_for_positions(self):
         position = 'PG'
-        stacks = [4]
-        self.optimizer.set_team_stacking(stacks, for_positions=[position])
+        self.optimizer.add_stack(TeamStack(4, for_positions=[position]))
         lineup = next(self.optimizer.optimize(n=1))
         all_position_players_teams = [player.team for player in lineup if position in player.positions]
         self.assertEqual(len(set(all_position_players_teams)), 1)
@@ -520,7 +520,7 @@ class TestFanduelMaxFromOneTeamTestCase(unittest.TestCase):
         self.assertNotIn('P', hou_players_positions)
 
     def test_max_hitters_from_one_team_with_stacking(self):
-        self.optimizer.set_team_stacking([5])
+        self.optimizer.add_stack(TeamStack(5))
         lineup = next(self.optimizer.optimize(1))
         hou_players_positions = [player.lineup_position for player in lineup if player.team == 'HOU']
         self.assertEqual(len(hou_players_positions), 5)
@@ -541,8 +541,7 @@ class TestTeamStacksExposureRule(unittest.TestCase):
         self.optimizer.load_players(self.players + self.high_fppg_players)
 
     def test_teams_exposure_correctness_with_stacking(self):
-        self.optimizer.set_teams_max_exposure({self.test_team: 0.5})
-        self.optimizer.set_team_stacking([3])
+        self.optimizer.add_stack(TeamStack(3, max_exposure_per_team={self.test_team: 0.5}))
         lineups = self.optimizer.optimize(2)
         first_lineup = next(lineups)
         second_lineup = next(lineups)
@@ -550,17 +549,13 @@ class TestTeamStacksExposureRule(unittest.TestCase):
         self.assertNotEqual(len([p for p in second_lineup if p in self.high_fppg_players]), len(self.high_fppg_players))
 
     def test_teams_exposure_correctness_with_positions_for_same_team(self):
-        self.optimizer.set_teams_max_exposure({self.test_team: 0.5})
-        self.optimizer.set_positions_for_same_team(self.high_fppg_players_positions)
+        self.optimizer.add_stack(
+            PositionsStack(self.high_fppg_players_positions, max_exposure_per_team={self.test_team: 0.5}))
         lineups = self.optimizer.optimize(2)
         first_lineup = next(lineups)
         second_lineup = next(lineups)
         self.assertEqual(len([p for p in first_lineup if p in self.high_fppg_players]), len(self.high_fppg_players))
         self.assertNotEqual(len([p for p in second_lineup if p in self.high_fppg_players]), len(self.high_fppg_players))
-
-    def test_incorrect_team_name(self):
-        with self.assertRaises(LineupOptimizerException):
-            self.optimizer.set_teams_max_exposure({'WRONG TEAM': 0.5})
 
 
 class TotalTeamsTestCase(unittest.TestCase):
@@ -591,7 +586,8 @@ class TotalTeamsTestCase(unittest.TestCase):
         self.assertEqual(len(set(player.team for player in lineup)), 3)
 
     def test_minimum_teams_with_stacking(self):
-        self.optimizer.set_team_stacking([5, 4])
+        self.optimizer.add_stack(TeamStack(5))
+        self.optimizer.add_stack(TeamStack(4))
         with self.assertRaises(LineupOptimizerException):
             next(self.optimizer.optimize(1))
 
