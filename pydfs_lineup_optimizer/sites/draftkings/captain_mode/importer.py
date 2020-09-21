@@ -6,7 +6,7 @@ from pydfs_lineup_optimizer.sites.draftkings.classic.importer import DraftKingsC
 class DraftKingsCaptainModeCSVImporter(DraftKingsCSVImporter):  # pragma: nocover
     def _row_to_player(self, row):
         try:
-            fppg_multiplier = 1.5 if row['Roster Position'] == 'CPT' else 1
+            multiplier = 1.5 if row['Roster Position'] == 'CPT' else 1
             name = row['Name'].split()
             player = Player(
                 row['ID'],
@@ -14,8 +14,8 @@ class DraftKingsCaptainModeCSVImporter(DraftKingsCSVImporter):  # pragma: nocove
                 name[1] if len(name) > 1 else '',
                 row['Roster Position'].split('/'),
                 row['TeamAbbrev'],
-                float(row['Salary']),
-                float(row['AvgPointsPerGame']) * fppg_multiplier,
+                float(row['Salary']) * multiplier,
+                float(row['AvgPointsPerGame']) * multiplier,
                 game_info=self._parse_game_info(row),
                 **self.get_player_extra(row)
             )
