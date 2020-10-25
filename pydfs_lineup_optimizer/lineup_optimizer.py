@@ -401,12 +401,23 @@ class LineupOptimizer:
                 raise GenerateLineupException(solver_exception.get_user_defined_constraints())
         self.last_context = context
 
-    def optimize_lineups(self, lineups: List[Lineup]):
+    def optimize_lineups(
+            self,
+            lineups: List[Lineup],
+            max_exposure: Optional[float] = None,
+            randomness: bool = False,
+            with_injured: bool = False,
+            exposure_strategy: Type[BaseExposureStrategy] = TotalExposureStrategy
+    ):
         players = [player for player in self.players if player.max_exposure is None or player.max_exposure > 0]
         context = OptimizationContext(
             total_lineups=len(lineups),
             players=players,
             existed_lineups=lineups,
+            max_exposure=max_exposure,
+            randomness=randomness,
+            with_injured=with_injured,
+            exposure_strategy=exposure_strategy
         )
         rules = self._rules.copy()
         rules.update(self.settings.extra_rules)
