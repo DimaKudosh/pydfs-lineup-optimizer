@@ -88,7 +88,7 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
                     try:
                         player_data = line[index]
                         player_data = player_data.replace('(LOCKED)', '')  # Remove possible '(LOCKED)' substring
-                        player_id = player_data.split('(')[1][:-1]
+                        player_id = player_data.split('(')[1].strip()[:-1]
                     except IndexError:
                         raise LineupOptimizerIncorrectCSV
                     try:
