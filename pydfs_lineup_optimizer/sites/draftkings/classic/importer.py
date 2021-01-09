@@ -1,3 +1,4 @@
+import re
 import csv
 from itertools import islice
 from datetime import datetime
@@ -11,6 +12,8 @@ from pydfs_lineup_optimizer.tz import get_timezone
 
 
 class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
+    LINEUP_PLAYER_ID_REGEX = r'.+\((?P<id>\d+)\)'
+
     def _parse_game_info(self, row: Dict) -> Optional[GameInfo]:
         game_info = row.get('Game Info')
         if not game_info:
@@ -86,11 +89,12 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
                 lineup_players = []
                 for index, position in zip(range(start_column, end_column), position_names):
                     try:
-                        player_data = line[index]
-                        player_data = player_data.replace('(LOCKED)', '')  # Remove possible '(LOCKED)' substring
-                        player_id = player_data.split('(')[1][:-1]
+                        match = re.search(self.LINEUP_PLAYER_ID_REGEX, line[index])
                     except IndexError:
                         raise LineupOptimizerIncorrectCSV
+                    if not match:
+                        raise LineupOptimizerIncorrectCSV
+                    player_id = match.group('id')
                     try:
                         player = players_dict[player_id]
                     except KeyError:
