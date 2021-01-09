@@ -1,11 +1,11 @@
 from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatusOptimal, LpBinary, LpInteger, PULP_CBC_CMD
-from .base import Solver
-from .constants import SolverSign
-from .exceptions import SolverException, SolverInfeasibleSolutionException
+from pydfs_lineup_optimizer.solvers.base import Solver
+from pydfs_lineup_optimizer.solvers.constants import SolverSign
+from pydfs_lineup_optimizer.solvers.exceptions import SolverException, SolverInfeasibleSolutionException
 
 
 class PuLPSolver(Solver):
-    LP_SOLVER = PULP_CBC_CMD(verbose=False, msg=False)
+    LP_SOLVER = PULP_CBC_CMD(msg=False)
 
     def __init__(self):
         self.prob = LpProblem('Daily Fantasy Sports', LpMaximize)
