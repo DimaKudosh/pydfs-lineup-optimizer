@@ -70,3 +70,9 @@ class DraftKingsCaptainModeWNBASettings(DraftKingsCaptainModeSettings):
 class DraftLingsCaptainModeSoccerSettings(DraftKingsCaptainModeSettings):
     sport = Sport.SOCCER
     positions = POSITIONS_WITH_FLEX[:]
+
+@SitesRegistry.register_settings
+class DraftKingsCaptainModeNHLSettings(DraftKingsCaptainModeSettings):
+    sport = Sport.HOCKEY
+    positions = POSITIONS_WITH_FLEX[:]
+

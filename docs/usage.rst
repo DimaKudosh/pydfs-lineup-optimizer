@@ -217,5 +217,12 @@ You can export lineups into a csv file. For this you should call export method o
 
     optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
     optimizer.load_players_from_csv("players.csv")
-    optimizer.optimize(10)
+
+    # if you want to see lineups on screen
+    for lineup in optimizer.optimize(10):
+        print(lineup)
+    optimizer.export('result.csv')
+
+    # if you don't need to see lineups on screen
+    lineups = list(optimizer.optimize(10))
     optimizer.export('result.csv')

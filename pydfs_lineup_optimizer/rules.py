@@ -8,7 +8,7 @@ from pydfs_lineup_optimizer.solvers import Solver, SolverSign
 from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer, get_remaining_positions, \
     get_players_grouped_by_teams
 from pydfs_lineup_optimizer.lineup import Lineup
-from pydfs_lineup_optimizer.player import Player
+from pydfs_lineup_optimizer.player import Player, GameInfo
 from pydfs_lineup_optimizer.context import OptimizationContext
 
 
@@ -94,7 +94,8 @@ class TotalPlayersRule(OptimizerRule):
     def apply(self, solver):
         if self.optimizer.total_players:
             variables = self.players_dict.values()
-            solver.add_constraint(variables, None, SolverSign.EQ, self.optimizer.total_players)
+            solver.add_constraint(variables, None, SolverSign.EQ, self.optimizer.total_players,
+                                  name='total_players')
 
 
 class LineupBudgetRule(OptimizerRule):
@@ -106,7 +107,7 @@ class LineupBudgetRule(OptimizerRule):
         for player, variable in self.players_dict.items():
             variables.append(variable)
             coefficients.append(player.salary)
-        solver.add_constraint(variables, coefficients, SolverSign.LTE, self.optimizer.budget)
+        solver.add_constraint(variables, coefficients, SolverSign.LTE, self.optimizer.budget, name='budget')
 
 
 class LockedPlayersRule(OptimizerRule):
@@ -132,9 +133,9 @@ class LockedPlayersRule(OptimizerRule):
             if player not in removed_players:
                 force_variables.append(self.players_dict[player])
         if force_variables:
-            solver.add_constraint(force_variables, None, SolverSign.EQ, len(force_variables))
+            solver.add_constraint(force_variables, None, SolverSign.EQ, len(force_variables), name='locked_players')
         if exclude_variables:
-            solver.add_constraint(exclude_variables, None, SolverSign.EQ, 0)
+            solver.add_constraint(exclude_variables, None, SolverSign.EQ, 0, name='exclude_players')
 
     def post_optimize(self, solved_variables: List[str]):
         self.max_exposure_strategy.set_used(solved_variables)
@@ -161,14 +162,16 @@ class PositionsRule(OptimizerRule):
             players_with_position = set()
             for pos in position:
                 players_with_position.update(players_by_positions[pos])
-            solver.add_constraint(players_with_position, None, SolverSign.GTE, places + extra)
+            solver.add_constraint(players_with_position, None, SolverSign.GTE, places + extra,
+                                  name='positions_%s' % '_'.join(position))
 
 
 class TeamMatesRule(OptimizerRule):
     def apply(self, solver):
         for team, quantity in self.optimizer.players_from_one_team.items():
             players_from_same_team = [variable for player, variable in self.players_dict.items() if player.team == team]
-            solver.add_constraint(players_from_same_team, None, SolverSign.EQ, quantity)
+            solver.add_constraint(players_from_same_team, None, SolverSign.EQ, quantity,
+                                  name='players_from_one_team_%s' % team)
 
 
 class MaxFromOneTeamRule(OptimizerRule):
@@ -177,7 +180,8 @@ class MaxFromOneTeamRule(OptimizerRule):
             return
         for team in self.optimizer.available_teams:
             players_from_team = [variable for player, variable in self.players_dict.items() if player.team == team]
-            solver.add_constraint(players_from_team, None, SolverSign.LTE, self.optimizer.max_from_one_team)
+            solver.add_constraint(players_from_team, None, SolverSign.LTE, self.optimizer.max_from_one_team,
+                                  name='max_from_one_team_%s' % team)
 
 
 class MinSalaryCapRule(OptimizerRule):
@@ -188,13 +192,13 @@ class MinSalaryCapRule(OptimizerRule):
             variables.append(variable)
             coefficients.append(player.salary)
         min_salary_cap = self.optimizer.min_salary_cap
-        solver.add_constraint(variables, coefficients, SolverSign.GTE, min_salary_cap)
+        solver.add_constraint(variables, coefficients, SolverSign.GTE, min_salary_cap, name='min_salary_cap')
 
 
 class RemoveInjuredRule(OptimizerRule):
     def apply(self, solver):
         injured_players_variables = [variable for player, variable in self.players_dict.items() if player.is_injured]
-        solver.add_constraint(injured_players_variables, None, SolverSign.EQ, 0)
+        solver.add_constraint(injured_players_variables, None, SolverSign.EQ, 0, name='exclude_injured')
 
 
 class MaxRepeatingPlayersRule(OptimizerRule):
@@ -207,8 +211,9 @@ class MaxRepeatingPlayersRule(OptimizerRule):
         if max_repeating_players is None or not result:
             return
         self.exclude_combinations.append([self.players_dict[player] for player in result])
-        for players_combination in self.exclude_combinations:
-            solver.add_constraint(players_combination, None, SolverSign.LTE, max_repeating_players)
+        for i, players_combination in enumerate(self.exclude_combinations, start=1):
+            solver.add_constraint(players_combination, None, SolverSign.LTE, max_repeating_players,
+                                  name='max_repeating_lineup_%d' % i)
 
 
 class ProjectedOwnershipRule(OptimizerRule):
@@ -229,9 +234,9 @@ class ProjectedOwnershipRule(OptimizerRule):
                 max_variables.append(variable)
                 max_coefficients.append(player.projected_ownership - max_projected_ownership)
         if min_variables:
-            solver.add_constraint(min_variables, min_coefficients, SolverSign.GTE, 0)
+            solver.add_constraint(min_variables, min_coefficients, SolverSign.GTE, 0, name='ownership_min')
         if max_variables:
-            solver.add_constraint(max_variables, max_coefficients, SolverSign.LTE, 0)
+            solver.add_constraint(max_variables, max_coefficients, SolverSign.LTE, 0, name='ownership_max')
 
 
 class UniquePlayerRule(OptimizerRule):
@@ -246,7 +251,7 @@ class UniquePlayerRule(OptimizerRule):
             if len(group) == 1:
                 continue
             variables = [variable for player, variable in group]
-            solver.add_constraint(variables, None, SolverSign.LTE, 1)
+            solver.add_constraint(variables, None, SolverSign.LTE, 1, name='unique_player_%s' % player_id)
 
 
 class LateSwapRule(OptimizerRule):
@@ -323,7 +328,7 @@ class GenericStacksRule(OptimizerRule):
                         if max_from_group is None:
                             continue
                         solver.add_constraint([self.players_dict[p] for p in group_players], None, SolverSign.EQ, 0)
-                    max_group = sorted(sub_groups, key=lambda t: t[1])[0]
+                    max_group = sorted(sub_groups, key=lambda t: t[1])[0]  # type: ignore
                     if max_group[1]:
                         solver.add_constraint([self.players_dict[p] for p in max_group[0]], None, SolverSign.LTE,
                                               max_group[1] - 1)
@@ -361,7 +366,7 @@ class MinExposureRule(OptimizerRule):
             player: round(player.min_exposure * context.total_lineups)
             for player in context.players if player.min_exposure
         }
-        self.positions = {}
+        self.positions = {}  # type: Dict[Tuple[str, ...], int]
         if self.min_exposure_players:
             self.positions = get_positions_for_optimizer(optimizer.settings.positions, None)
 
@@ -497,7 +502,8 @@ class FanduelBaseballRosterRule(OptimizerRule):
                         list_intersection(player.positions, self.HITTERS)}
         for team in self.optimizer.available_teams:
             players_from_team = [variable for player, variable in players_dict.items() if player.team == team]
-            solver.add_constraint(players_from_team, None, SolverSign.LTE, self.MAXIMUM_HITTERS_FROM_ONE_TEAM)
+            solver.add_constraint(players_from_team, None, SolverSign.LTE, self.MAXIMUM_HITTERS_FROM_ONE_TEAM,
+                                  name='fanduel_max_hitters_%s' % team)
 
 
 class TotalTeamsRule(OptimizerRule):
@@ -520,15 +526,15 @@ class TotalTeamsRule(OptimizerRule):
             solver.add_constraint(variables, None, SolverSign.LTE, variable * total_players)
             solver.add_constraint(variables, None, SolverSign.GTE, variable)
         if total_teams:
-            solver.add_constraint(teams_variables, None, SolverSign.EQ, total_teams)
+            solver.add_constraint(teams_variables, None, SolverSign.EQ, total_teams, name='total_teams')
         else:
-            solver.add_constraint(teams_variables, None, SolverSign.GTE, min_teams)
+            solver.add_constraint(teams_variables, None, SolverSign.GTE, min_teams, name='min_teams')
 
 
 class FanduelSingleGameMaxQBRule(OptimizerRule):
     def apply(self, solver):
         variables = [var for player, var in self.players_dict.items() if 'QB' in player.original_positions]
-        solver.add_constraint(variables, None, SolverSign.LTE, 2)
+        solver.add_constraint(variables, None, SolverSign.LTE, 2, name='fanduel_single_game_max_qb')
 
 
 class MinStartersRule(OptimizerRule):
@@ -537,7 +543,7 @@ class MinStartersRule(OptimizerRule):
         if not min_starters:
             return
         variables = [variable for player, variable in self.players_dict.items() if player.is_confirmed_starter]
-        solver.add_constraint(variables, None, SolverSign.GTE, min_starters)
+        solver.add_constraint(variables, None, SolverSign.GTE, min_starters, name='min_starters')
 
 
 class MinGamesRule(OptimizerRule):
@@ -546,7 +552,7 @@ class MinGamesRule(OptimizerRule):
         if not min_games:
             return
         total_players = self.optimizer.settings.get_total_players() or 100
-        players_by_games = defaultdict(list)
+        players_by_games = defaultdict(list)  # type: DefaultDict[GameInfo, List[Player]]
         for player in self.optimizer.players:
             if player.game_info:
                 players_by_games[player.game_info].append(player)
@@ -558,7 +564,7 @@ class MinGamesRule(OptimizerRule):
             solver.add_constraint(variables, None, SolverSign.LTE, variable * total_players)
             solver.add_constraint(variables, None, SolverSign.GTE, variable)
         if len(game_variables) >= min_games:
-            solver.add_constraint(game_variables, None, SolverSign.GTE, min_games)
+            solver.add_constraint(game_variables, None, SolverSign.GTE, min_games, name='min_games')
 
 
 class DraftKingsBaseballRosterRule(OptimizerRule):
@@ -570,7 +576,8 @@ class DraftKingsBaseballRosterRule(OptimizerRule):
                         list_intersection(player.positions, self.HITTERS)}
         for team in self.optimizer.available_teams:
             players_from_team = [variable for player, variable in players_dict.items() if player.team == team]
-            solver.add_constraint(players_from_team, None, SolverSign.LTE, self.MAXIMUM_HITTERS_FROM_ONE_TEAM)
+            solver.add_constraint(players_from_team, None, SolverSign.LTE, self.MAXIMUM_HITTERS_FROM_ONE_TEAM,
+                                  name='dk_max_hitters_%s' % team)
 
 
 class DraftKingsTiersRule(OptimizerRule):
@@ -581,4 +588,4 @@ class DraftKingsTiersRule(OptimizerRule):
     def apply(self, solver):
         for tier, players in groupby(sorted(self.players_dict.keys(), key=self.sort_player), key=self.sort_player):
             variables = [self.players_dict[player] for player in players]
-            solver.add_constraint(variables, None, SolverSign.EQ, 1)
+            solver.add_constraint(variables, None, SolverSign.EQ, 1, name='dk_tier_%s' % tier)

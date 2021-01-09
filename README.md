@@ -12,9 +12,9 @@ Now it supports following dfs sites:
 
 League | DraftKings | FanDuel | FantasyDraft | Yahoo | FanBall | DraftKings Captain Mode | FanDuel Single Game | DraftKings Tiers |
 ------ | ---------- | ------- | ------------ | ----- | ------- | ----------------------- | ------------------- | ---------------- |
-NFL    | +          | +       | +            | +     | +       | +                       | +                   | -                |
+NFL    | +          | +       | +            | +     | +       | +                       | +                   | +                |
 NBA    | +          | +       | +            | +     | -       | +                       | +                   | +                |
-NHL    | +          | +       | +            | +     | -       | -                       | -                   | +                |
+NHL    | +          | +       | +            | +     | -       | +                       | -                   | +                |
 MLB    | +          | +       | +            | +     | -       | +                       | -                   | +                |
 WNBA   | +          | +       | -            | -     | -       | +                       | -                   | -                |
 Golf   | +          | +       | +            | +     | -       | -                       | -                   | -                |

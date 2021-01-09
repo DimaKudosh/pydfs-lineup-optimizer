@@ -30,3 +30,8 @@ class DraftKingsTiersBaseballSettings(DraftKingsTiersSettings):
 @SitesRegistry.register_settings
 class DraftKingsTiersHockeySettings(DraftKingsTiersSettings):
     sport = Sport.HOCKEY
+
+
+@SitesRegistry.register_settings
+class DraftKingsTiersFootballSettings(DraftKingsTiersSettings):
+    sport = Sport.FOOTBALL

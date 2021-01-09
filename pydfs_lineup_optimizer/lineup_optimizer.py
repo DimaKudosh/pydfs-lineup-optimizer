@@ -1,18 +1,17 @@
-import warnings
 from collections import OrderedDict
 from itertools import chain
 from math import ceil
-from typing import FrozenSet, Type, Generator, Tuple, Union, Optional, List, Dict, Set, cast
+from typing import FrozenSet, Type, Generator, Tuple, Optional, List, Dict, Set
 from pydfs_lineup_optimizer.lineup import Lineup
-from pydfs_lineup_optimizer.solvers import Solver, PuLPSolver, SolverException
+from pydfs_lineup_optimizer.solvers import Solver, PuLPSolver, SolverInfeasibleSolutionException
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
-    LineupOptimizerIncorrectPositionName
+    LineupOptimizerIncorrectPositionName, GenerateLineupException
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings
 from pydfs_lineup_optimizer.player import Player, LineupPlayer, GameInfo
-from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions, process_percents, get_remaining_positions
+from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions, get_remaining_positions
 from pydfs_lineup_optimizer.rules import *
-from pydfs_lineup_optimizer.stacks import BaseGroup, TeamStack, PositionsStack, BaseStack, Stack
+from pydfs_lineup_optimizer.stacks import BaseGroup, BaseStack, Stack
 from pydfs_lineup_optimizer.context import OptimizationContext
 from pydfs_lineup_optimizer.statistics import Statistic
 from pydfs_lineup_optimizer.exposure_strategy import BaseExposureStrategy, TotalExposureStrategy
@@ -253,15 +252,6 @@ class LineupOptimizer:
             self._check_position_constraint(pos)
         self.players_with_same_position = positions
 
-    # def set_positions_for_same_team(self, *positions_stacks: List[Union[str, Tuple[str, ...]]]):
-    #     warnings.simplefilter('always', DeprecationWarning)
-    #     warnings.warn('set_positions_for_same_team method will be removed in 3.3, use add_stack instead', DeprecationWarning)
-    #     if positions_stacks and positions_stacks[0] is not None:
-    #         team_stacks = [
-    #             PositionsStack(stack, max_exposure_per_team=self.teams_exposures) for stack in positions_stacks]
-    #         for stack in team_stacks:
-    #             self.add_stack(stack)
-
     def set_max_repeating_players(self, max_repeating_players: int):
         if max_repeating_players >= self.total_players:
             raise LineupOptimizerException('Maximum repeating players should be smaller than %d' % self.total_players)
@@ -285,14 +275,6 @@ class LineupOptimizer:
             self.add_new_rule(ProjectedOwnershipRule)
         else:
             self.remove_rule(ProjectedOwnershipRule)
-
-    # def set_team_stacking(self, stacks: Optional[List[int]], for_positions: Optional[List[str]] = None):
-    #     warnings.simplefilter('always', DeprecationWarning)
-    #     warnings.warn('set_team_stacking method will be removed in 3.3, use add_stack instead', DeprecationWarning)
-    #     if stacks:
-    #         team_stacks = [TeamStack(stack, for_positions=for_positions, max_exposure_per_team=self.teams_exposures) for stack in stacks]
-    #         for stack in team_stacks:
-    #             self.add_stack(stack)
 
     def restrict_positions_for_opposing_team(
             self,
@@ -415,16 +397,27 @@ class LineupOptimizer:
                     return
                 for constraint in constraints:
                     constraint.post_optimize(variables_names)
-            except SolverException:
-                raise LineupOptimizerException('Can\'t generate lineups')
+            except SolverInfeasibleSolutionException as solver_exception:
+                raise GenerateLineupException(solver_exception.get_user_defined_constraints())
         self.last_context = context
 
-    def optimize_lineups(self, lineups: List[Lineup]):
+    def optimize_lineups(
+            self,
+            lineups: List[Lineup],
+            max_exposure: Optional[float] = None,
+            randomness: bool = False,
+            with_injured: bool = False,
+            exposure_strategy: Type[BaseExposureStrategy] = TotalExposureStrategy
+    ):
         players = [player for player in self.players if player.max_exposure is None or player.max_exposure > 0]
         context = OptimizationContext(
             total_lineups=len(lineups),
             players=players,
             existed_lineups=lineups,
+            max_exposure=max_exposure,
+            randomness=randomness,
+            with_injured=with_injured,
+            exposure_strategy=exposure_strategy
         )
         rules = self._rules.copy()
         rules.update(self.settings.extra_rules)
@@ -462,8 +455,8 @@ class LineupOptimizer:
                     return
                 for constraint in constraints:
                     constraint.post_optimize(variables_names)
-            except SolverException:
-                raise LineupOptimizerException('Can\'t generate lineups')
+            except SolverInfeasibleSolutionException as solver_exception:
+                raise GenerateLineupException(solver_exception.get_user_defined_constraints())
         self.last_context = context
 
     def print_statistic(self) -> None:

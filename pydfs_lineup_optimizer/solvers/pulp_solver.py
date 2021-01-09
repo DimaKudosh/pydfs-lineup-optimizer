@@ -1,11 +1,11 @@
 from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatusOptimal, LpBinary, LpInteger, PULP_CBC_CMD
-from .base import Solver
-from .constants import SolverSign
-from .exceptions import SolverException
+from pydfs_lineup_optimizer.solvers.base import Solver
+from pydfs_lineup_optimizer.solvers.constants import SolverSign
+from pydfs_lineup_optimizer.solvers.exceptions import SolverException, SolverInfeasibleSolutionException
 
 
 class PuLPSolver(Solver):
-    LP_SOLVER = PULP_CBC_CMD(verbose=False, msg=False)
+    LP_SOLVER = PULP_CBC_CMD(msg=False)
 
     def __init__(self):
         self.prob = LpProblem('Daily Fantasy Sports', LpMaximize)
@@ -21,19 +21,19 @@ class PuLPSolver(Solver):
     def set_objective(self, variables, coefficients):
         self.prob += lpSum([variable * coefficient for variable, coefficient in zip(variables, coefficients)])
 
-    def add_constraint(self, variables, coefficients, sign, rhs):
+    def add_constraint(self, variables, coefficients, sign, rhs, name=None):
         if coefficients:
             lhs = [variable * coefficient for variable, coefficient in zip(variables, coefficients)]
         else:
             lhs = variables
         if sign == SolverSign.EQ:
-            self.prob += lpSum(lhs) == rhs
+            self.prob += lpSum(lhs) == rhs, name
         elif sign == SolverSign.NOT_EQ:
-            self.prob += lpSum(lhs) != rhs
+            self.prob += lpSum(lhs) != rhs, name
         elif sign == SolverSign.GTE:
-            self.prob += lpSum(lhs) >= rhs
+            self.prob += lpSum(lhs) >= rhs, name
         elif sign == SolverSign.LTE:
-            self.prob += lpSum(lhs) <= rhs
+            self.prob += lpSum(lhs) <= rhs, name
         else:
             raise SolverException('Incorrect constraint sign')
 
@@ -52,4 +52,5 @@ class PuLPSolver(Solver):
                     result.append(variable)
             return result
         else:
-            raise SolverException('Unable to solve')
+            invalid_constraints = [name for name, constraint in self.prob.constraints.items() if not constraint.valid()]
+            raise SolverInfeasibleSolutionException(invalid_constraints)
