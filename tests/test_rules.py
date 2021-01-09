@@ -574,7 +574,7 @@ class TotalTeamsTestCase(unittest.TestCase):
             Player('11', '11', '11', ['P'], 'ARI', 3000, 5),
             Player('12', '12', '12', ['SS'], 'NY', 3000, 5),
             Player('13', '13', '13', ['OF'], 'POR', 3000, 5),
-            Player('13', '13', '13', ['OF'], 'MIN', 3000, 50),
+            Player('14', '14', '14', ['OF'], 'MIN', 3000, 50),
         ]
         self.optimizer = get_optimizer(Site.FANDUEL, Sport.BASEBALL)
         self.optimizer.settings.min_teams = 3
