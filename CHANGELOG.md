@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.4.0]
+- Fix PULP version
+- Add DK NHL Captain Mode
+- Add DK NFL Tiers
+- Add failed rules to generate error message
+- Extend optimize_lineups method
+
 ## [v3.3.0]
 - Added ability to print statistic after optimization run
 - Added cyclic spacing handling for set_spacing_for_positions method 
