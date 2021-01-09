@@ -8,7 +8,7 @@ from pydfs_lineup_optimizer.solvers import Solver, SolverSign
 from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer, get_remaining_positions, \
     get_players_grouped_by_teams
 from pydfs_lineup_optimizer.lineup import Lineup
-from pydfs_lineup_optimizer.player import Player
+from pydfs_lineup_optimizer.player import Player, GameInfo
 from pydfs_lineup_optimizer.context import OptimizationContext
 
 
@@ -328,7 +328,7 @@ class GenericStacksRule(OptimizerRule):
                         if max_from_group is None:
                             continue
                         solver.add_constraint([self.players_dict[p] for p in group_players], None, SolverSign.EQ, 0)
-                    max_group = sorted(sub_groups, key=lambda t: t[1])[0]
+                    max_group = sorted(sub_groups, key=lambda t: t[1])[0]  # type: ignore
                     if max_group[1]:
                         solver.add_constraint([self.players_dict[p] for p in max_group[0]], None, SolverSign.LTE,
                                               max_group[1] - 1)
@@ -366,7 +366,7 @@ class MinExposureRule(OptimizerRule):
             player: round(player.min_exposure * context.total_lineups)
             for player in context.players if player.min_exposure
         }
-        self.positions = {}
+        self.positions = {}  # type: Dict[Tuple[str, ...], int]
         if self.min_exposure_players:
             self.positions = get_positions_for_optimizer(optimizer.settings.positions, None)
 
@@ -552,7 +552,7 @@ class MinGamesRule(OptimizerRule):
         if not min_games:
             return
         total_players = self.optimizer.settings.get_total_players() or 100
-        players_by_games = defaultdict(list)
+        players_by_games = defaultdict(list)  # type: DefaultDict[GameInfo, List[Player]]
         for player in self.optimizer.players:
             if player.game_info:
                 players_by_games[player.game_info].append(player)
