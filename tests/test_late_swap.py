@@ -21,7 +21,7 @@ class LateSwapTestCase(unittest.TestCase):
         positions = ['PG', 'SG', 'SF', 'PF', 'C', 'PG/SG', 'SF/PF', 'C']
         self.active_players = create_players(positions, game_info=self.future_game_info, salary=5000, fppg=20)
         self.inactive_players = create_players(positions, game_info=self.finished_game_info, salary=4500, fppg=10)
-        self.lineup_optimizer.load_players(self.active_players + self.inactive_players)
+        self.lineup_optimizer.player_pool.load_players(self.active_players + self.inactive_players)
         self.lineup = Lineup([
             LineupPlayer(self.active_players[0], 'PG'),
             LineupPlayer(self.inactive_players[1], 'SG'),

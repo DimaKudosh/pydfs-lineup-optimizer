@@ -12,7 +12,6 @@ class OptimizationContext:
             players: List[Player],
             max_exposure: Optional[float] = None,
             randomness: bool = False,
-            with_injured: bool = False,
             existed_lineups: List[Lineup] = None,
             exposure_strategy: Type[BaseExposureStrategy] = TotalExposureStrategy,
             exclude_lineups: Optional[Iterable[Lineup]] = None,
@@ -22,7 +21,6 @@ class OptimizationContext:
         self.remaining_lineups = total_lineups
         self.max_exposure = max_exposure
         self.randomness = randomness
-        self.with_injured = with_injured
         self.existed_lineups = existed_lineups or []
         self.exclude_lineups = exclude_lineups or []
         self.lineups = []  # type: List[Lineup]

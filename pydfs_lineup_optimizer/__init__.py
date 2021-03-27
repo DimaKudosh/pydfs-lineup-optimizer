@@ -12,6 +12,7 @@ from pydfs_lineup_optimizer.stacks import PlayersGroup, TeamStack, PositionsStac
 from pydfs_lineup_optimizer.exposure_strategy import TotalExposureStrategy, AfterEachExposureStrategy
 from pydfs_lineup_optimizer.fantasy_points_strategy import StandardFantasyPointsStrategy, RandomFantasyPointsStrategy, \
     ProgressiveFantasyPointsStrategy
+from pydfs_lineup_optimizer.player_pool import PlayerFilter
 
 
 __all__ = [
@@ -19,7 +20,7 @@ __all__ = [
     'LineupOptimizerIncorrectPositionName', 'LineupOptimizerIncorrectCSV', 'LineupOptimizer', 'Lineup',
     'CSVLineupExporter', 'set_timezone', 'FantasyDraftCSVLineupExporter', 'PlayersGroup', 'TeamStack', 'PositionsStack',
     'Stack', 'TotalExposureStrategy', 'AfterEachExposureStrategy', 'StandardFantasyPointsStrategy',
-    'RandomFantasyPointsStrategy', 'ProgressiveFantasyPointsStrategy', 'LineupPlayer',
+    'RandomFantasyPointsStrategy', 'ProgressiveFantasyPointsStrategy', 'LineupPlayer', 'PlayerFilter',
 ]
 
 

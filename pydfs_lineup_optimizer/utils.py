@@ -76,13 +76,13 @@ def get_positions_for_optimizer(
 
 
 def link_players_with_positions(
-        players: List['Player'],
+        players: Iterable['Player'],
         positions: List[LineupPosition]
 ) -> Dict['Player', LineupPosition]:
     """
     This method tries to set positions for given players, and raise error if can't.
     """
-    positions = positions[:]
+    positions = positions.copy()
     players_with_positions = {}  # type: Dict['Player', LineupPosition]
     players = sorted(players, key=get_player_priority)
     for position in positions:
@@ -112,15 +112,21 @@ def link_players_with_positions(
 
 def get_remaining_positions(
         positions: List[LineupPosition],
-        unswappable_players: List['LineupPlayer']
+        unswappable_players: Optional[List['LineupPlayer']] = None,
+        locked_positions: Optional[List['LineupPosition']] = None,
 ) -> List[LineupPosition]:
     """
-    Remove unswappable players positions from positions list
+    Remove locked and unswappable players positions from positions list
     """
     positions = positions[:]
-    for player in unswappable_players:
+    for player in unswappable_players or []:
         for position in positions:
             if position.name == player.lineup_position:
+                positions.remove(position)
+                break
+    for locked_position in locked_positions or []:
+        for position in positions:
+            if position.name == locked_position.name:
                 positions.remove(position)
                 break
     return positions

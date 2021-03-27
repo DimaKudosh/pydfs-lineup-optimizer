@@ -25,7 +25,7 @@ class TestLineupExporter(unittest.TestCase):
             Player('7', 'First Name 7', 'Last Name 7', ['SF', 'PF'], 'Team7', 20, 20),
             Player('8', 'First Name 8', 'Last Name 8', ['PG', 'SG', 'SF'], 'Team8', 20, 20),
         ]
-        optimizer.load_players(cls.players)
+        optimizer.player_pool.load_players(cls.players)
         cls.lineups = list(optimizer.optimize(1))
 
     @patch(OPEN_METHOD, new_callable=mock_open)
