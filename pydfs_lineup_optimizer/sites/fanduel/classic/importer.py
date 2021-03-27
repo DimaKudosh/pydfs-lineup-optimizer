@@ -23,7 +23,7 @@ class FanDuelCSVImporter(CSVImporter):  # pragma: nocover
                 row['Position'].split('/'),
                 row['Team'],
                 float(row['Salary']),
-                float(row['FPPG']),
+                float(row['FPPG'] or 0),
                 is_injured=True if row['Injury Indicator'].strip() else False,
                 game_info=game_info,
                 **self.get_player_extra(row)

@@ -57,10 +57,10 @@ class FanDuelHockeySettings(FanDuelSettings):
         LineupPosition('C', ('C', )),
         LineupPosition('W', ('W', )),
         LineupPosition('W', ('W', )),
-        LineupPosition('W', ('W', )),
-        LineupPosition('W', ('W', )),
         LineupPosition('D', ('D', )),
         LineupPosition('D', ('D', )),
+        LineupPosition('UTIL', ('C', 'W', 'D')),
+        LineupPosition('UTIL', ('C', 'W', 'D')),
         LineupPosition('G', ('G', )),
     ]
 
