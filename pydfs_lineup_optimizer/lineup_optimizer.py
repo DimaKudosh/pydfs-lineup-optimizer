@@ -449,7 +449,7 @@ class LineupOptimizer:
                     variables_names.append(solved_variable.name)
                 generated_lineup = self._build_lineup(lineup_players, context, unswappable_players)
                 previous_lineup = generated_lineup
-                context.add_lineup(lineup)
+                context.add_lineup(generated_lineup)
                 yield generated_lineup
                 if len(self.locked_players) == self.total_players:
                     return
