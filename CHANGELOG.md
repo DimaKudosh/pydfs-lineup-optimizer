@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.4.1]
+- Fix FanDuel NHL settings
+- Fix DK late-swap export
+
 ## [v3.4.0]
 - Fix PULP version
 - Add DK NHL Captain Mode
