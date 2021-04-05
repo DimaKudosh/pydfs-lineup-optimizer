@@ -46,7 +46,7 @@ def get_positions_for_optimizer(
     if not multi_positions_combinations:
         return positions
     # Create min partition for each position
-    min_positions = {}
+    min_positions = {}  # type: Dict[str, Tuple[str, ...]]
     for positions_tuple in positions_counter.keys():
         for position in positions_tuple:
             if position not in min_positions or len(min_positions[position]) > len(positions_tuple):
@@ -57,19 +57,19 @@ def get_positions_for_optimizer(
         possible_combinations.add(tuple(chain.from_iterable(min_positions.get(pos, pos) for pos in multi_positions)))
     for i in range(2, len(possible_combinations)):
         total_combinations = len(possible_combinations)
-        for positions_tuple in combinations(possible_combinations, i):
-            flatten_positions = tuple(sorted(set(chain.from_iterable(positions_tuple))))
+        for combo in combinations(possible_combinations, i):
+            flatten_positions = tuple(sorted(set(chain.from_iterable(combo))))
             possible_combinations.add(flatten_positions)
         if total_combinations == len(possible_combinations):
             break
     # Calculate min required players for each position
     possible_combinations.update(positions.keys())
     for i in range(2, len(positions)):
-        for positions_tuple in combinations(positions_counter.keys(), i):
-            flatten_positions = tuple(sorted(set(chain.from_iterable(positions_tuple))))
+        for combo in combinations(positions_counter.keys(), i):
+            flatten_positions = tuple(sorted(set(chain.from_iterable(combo))))
             if flatten_positions in positions or flatten_positions not in possible_combinations:
                 continue
-            min_value = sum(positions[pos] for pos in positions_tuple)
+            min_value = sum(positions[pos] for pos in combo)
             positions[flatten_positions] = min_value
     return positions
 
