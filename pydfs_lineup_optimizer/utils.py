@@ -45,19 +45,29 @@ def get_positions_for_optimizer(
         positions[key] = min_value
     if not multi_positions_combinations:
         return positions
+    # Create min partition for each position
+    min_positions = {}
+    for positions_tuple in positions_counter.keys():
+        for position in positions_tuple:
+            if position not in min_positions or len(min_positions[position]) > len(positions_tuple):
+                min_positions[position] = positions_tuple
     #  Create list of required combinations for consistency of multi-positions
-    for i in range(2, len(multi_positions_combinations)):
-        total_combinations = len(multi_positions_combinations)
-        for positions_tuple in combinations(multi_positions_combinations, i):
+    possible_combinations = set()
+    for multi_positions in multi_positions_combinations:
+        possible_combinations.add(tuple(chain.from_iterable(min_positions.get(pos, pos) for pos in multi_positions)))
+    for i in range(2, len(possible_combinations)):
+        total_combinations = len(possible_combinations)
+        for positions_tuple in combinations(possible_combinations, i):
             flatten_positions = tuple(sorted(set(chain.from_iterable(positions_tuple))))
-            multi_positions_combinations.add(flatten_positions)
-        if total_combinations == len(multi_positions_combinations):
+            possible_combinations.add(flatten_positions)
+        if total_combinations == len(possible_combinations):
             break
-    multi_positions_combinations.update(positions.keys())
+    # Calculate min required players for each position
+    possible_combinations.update(positions.keys())
     for i in range(2, len(positions)):
         for positions_tuple in combinations(positions_counter.keys(), i):
             flatten_positions = tuple(sorted(set(chain.from_iterable(positions_tuple))))
-            if flatten_positions in positions or flatten_positions not in multi_positions_combinations:
+            if flatten_positions in positions or flatten_positions not in possible_combinations:
                 continue
             min_value = sum(positions[pos] for pos in positions_tuple)
             positions[flatten_positions] = min_value

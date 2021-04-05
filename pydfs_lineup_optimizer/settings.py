@@ -13,6 +13,9 @@ class LineupPosition:
         self.name = name
         self.positions = positions
 
+    def __repr__(self):
+        return '%s (%s)' % (self.name, '/'.join(self.positions))
+
 
 class BaseSettings:
     site = None  # type: str
