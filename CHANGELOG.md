@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.4.2]
+- Fix positions constraint for multi positions
+
 ## [v3.4.1]
 - Fix FanDuel NHL settings
 - Fix DK late-swap export
