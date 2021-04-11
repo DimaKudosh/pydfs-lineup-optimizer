@@ -124,35 +124,6 @@ and will add this player to the fourth lineup. In this case, lineups can be unor
 
     lineups = optimizer.optimize(n=10, max_exposure=0.3, exposure_strategy=AfterEachExposureStrategy)
 
-
-Optimizer also have randomness feature. It adds some deviation for players projection for
-creating less optimized but more randomized lineups. For activating randomness feature you should set randomness parameter to True.
-By default min deviation is 0 and max deviation is 12%. You can change it with set_deviation method.
-You also can specify player specific deviation using `min_deviation` and `max_deviation` attributes for player,
-or using additional columns `Min Deviation` and `Max Deviation` in import csv.
-Also you can randomize players fppg by specifying projection range using `fppg_floor` and `fppg_ceil` attributes for player or
-`Projection Floor` and `Projection Ceil` csv columns. In this case this method has priority over deviation.
-It works only if both fields are specified.
-
-.. code-block:: python
-
-    lineups = optimizer.optimize(n=10, randomness=True)
-    lineups = optimizer.set_deviation(0.2, 0.4)  # for making more random lineups
-    harden = optimizer.get_player_by_name('Harden')
-    harden.min_deviation = 0.3
-    harden.max_deviation = 0.6
-    westbrook = optimizer.get_player_by_name('Westbrook')
-    westbrook.min_deviation = 0  # Disable randomness for this player
-    westbrook.max_deviation = 0
-    doncic = optimizer.get_player_by_name('Doncic')
-    doncic.fppg_floor = 0  # Randomize using projection range
-    doncic.fppg_ceil = 0
-    lineups = optimizer.optimize(n=10, randomness=True)
-
-.. note::
-
-    With randomness = True optimizer generate lineups without ordering by max points projection.
-
 After optimization you can print to console list with statistic about players used in lineups.
 
 .. code-block::
@@ -226,3 +197,48 @@ You can export lineups into a csv file. For this you should call export method o
     # if you don't need to see lineups on screen
     lineups = list(optimizer.optimize(10))
     optimizer.export('result.csv')
+
+Adjusting player fantasy points
+===============================
+
+By default optimizer uses value of `fppg` property of player for optimizing.
+You can change this behaviour by providing a custom fantasy points strategy using `set_fantasy_points_strategy` method.
+There are several strategies already implemented in this package:
+
+- RandomFantasyPointsStrategy
+- ProgressiveFantasyPointsStrategy
+
+RandomFantasyPointsStrategy adds some deviation for players projection for creating less optimized but more randomized lineups.
+You can set this deviation when creating strategy by default min deviation is 0 and max deviation is 12%.
+You also can specify player specific deviation using `min_deviation` and `max_deviation` attributes for player,
+or using additional columns `Min Deviation` and `Max Deviation` in import csv.
+Also you can randomize players fppg by specifying projection range using `fppg_floor` and `fppg_ceil` attributes for player or
+`Projection Floor` and `Projection Ceil` csv columns. In this case this method has priority over deviation.
+It works only if both fields are specified.
+
+.. code-block:: python
+
+    optimizer.set_fantasy_points_strategy(RandomFantasyPointsStrategy(max_deviation=0.2))  # set random strategy with custom max_deviation
+    harden = optimizer.get_player_by_name('Harden')
+    harden.min_deviation = 0.3
+    harden.max_deviation = 0.6  # Set different deviation for player
+    westbrook = optimizer.get_player_by_name('Westbrook')
+    westbrook.min_deviation = 0  # Disable randomness for this player
+    westbrook.max_deviation = 0
+    doncic = optimizer.get_player_by_name('Doncic')
+    doncic.fppg_floor = 60  # Randomize using projection range
+    doncic.fppg_ceil = 90
+    lineups = optimizer.optimize(n=10)
+
+.. note::
+
+    With RandomFantasyPointsStrategy optimizer generate lineups without ordering by max points projection.
+
+ProgressiveFantasyPointsStrategy is another method to randomize optimizer result.
+It increases fantasy points for each player that don't be used in the previous lineup by some specified percent of original fantasy points.
+It works cumulatively so fantasy points will be greater if player didn't used in lineup multiple times.
+After player will be selected to lineup his points will be reset to the original value.
+
+.. code-block:: python
+
+    optimizer.set_fantasy_points_strategy(ProgressiveFantasyPointsStrategy(0.01))  # Set progressive strategy that increase player points by 1%

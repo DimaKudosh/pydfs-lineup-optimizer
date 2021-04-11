@@ -9,12 +9,15 @@ from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOp
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.settings import BaseSettings
 from pydfs_lineup_optimizer.player import Player, LineupPlayer, GameInfo
-from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions, get_remaining_positions
+from pydfs_lineup_optimizer.utils import ratio, link_players_with_positions, get_remaining_positions, \
+    show_deprecation_warning
 from pydfs_lineup_optimizer.rules import *
 from pydfs_lineup_optimizer.stacks import BaseGroup, BaseStack, Stack
 from pydfs_lineup_optimizer.context import OptimizationContext
 from pydfs_lineup_optimizer.statistics import Statistic
 from pydfs_lineup_optimizer.exposure_strategy import BaseExposureStrategy, TotalExposureStrategy
+from pydfs_lineup_optimizer.fantasy_points_strategy import BaseFantasyPointsStrategy, StandardFantasyPointsStrategy, \
+    RandomFantasyPointsStrategy
 
 
 BASE_RULES = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamRule, LockedPlayersRule,
@@ -54,6 +57,7 @@ class LineupOptimizer:
         self.stacks = []  # type: List[BaseStack]
         self.min_starters = None  # type: Optional[int]
         self.last_context = None  # type: Optional[OptimizationContext]
+        self.fantasy_points_strategy = StandardFantasyPointsStrategy()  # type: BaseFantasyPointsStrategy
 
     @property
     def budget(self) -> Optional[float]:
@@ -108,10 +112,15 @@ class LineupOptimizer:
     def reset_lineup(self):
         self._lineup = []
 
+    def set_fantasy_points_strategy(self, strategy: BaseFantasyPointsStrategy):
+        self.fantasy_points_strategy = strategy
+
     def set_deviation(self, min_deviation: float, max_deviation: float):
         """
         Set deviation ranges for randomness mode
         """
+        show_deprecation_warning('set_deviation method is deprecated and will be removed in 3.6, '
+                                 'set deviation in  RandomFantasyPointsStrategy instead')
         self._min_deviation = min_deviation
         self._max_deviation = max_deviation
 
@@ -362,9 +371,10 @@ class LineupOptimizer:
         rules = self._rules.copy()
         rules.update(self.settings.extra_rules)
         if randomness:
-            rules.add(RandomObjective)
-        else:
-            rules.add(NormalObjective)
+            show_deprecation_warning('Randomness parameter is deprecated and will be removed in 3.6, '
+                                     'use set_fantasy_points_strategy instead')
+            self.set_fantasy_points_strategy(RandomFantasyPointsStrategy(self._min_deviation, self._max_deviation))
+        rules.add(Objective)
         if with_injured:
             rules.remove(RemoveInjuredRule)
         base_solver = self._solver_class()
@@ -421,7 +431,11 @@ class LineupOptimizer:
         )
         rules = self._rules.copy()
         rules.update(self.settings.extra_rules)
-        rules.add(NormalObjective)
+        if randomness:
+            show_deprecation_warning('Randomness parameter is deprecated and will be removed in 3.6, '
+                                     'use set_fantasy_points_strategy instead')
+            self.set_fantasy_points_strategy(RandomFantasyPointsStrategy(self._min_deviation, self._max_deviation))
+        rules.add(Objective)
         rules.add(LateSwapRule)
         rules.remove(PositionsRule)
         base_solver = self._solver_class()

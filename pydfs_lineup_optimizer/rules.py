@@ -18,7 +18,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 __all__ = [
-    'OptimizerRule', 'NormalObjective', 'RandomObjective', 'UniqueLineupRule', 'TotalPlayersRule',
+    'OptimizerRule', 'Objective', 'UniqueLineupRule', 'TotalPlayersRule',
     'LineupBudgetRule', 'LockedPlayersRule', 'PositionsRule', 'TeamMatesRule', 'MaxFromOneTeamRule',
     'MinSalaryCapRule', 'RemoveInjuredRule', 'MaxRepeatingPlayersRule',
     'ProjectedOwnershipRule', 'UniquePlayerRule', 'LateSwapRule',
@@ -46,33 +46,22 @@ class OptimizerRule:
         pass
 
 
-class NormalObjective(OptimizerRule):
-    def apply(self, solver):
-        variables = []
-        coefficients = []
-        for player, variable in self.players_dict.items():
-            variables.append(variable)
-            coefficients.append(player.fppg)
-        solver.set_objective(variables, coefficients)
+class Objective(OptimizerRule):
+    def __init__(self, optimizer, players_dict, context):
+        super().__init__(optimizer, players_dict, context)
+        self.fantasy_points_strategy = optimizer.fantasy_points_strategy
 
-
-class RandomObjective(OptimizerRule):
     def apply_for_iteration(self, solver, result):
+        if result:
+            self.fantasy_points_strategy.set_previous_lineup(result)
         variables = []
         coefficients = []
-        optimizer_min_deviation, optimizer_max_deviation = self.optimizer.get_deviation()
+        get_points = self.fantasy_points_strategy.get_player_fantasy_points
         for player, variable in self.players_dict.items():
+            fantasy_points = get_points(player)
             variables.append(variable)
-            if player.fppg_floor is not None and player.fppg_ceil is not None:
-                random_fppg = uniform(player.fppg_floor, player.fppg_ceil)
-            else:
-                multiplier = uniform(
-                    player.min_deviation if player.min_deviation is not None else optimizer_min_deviation,
-                    player.max_deviation if player.max_deviation is not None else optimizer_max_deviation
-                )
-                random_fppg = player.fppg * (1 + (-1 if bool(getrandbits(1)) else 1) * multiplier)
-            self.context.players_used_fppg[player] = random_fppg
-            coefficients.append(random_fppg)
+            coefficients.append(fantasy_points)
+            self.context.players_used_fppg[player] = fantasy_points
         solver.set_objective(variables, coefficients)
 
 

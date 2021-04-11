@@ -1,3 +1,4 @@
+import warnings
 from typing import Dict, Tuple, List, Iterable, Set, Any, DefaultDict, Optional, TYPE_CHECKING
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
@@ -146,3 +147,8 @@ def process_percents(percent: Optional[float]) -> Optional[float]:
 
 def get_player_priority(player: 'Player') -> float:
     return float(player.game_info.starts_at.timestamp()) if player.game_info and player.game_info.starts_at else 0.0
+
+
+def show_deprecation_warning(text: str):
+    warnings.simplefilter('always', DeprecationWarning)
+    warnings.warn(text, DeprecationWarning)
