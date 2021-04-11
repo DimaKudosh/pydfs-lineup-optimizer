@@ -8,12 +8,13 @@ class PuLPSolver(Solver):
     LP_SOLVER = PULP_CBC_CMD(msg=False)
 
     def __init__(self):
-        self.prob = LpProblem('Daily Fantasy Sports', LpMaximize)
+        self.prob = LpProblem('pydfs_lineup_optimizer', LpMaximize)
 
     def setup_solver(self):
         pass
 
     def add_variable(self, name, min_value=None, max_value=None):
+        # name = name.replace(' ', '_')
         if any([min_value, max_value]):
             return LpVariable(name, lowBound=min_value, upBound=max_value, cat=LpInteger)
         return LpVariable(name, cat=LpBinary)
