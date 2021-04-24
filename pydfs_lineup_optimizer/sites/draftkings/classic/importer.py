@@ -3,7 +3,7 @@ import csv
 from itertools import islice
 from datetime import datetime
 from pytz import timezone
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerIncorrectCSV
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
 from pydfs_lineup_optimizer.player import Player, LineupPlayer, GameInfo
@@ -14,27 +14,40 @@ from pydfs_lineup_optimizer.tz import get_timezone
 class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
     LINEUP_PLAYER_ID_REGEX = r'.+\((?P<id>\d+)\)'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._games = {}  # type: Dict[Tuple[Optional[str], Optional[str]], GameInfo]
+
     def _parse_game_info(self, row: Dict) -> Optional[GameInfo]:
-        game_info = row.get('Game Info')
-        if not game_info:
+        raw_game_info = row.get('Game Info')
+        if not raw_game_info:
             return None
-        if game_info in ('In Progress', 'Final'):
-            return GameInfo(  # No game info provided, just mark game as started
-                home_team='',
-                away_team='',
-                starts_at='',
-                game_started=True)
+        if raw_game_info in ('In Progress', 'Final'):
+            game_info = self._games.get((None, None))
+            if not game_info:
+                game_info = GameInfo(  # No game info provided, just mark game as started
+                    home_team=None,
+                    away_team=None,
+                    starts_at=None,
+                    game_started=True
+                )
+                self._games[(None, None)] = game_info
+            return game_info
         try:
-            teams, date, time, tz = game_info.rsplit(' ', 3)
+            teams, date, time, tz = raw_game_info.rsplit(' ', 3)
             away_team, home_team = teams.split('@')
+            game_info = self._games.get((home_team, away_team))
+            if game_info:
+                return game_info
             starts_at = datetime.strptime(date + time, '%m/%d/%Y%I:%M%p').\
                 replace(tzinfo=timezone(get_timezone()))
-            return GameInfo(
+            game_info = GameInfo(
                 home_team=home_team,
                 away_team=away_team,
                 starts_at=starts_at,
-                game_started=False
             )
+            self._games[(home_team, away_team)] = game_info
+            return game_info
         except ValueError:
             return None
 
@@ -57,6 +70,7 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
         return player
 
     def import_players(self):
+        self._games = {}
         with open(self.filename, 'r') as csv_file:
             start_line = 0  # Find line with 'TeamAbbrev', that's where players data starts
             while True:

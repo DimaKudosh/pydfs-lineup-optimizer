@@ -151,11 +151,12 @@ Below is an full example of how **pydfs-lineup-optimizer** can be used to genera
     for lineup in optimizer.optimize(n=10, max_exposure=0.3):
         print(lineup)
 
-DraftKings Late-Swap
+Late-Swap
 --------------------
 
-Optimizer provides additional functionality for DK that allows to re-optimize existed lineups.
-For this you should load lineups, you can do it from csv file generated in DK lobby for specific contest.
+Optimizer provides additional functionality that allows to re-optimize existed lineups.
+Currently this feature implemented for DK and FanDuel.
+For this you should load lineups, you can do it from csv file generated for specific contest.
 Then you should pass loaded lineups to `optimize_lineups` method.
 Players with started game will be locked on specific positions and optimizer will change only players with upcoming game.
 
@@ -168,7 +169,22 @@ Players with started game will be locked on specific positions and optimizer wil
     for lineup in optimizer.optimize_lineups(lineups):
         print(lineup)
 
-For parsing dates of games library uses US/Eastern timezone by default.
+Because FanDuel doesn't provide information about locked player and games start time you should manually add information about started games like in example below:
+
+.. code-block:: python
+
+    csv_filename = "fd_nba.csv"
+    optimizer = get_optimizer(Site.FANDUEL, Sport.BASKETBALL)
+    optimizer.load_players_from_csv(csv_filename)
+    lineups = optimizer.load_lineups_from_csv(csv_filename)
+    locked_teams = {'DET', 'MIA', 'BOS', 'NYK'}
+    for game in optimizer.games:
+        if game.home_team in locked_teams or game.away_team in locked_teams:
+            game.game_started = True
+    for lineup in optimizer.optimize_lineups(lineups):
+        print(lineup)
+
+For parsing dates of games for DK library uses US/Eastern timezone by default.
 You can change it using `set_timezone` function:
 
 .. code-block:: python

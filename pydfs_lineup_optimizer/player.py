@@ -6,7 +6,21 @@ from pydfs_lineup_optimizer.utils import process_percents
 from pydfs_lineup_optimizer.tz import get_timezone
 
 
-GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at', 'game_started'])
+class GameInfo:
+    def __init__(
+            self,
+            home_team: Optional[str],
+            away_team: Optional[str],
+            starts_at: Optional[datetime],
+            game_started: bool = False
+    ):
+        self.home_team = home_team
+        self.away_team = away_team
+        self.starts_at = starts_at
+        self.game_started = game_started
+
+    def __hash__(self):
+        return hash((self.home_team, self.away_team))
 
 
 class Player:
