@@ -30,3 +30,17 @@ def build_fanduel_single_game_importer(mvp=True, star=False, pro=False) -> Type[
             players.extend(extra_players)
             return players
     return FanDuelSingleGameCSVImporter
+
+
+class FanDuelSingleGameHockeyCSVImporter(FanDuelCSVImporter):  # pragma: nocover
+    def import_players(self):
+        players = super().import_players()
+        extra_players = []
+        for player in players:
+            captain_player = deepcopy(player)
+            captain_player.fppg *= 1.5
+            captain_player._original_positions = player.positions
+            captain_player.positions = ['CAPTAIN']
+            extra_players.append(captain_player)
+        players.extend(extra_players)
+        return players

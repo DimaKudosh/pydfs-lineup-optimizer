@@ -11,7 +11,7 @@ class BaseLineupPrinter:
 
 
 class LineupPrinter(BaseLineupPrinter):
-    OUTPUT_FORMAT = '{index:>2}. {lineup_position:<5} {name:<30}{positions:<6}{team:<15}{game:<9}' \
+    OUTPUT_FORMAT = '{index:>2}. {lineup_position:<7} {name:<30}{positions:<6}{team:<15}{game:<9}' \
                     '{fppg:<15}{salary:<10}\n'
 
     def _print_game_info(self, player: 'LineupPlayer') -> str:

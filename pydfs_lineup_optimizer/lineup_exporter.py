@@ -79,6 +79,7 @@ class FanDuelCSVLineupExporter(CSVLineupExporter):
         'MVP': 'MVP - 2X Points',
         'STAR': 'STAR - 1.5X Points',
         'PRO': 'PRO - 1.2X Points',
+        'CAPTAIN': 'Captain - 1.5x Pts',
     }
 
     def _get_extra_columns(self, lineup):

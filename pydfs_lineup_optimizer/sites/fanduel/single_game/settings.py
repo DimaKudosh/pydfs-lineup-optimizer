@@ -4,7 +4,8 @@ from pydfs_lineup_optimizer.constants import Sport, Site
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 from pydfs_lineup_optimizer.rules import FanduelSingleGameMaxQBRule
 from pydfs_lineup_optimizer.sites.fanduel.classic.importer import FanDuelCSVImporter, FanDuelMVPCSVImporter
-from pydfs_lineup_optimizer.sites.fanduel.single_game.importer import build_fanduel_single_game_importer
+from pydfs_lineup_optimizer.sites.fanduel.single_game.importer import build_fanduel_single_game_importer, \
+    FanDuelSingleGameHockeyCSVImporter
 from pydfs_lineup_optimizer.lineup_exporter import FanDuelCSVLineupExporter
 
 
@@ -52,4 +53,30 @@ class FanDuelSingleGameLOLSettings(FanDuelSingleGameSettings):
         LineupPosition('UTIL', ('TOP', 'MID', 'ADC', 'JNG', 'SUP')),
         LineupPosition('UTIL', ('TOP', 'MID', 'ADC', 'JNG', 'SUP')),
         LineupPosition('UTIL', ('TOP', 'MID', 'ADC', 'JNG', 'SUP')),
+    ]
+
+
+@SitesRegistry.register_settings
+class FanDuelSingleGameBaseballSettings(FanDuelSingleGameSettings):
+    sport = Sport.BASEBALL
+    csv_importer = build_fanduel_single_game_importer(mvp=True, star=True, pro=False)
+    positions = [
+        LineupPosition('MVP', ('MVP', )),
+        LineupPosition('STAR', ('STAR', )),
+        LineupPosition('UTIL', ('1B', '2B', '3B', 'SS', 'OF', 'C')),
+        LineupPosition('UTIL', ('1B', '2B', '3B', 'SS', 'OF', 'C')),
+        LineupPosition('UTIL', ('1B', '2B', '3B', 'SS', 'OF', 'C')),
+    ]
+
+
+@SitesRegistry.register_settings
+class FanDuelSingleGameHockeySettings(FanDuelSingleGameSettings):
+    sport = Sport.HOCKEY
+    csv_importer = FanDuelSingleGameHockeyCSVImporter
+    positions = [
+        LineupPosition('CAPTAIN', ('CAPTAIN', )),
+        LineupPosition('UTIL', ('C', 'W', 'D')),
+        LineupPosition('UTIL', ('C', 'W', 'D')),
+        LineupPosition('UTIL', ('C', 'W', 'D')),
+        LineupPosition('UTIL', ('C', 'W', 'D')),
     ]
