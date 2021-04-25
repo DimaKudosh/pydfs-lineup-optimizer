@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.5.0]
+- Add progressive fantasy points strategy
+- Add FanDuel Single Game NHL & MLB
+- Add late-swap for FanDuel
+- Fix FanDuel export
+- Fix player name parsing during import
+- Remove PuLP warnings
+
 ## [v3.4.2]
 - Fix positions constraint for multi positions
 
