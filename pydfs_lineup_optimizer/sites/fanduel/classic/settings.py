@@ -6,6 +6,7 @@ from pydfs_lineup_optimizer.lineup_printer import IndividualSportLineupPrinter
 from pydfs_lineup_optimizer.rules import OptimizerRule, FanduelBaseballRosterRule
 from pydfs_lineup_optimizer.sites.fanduel.classic.importer import FanDuelCSVImporter, FanDuelLOLCSVImporter, \
     FanDuelMVPCSVImporter
+from pydfs_lineup_optimizer.lineup_exporter import FanDuelCSVLineupExporter
 
 
 class FanDuelSettings(BaseSettings):
@@ -14,6 +15,7 @@ class FanDuelSettings(BaseSettings):
     max_from_one_team = 4  # type: Optional[int]
     min_teams = 3  # type: Optional[int]
     csv_importer = FanDuelCSVImporter
+    csv_exporter = FanDuelCSVLineupExporter
 
 
 @SitesRegistry.register_settings
