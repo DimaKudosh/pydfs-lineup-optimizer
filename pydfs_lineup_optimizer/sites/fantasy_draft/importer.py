@@ -13,7 +13,7 @@ class FantasyDraftCSVImporter(CSVImporter):  # pragma: nocover
                 try:
                     if not row.get('Name'):
                         break
-                    name = row['Name'].split()
+                    name = row['Name'].split(maxsplit=1)
                     fppg = row.get('Avg FPPG') or row.get('Avg FPPT')
                     if not fppg:
                         raise LineupOptimizerIncorrectCSV

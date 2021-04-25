@@ -53,7 +53,7 @@ class DraftKingsCSVImporter(CSVImporter):  # pragma: nocover
 
     def _row_to_player(self, row: Dict) -> Player:
         try:
-            name = row['Name'].split()
+            name = row['Name'].split(maxsplit=1)
             player = Player(
                 row['ID'],
                 name[0],

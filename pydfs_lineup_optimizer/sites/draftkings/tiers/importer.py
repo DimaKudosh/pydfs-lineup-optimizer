@@ -6,7 +6,7 @@ from pydfs_lineup_optimizer.sites.draftkings.classic.importer import DraftKingsC
 class DraftKingsTiersCSVImporter(DraftKingsCSVImporter):  # pragma: nocover
     def _row_to_player(self, row):
         try:
-            name = row['Name'].split()
+            name = row['Name'].split(maxsplit=1)
             player = Player(
                 row['ID'],
                 name[0],
