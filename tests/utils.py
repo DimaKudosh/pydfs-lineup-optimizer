@@ -1,4 +1,5 @@
 import json
+from uuid import uuid4
 from pydfs_lineup_optimizer.player import Player
 
 
@@ -41,7 +42,7 @@ def create_players(positions_list, **kwargs):
         player_params = {'team': str(i)}
         player_params.update(params)
         players.append(
-            Player(player_id=str(i), first_name=str(i), last_name=str(i), positions=positions.split('/'),
+            Player(player_id=str(uuid4()), first_name=str(i), last_name=str(i), positions=positions.split('/'),
                    **player_params)
         )
     return players

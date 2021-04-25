@@ -5,7 +5,7 @@ from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 from pydfs_lineup_optimizer.settings import LineupPosition
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException
 from pydfs_lineup_optimizer.utils import ratio, get_positions_for_optimizer, link_players_with_positions, \
-    list_intersection, process_percents
+    list_intersection
 from pydfs_lineup_optimizer.sites.draftkings.classic.settings import DraftKingsBasketballSettings, \
     DraftKingsFootballSettings, DraftKingsBaseballSettings, DraftKingsHockeySettings
 from pydfs_lineup_optimizer.tz import get_timezone, set_timezone
@@ -24,11 +24,6 @@ class UtilsTestCase(unittest.TestCase):
         self.assertTrue(list_intersection(['PG'], ['SG', 'PG']))
         self.assertTrue(list_intersection(['SG', 'PG'], ['PG']))
         self.assertFalse(list_intersection(['PG'], ['SF', 'PF']))
-
-    def test_process_percents(self):
-        self.assertIsNone(process_percents(None))
-        self.assertEqual(process_percents(0.3), 0.3)
-        self.assertEqual(process_percents(30), 0.3)
 
 
 class PositionsConverterTestCase(unittest.TestCase):

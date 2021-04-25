@@ -251,10 +251,12 @@ It works only if both fields are specified.
     With RandomFantasyPointsStrategy optimizer generate lineups without ordering by max points projection.
 
 ProgressiveFantasyPointsStrategy is another method to randomize optimizer result.
-It increases fantasy points for each player that don't be used in the previous lineup by some specified percent of original fantasy points.
+It increases fantasy points for each player that wasn't used in the previous lineup by some specified percent of original fantasy points.
 It works cumulatively so fantasy points will be greater if player didn't used in lineup multiple times.
 After player will be selected to lineup his points will be reset to the original value.
+You can change this value for specific player by setting `progressive_scale` property of Player or by adding `Progressive Scale` column to import csv.
 
 .. code-block:: python
 
     optimizer.set_fantasy_points_strategy(ProgressiveFantasyPointsStrategy(0.01))  # Set progressive strategy that increase player points by 1%
+    optimizer.get_player_by_name('Stephen Curry').progressive_scale = 0.02  # For curry points will be increased by 2%

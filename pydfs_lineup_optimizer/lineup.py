@@ -24,7 +24,7 @@ class Lineup:
         return hash(sorted(p.id for p in self))
 
     def __eq__(self, other):
-        return hash(self) == hash(other)
+        return sorted(p.id for p in self) == sorted(p.id for p in other)
 
     @property
     def lineup(self) -> List[LineupPlayer]:

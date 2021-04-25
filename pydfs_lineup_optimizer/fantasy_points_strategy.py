@@ -51,4 +51,5 @@ class ProgressiveFantasyPointsStrategy(BaseFantasyPointsStrategy):
             if player in lineup_players:
                 self.player_multipliers[player] = 0
             else:
-                self.player_multipliers[player] += self.scale
+                scale = player.progressive_scale if player.progressive_scale is not None else self.scale
+                self.player_multipliers[player] += scale
