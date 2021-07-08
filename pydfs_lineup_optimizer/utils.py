@@ -38,9 +38,9 @@ def get_positions_for_optimizer(
     Convert positions list into dict for using in optimizer.
     """
     positions = {}
-    positions_counter = Counter([tuple(sorted(p.positions)) for p in positions_list])
-    for key in positions_counter.keys():
-        min_value = positions_counter[key] + len(list(filter(
+    positions_counter = Counter(p.positions for p in positions_list)
+    for key, total in positions_counter.items():
+        min_value = total + len(list(filter(
             lambda p: len(p.positions) < len(key) and list_intersection(key, p.positions), positions_list
         )))
         positions[key] = min_value
@@ -55,8 +55,8 @@ def get_positions_for_optimizer(
     #  Create list of required combinations for consistency of multi-positions
     possible_combinations = set()
     for multi_positions in multi_positions_combinations:
-        possible_combinations.add(tuple(chain.from_iterable(min_positions.get(pos, pos) for pos in multi_positions)))
-    for i in range(2, len(possible_combinations)):
+        possible_combinations.add(tuple(chain.from_iterable(min_positions.get(pos, (pos, )) for pos in multi_positions)))
+    for i in range(2, len(possible_combinations) + 1):
         total_combinations = len(possible_combinations)
         for combo in combinations(possible_combinations, i):
             flatten_positions = tuple(sorted(set(chain.from_iterable(combo))))

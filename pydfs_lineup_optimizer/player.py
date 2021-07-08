@@ -1,7 +1,6 @@
-from collections import namedtuple
 from datetime import datetime
 from pytz import timezone
-from typing import List, Optional
+from typing import List, Optional, Tuple, Sequence
 from pydfs_lineup_optimizer.tz import get_timezone
 
 
@@ -48,7 +47,7 @@ class Player:
         self.id = player_id
         self.first_name = first_name
         self.last_name = last_name
-        self.positions = positions
+        self.positions = positions  # type: ignore
         self.team = team
         self.salary = salary
         self.fppg = fppg
@@ -64,16 +63,16 @@ class Player:
         self.fppg_floor = fppg_floor
         self.fppg_ceil = fppg_ceil
         self.progressive_scale = progressive_scale
-        self._original_positions = original_positions
+        self.original_positions = original_positions  # type: ignore
 
     def __repr__(self):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)
 
     def __hash__(self):
-        return hash((self.id, tuple(sorted(self.positions))))
+        return hash((self.id, self.positions))
 
     def __eq__(self, other):
-        return (self.id, tuple(sorted(self.positions))) == (other.id, tuple(sorted(self.positions)))
+        return (self.id, self.positions) == (other.id, other.positions)
 
     @property
     def full_name(self) -> str:
@@ -95,8 +94,20 @@ class Player:
         return False
 
     @property
-    def original_positions(self) -> List[str]:
+    def positions(self) -> Tuple[str, ...]:
+        return self._positions
+
+    @positions.setter
+    def positions(self, value: Sequence[str]):
+        self._positions = tuple(sorted(value))
+
+    @property
+    def original_positions(self) -> Tuple[str, ...]:
         return self._original_positions or self.positions
+
+    @original_positions.setter
+    def original_positions(self, value: Optional[Sequence[str]]):
+        self._original_positions = tuple(sorted(value)) if value else None
 
 
 class LineupPlayer:

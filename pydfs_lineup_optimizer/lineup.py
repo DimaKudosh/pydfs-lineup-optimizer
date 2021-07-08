@@ -21,7 +21,7 @@ class Lineup:
         return 'Lineup: projection %s, budget %s' % (self.fantasy_points_projection, self.salary_costs)
 
     def __hash__(self):
-        return hash(sorted(p.id for p in self))
+        return hash(tuple(sorted(p.id for p in self)))
 
     def __eq__(self, other):
         return sorted(p.id for p in self) == sorted(p.id for p in other)

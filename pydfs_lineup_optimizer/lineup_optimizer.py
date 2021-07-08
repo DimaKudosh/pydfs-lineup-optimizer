@@ -18,6 +18,7 @@ from pydfs_lineup_optimizer.statistics import Statistic
 from pydfs_lineup_optimizer.exposure_strategy import BaseExposureStrategy, TotalExposureStrategy
 from pydfs_lineup_optimizer.fantasy_points_strategy import BaseFantasyPointsStrategy, StandardFantasyPointsStrategy, \
     RandomFantasyPointsStrategy
+from pydfs_lineup_optimizer.solvers import get_default_solver
 
 
 BASE_RULES = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamRule, LockedPlayersRule,
@@ -26,7 +27,7 @@ BASE_RULES = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamR
 
 
 class LineupOptimizer:
-    def __init__(self, settings: Type[BaseSettings], solver: Type[Solver] = PuLPSolver):
+    def __init__(self, settings: Type[BaseSettings], solver: Type[Solver] = get_default_solver()):
         self._settings = settings()
         self._csv_importer = None  # type: Optional[Type[CSVImporter]]
         self._rules = BASE_RULES.copy()  # type: Set[Type[OptimizerRule]]
@@ -380,7 +381,8 @@ class LineupOptimizer:
         base_solver = self._solver_class()
         base_solver.setup_solver()
         players_dict = OrderedDict(
-            [(player, base_solver.add_variable('Player_%d' % i)) for i, player in enumerate(players)])
+            [(player, base_solver.add_variable(base_solver.build_player_var_name(player, str(i))))
+             for i, player in enumerate(players)])
         variables_dict = {v: k for k, v in players_dict.items()}
         constraints = [constraint(self, players_dict, context) for constraint in rules]
         for constraint in constraints:
@@ -441,7 +443,8 @@ class LineupOptimizer:
         base_solver = self._solver_class()
         base_solver.setup_solver()
         players_dict = OrderedDict(
-            [(player, base_solver.add_variable('Player_%d' % i)) for i, player in enumerate(players)])
+            [(player, base_solver.add_variable(base_solver.build_player_var_name(player, str(i))))
+             for i, player in enumerate(players)])
         variables_dict = {v: k for k, v in players_dict.items()}
         constraints = [constraint(self, players_dict, context) for constraint in rules]
         for constraint in constraints:

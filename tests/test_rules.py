@@ -194,12 +194,12 @@ class TestPositionsFromSameTeamTestCase(unittest.TestCase):
     def test_positions_from_same_team_with_combo_position(self):
         self.optimizer.add_stack(PositionsStack(['PG', ('SF', 'C')]))
         lineups = list(self.optimizer.optimize(2))
-        for stack in [('PG', 'SF'), ('PG', 'C')]:
-            players_in_stack = max([
-                len([p for p in lineup if p.team == self.first_team and list_intersection(p.positions, stack)])
-                for lineup in lineups
-            ])
-            self.assertEqual(players_in_stack, 2)
+        stack = ('PG', 'SF', 'C')
+        players_in_stack = max([
+            len([p for p in lineup if p.team == self.first_team and list_intersection(p.positions, stack)])
+            for lineup in lineups
+        ])
+        self.assertEqual(players_in_stack, 2)
 
 
 class TestMaxFromOneTeamTestCase(unittest.TestCase):

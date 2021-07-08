@@ -14,7 +14,7 @@ class PuLPSolver(Solver):
         pass
 
     def add_variable(self, name, min_value=None, max_value=None):
-        # name = name.replace(' ', '_')
+        name = name.replace(' ', '_')
         if any([min_value, max_value]):
             return LpVariable(name, lowBound=min_value, upBound=max_value, cat=LpInteger)
         return LpVariable(name, cat=LpBinary)
@@ -53,5 +53,6 @@ class PuLPSolver(Solver):
                     result.append(variable)
             return result
         else:
-            invalid_constraints = [name for name, constraint in self.prob.constraints.items() if not constraint.valid()]
+            invalid_constraints = [(name or str(constraint)) for name, constraint in
+                                   self.prob.constraints.items() if not constraint.valid()]
             raise SolverInfeasibleSolutionException(invalid_constraints)

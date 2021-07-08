@@ -90,7 +90,7 @@ class FanDuelMVPCSVImporter(FanDuelCSVImporter):
             mvp_player = deepcopy(player)
             mvp_player.fppg *= 1.5
             mvp_player._original_positions = player.positions
-            mvp_player.positions = ['MVP']
+            mvp_player.positions = ('MVP', )
             mvps.append(mvp_player)
         players.extend(mvps)
         return players
@@ -106,7 +106,7 @@ class FanDuelLOLCSVImporter(FanDuelCSVImporter):
             star_player = deepcopy(player)
             star_player.fppg *= 1.5
             star_player._original_positions = player.positions
-            star_player.positions = ['STAR']
+            star_player.positions = ('STAR', )
             stars.append(star_player)
         players.extend(stars)
         return players

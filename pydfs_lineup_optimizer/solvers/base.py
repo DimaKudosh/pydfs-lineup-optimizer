@@ -1,4 +1,8 @@
-from typing import TypeVar, Any, List, Iterable, Optional
+from typing import TypeVar, Any, List, Iterable, Optional, TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from pydfs_lineup_optimizer.player import Player
 
 
 Self = TypeVar('Self', bound='Solver')
@@ -23,3 +27,10 @@ class Solver:  # pragma: no cover
 
     def copy(self) -> Self:
         raise NotImplementedError
+
+    @staticmethod
+    def build_player_var_name(player: 'Player', postfix: Optional[str] = None):
+        parts = ['Player', player.full_name, *player.positions]
+        if postfix:
+            parts.append(postfix)
+        return '_'.join(parts).replace(' ', '_').replace('.', '_')
