@@ -33,7 +33,7 @@ class CSVLineupExporter(LineupExporter):
         ]
 
     def export(self, filename, render_func=None):
-        with open(filename, 'w') as csvfile:
+        with open(filename, 'w', newline='') as csvfile:
             lineup_writer = csv.writer(csvfile, delimiter=',')
             for index, lineup in enumerate(self.lineups):
                 if index == 0:
@@ -62,7 +62,7 @@ class FantasyDraftCSVLineupExporter(LineupExporter):
                 lines[i] = players_list + lines[i][total_players:]
             for line_order in range(i, len(lines) - 1):
                 lines[line_order] = [''] * total_players + lines[line_order][total_players:]
-        with open(filename, 'w') as csvfile:
+        with open(filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(lines)
 
