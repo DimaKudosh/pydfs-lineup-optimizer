@@ -32,7 +32,7 @@ class TestLineupExporter(unittest.TestCase):
     def test_csv_exporter(self, mocked_open):
         filename = 'test.csv'
         CSVLineupExporter(self.lineups).export(filename)
-        mocked_open.assert_called_once_with(filename, 'w')
+        mocked_open.assert_called_once_with(filename, 'w', newline='')
         lineup = self.lineups[0]
         header = ','.join(['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'UTIL', 'Budget', 'FPPG']) + '\r\n'
         body = [CSVLineupExporter.render_player(player) for player in lineup.lineup]
@@ -46,7 +46,7 @@ class TestLineupExporter(unittest.TestCase):
         filename = 'test.csv'
         player_render = lambda player: '%s %s' % (player.full_name, player.team)
         CSVLineupExporter(self.lineups).export(filename, player_render)
-        mocked_open.assert_called_once_with(filename, 'w')
+        mocked_open.assert_called_once_with(filename, 'w', newline='')
         lineup = self.lineups[0]
         header = ','.join(['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'UTIL', 'Budget', 'FPPG']) + '\r\n'
         body = [player_render(player) for player in lineup.lineup]

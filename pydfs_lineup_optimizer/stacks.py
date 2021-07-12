@@ -13,22 +13,36 @@ if TYPE_CHECKING:  # pragma: no cover
     from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 
 
-class BaseGroup(metaclass=ABCMeta):
-    min_from_group = None  # type: Optional[int]
-    max_from_group = None  # type: Optional[int]
-    max_exposure = None  # type: Optional[float]
+class OptimizerGroup:
+    def __init__(
+            self,
+            players: List[Player],
+            min_from_group: Optional[int] = None,
+            max_from_group: Optional[int] = None,
+    ):
+        self.players = players
+        self.min_from_group = min_from_group
+        self.max_from_group = max_from_group
 
+
+class BaseGroup(metaclass=ABCMeta):
     def __init__(
             self,
             max_exposure: Optional[float] = None,
+            depends_on: Optional[Player] = None,
+            min_from_group: Optional[int] = None,
+            max_from_group: Optional[int] = None,
             parent: Optional['BaseGroup'] = None,
     ):
         self.uuid = uuid4()
         self.max_exposure = max_exposure
         self.parent = parent
+        self.depends_on = depends_on
+        self.min_from_group = min_from_group
+        self.max_from_group = max_from_group
 
     @abstractmethod
-    def get_all_players_groups(self) -> List[Tuple[List[Player], Optional[int], Optional[int]]]:
+    def get_all_players_groups(self) -> List[OptimizerGroup]:
         pass
 
 
@@ -39,19 +53,22 @@ class PlayersGroup(BaseGroup):
             min_from_group: Optional[int] = None,
             max_from_group: Optional[int] = None,
             max_exposure: Optional[float] = None,
+            depends_on: Optional[Player] = None,
             parent: Optional[BaseGroup] = None,
     ):
-        super().__init__(max_exposure, parent)
+        if min_from_group is None and max_from_group is None:
+            min_from_group = len(players)
+        super().__init__(
+            max_exposure=max_exposure,
+            parent=parent,
+            min_from_group=min_from_group,
+            max_from_group=max_from_group,
+            depends_on=depends_on,
+        )
         self.players = list(set(players))
-        self.max_from_group = max_from_group
-        self.min_from_group = None  # type: Optional[int]
-        if min_from_group is not None:
-            self.min_from_group = min_from_group
-        elif max_from_group is None:
-            self.min_from_group = len(players)
 
-    def get_all_players_groups(self) -> List[Tuple[List[Player], Optional[int], Optional[int]]]:
-        return [(self.players, self.min_from_group, self.max_from_group)]
+    def get_all_players_groups(self) -> List[OptimizerGroup]:
+        return [OptimizerGroup(self.players, self.min_from_group, self.max_from_group)]
 
     def __str__(self):
         return 'Group: %s' % ','.join(player.full_name for player in self.players)
@@ -66,15 +83,17 @@ class NestedPlayersGroup(BaseGroup):
             max_exposure: Optional[float] = None,
             parent: Optional[BaseGroup] = None,
     ):
-        super().__init__(max_exposure, parent)
+        if min_from_group is None and max_from_group is None:
+            min_from_group = len(groups)
+        super().__init__(
+            max_exposure=max_exposure,
+            parent=parent,
+            min_from_group=min_from_group,
+            max_from_group=max_from_group,
+        )
         self.groups = groups
-        self.min_from_group = None  # type: Optional[int]
-        if min_from_group is not None:
-            self.min_from_group = min_from_group
-        elif max_from_group is None:
-            self.min_from_group = len(groups)
 
-    def get_all_players_groups(self):
+    def get_all_players_groups(self) -> List[OptimizerGroup]:
         return list(chain.from_iterable(group.get_all_players_groups() for group in self.groups))
 
 

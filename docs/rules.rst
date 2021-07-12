@@ -206,7 +206,7 @@ create lineups with Rodgers/Adams or Brees/Thomas duos with 0.5 exposure:
 
 Group players
 -------------
-You can group players in your lineups for this you can use `add_players_group` method of optimizer.
+You can group players in your lineups using `add_players_group` method of the optimizer.
 Here is an example:
 
 .. code-block:: python
@@ -214,9 +214,20 @@ Here is an example:
     group = PlayersGroup([optimizer.get_player_by_name(name) for name in ('LeBron James', 'Anthony Davis')])
     optimizer.add_players_group(group)
 
-You can use this method for ungrouping players as well. In this example maximum one player will be in lineup.
+You can use this method for ungrouping players as well. In this example maximum of one player will be in the lineup.
 
 .. code-block:: python
 
     group = PlayersGroup([optimizer.get_player_by_name(name) for name in ('LeBron James', 'Anthony Davis')], max_from_group=1)
+    optimizer.add_players_group(group)
+
+Also you can apply these groups conditionally based on another player selection.
+In the example below one of Travis Kelce or Tyreek Hill will be added to the lineup only with Patrick Mahomes or none of them will be added to the lineup.
+
+.. code-block:: python
+
+    group = PlayersGroup(
+        [optimizer.get_player_by_name(name) for name in ('Tyreek Hill', 'Travis Kelce')],
+        depends_on=optimizer.get_player_by_name('Patrick Mahomes')
+    )
     optimizer.add_players_group(group)

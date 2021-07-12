@@ -721,8 +721,8 @@ class PlayersGroupsRuleTestCase(unittest.TestCase):
             Player('2', '2', '2', ['SG'], '2', 3000, 1),
         ]
         self.high_fppg_group = [
-            Player('3', '3', '3', ['SF'], '3', 30, 100),
-            Player('4', '4', '4', ['PF'], '4', 30, 100),
+            Player('3', '3', '3', ['SF'], '3', 30, 1000),
+            Player('4', '4', '4', ['PF'], '4', 30, 1000),
         ]
         self.optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
         self.optimizer.load_players(self.players + self.group + self.high_fppg_group)
@@ -758,6 +758,32 @@ class PlayersGroupsRuleTestCase(unittest.TestCase):
         lineups = list(self.optimizer.optimize(2))
         self.assertEqual(len([player for player in self.high_fppg_group if player in lineups[0]]), 1)
         self.assertEqual(len([player for player in self.high_fppg_group if player in lineups[1]]), 0)
+
+    @parameterized.expand([
+        (True, 1, None, None, 3),
+        (True, 1, 1, None, 3),
+        (True, 1, None, 1, 2),
+        (True, -2000, None, None, 0),
+        (True, -2000, 1, None, 0),
+        (False, 1000, None, None, 3),
+        (False, 1000, None, 1, 2),
+        (False, 1000, 1, None, 2),
+    ])
+    def test_group_player_with_conditional_player(self, is_high_fppg_group, fppg, min_from_group,
+                                                  max_from_group, total):
+        if is_high_fppg_group:
+            group = self.high_fppg_group
+        else:
+            group = self.group
+        dependant_player = Player('5', '5', '5', ['C'], '5', 30, fppg)
+        self.optimizer.extend_players([dependant_player])
+        self.optimizer.add_players_group(
+            PlayersGroup(group, depends_on=dependant_player, min_from_group=min_from_group,
+                         max_from_group=max_from_group)
+        )
+        lineup = next(self.optimizer.optimize(1))
+        expect_players = [*group, dependant_player]
+        self.assertEqual(len([player for player in expect_players if player in lineup]), total)
 
 
 class MinExposureTestCase(unittest.TestCase):
