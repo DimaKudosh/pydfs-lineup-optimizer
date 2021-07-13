@@ -101,3 +101,8 @@ class OptimizerMethodsTestCase(unittest.TestCase):
         optimizer = get_optimizer(Site.YAHOO, Sport.FOOTBALL)
         with self.assertRaises(LineupOptimizerException):
             optimizer.export('temp.csv')
+
+    def test_exclude_lineups(self):
+        exclude_lineups = list(self.lineup_optimizer.optimize(1))
+        lineups = list(self.lineup_optimizer.optimize(1, exclude_lineups=exclude_lineups))
+        self.assertTrue(exclude_lineups[0] != lineups[0])

@@ -9,10 +9,10 @@ if TYPE_CHECKING:
 
 
 class Statistic:
-    def __init__(self, optimizer: 'LineupOptimizer'):
+    def __init__(self, optimizer: 'LineupOptimizer', with_excluded: bool = True):
         self.optimizer = optimizer
         if self.optimizer.last_context is not None:
-            self.lineups = self.optimizer.last_context.lineups
+            self.lineups = self.optimizer.last_context.get_lineups(with_excluded)
         else:
             self.lineups = []
 

@@ -260,3 +260,22 @@ You can change this value for specific player by setting `progressive_scale` pro
 
     optimizer.set_fantasy_points_strategy(ProgressiveFantasyPointsStrategy(0.01))  # Set progressive strategy that increase player points by 1%
     optimizer.get_player_by_name('Stephen Curry').progressive_scale = 0.02  # For curry points will be increased by 2%
+
+Exclude lineups
+===============
+
+You can run the optimizer several times. In this case, you probably want to avoid duplicated lineups in the result.
+You can provide a list of excluded lineups to optimize method.
+All of these lineups will be excluded from optimization and newly generated lineups will count them in max repeating players rule.
+
+.. code-block:: python
+
+    # Setup optimizer
+    lineups = set(optimizer.optimize(5))
+    # Change optimizer settings or players settings
+    lineups.update(optimizer.optimize(5, exclude_lineups=lineups))
+    for lineup in lineups:
+        print(lineup)
+    optimizer.print_statistic()
+    optimizer.export('export.csv')
+

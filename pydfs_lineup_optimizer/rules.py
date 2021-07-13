@@ -20,7 +20,7 @@ if TYPE_CHECKING:  # pragma: no cover
 __all__ = [
     'OptimizerRule', 'Objective', 'UniqueLineupRule', 'TotalPlayersRule',
     'LineupBudgetRule', 'LockedPlayersRule', 'PositionsRule', 'TeamMatesRule', 'MaxFromOneTeamRule',
-    'MinSalaryCapRule', 'RemoveInjuredRule', 'MaxRepeatingPlayersRule',
+    'MinSalaryCapRule', 'RemoveInjuredRule',
     'ProjectedOwnershipRule', 'UniquePlayerRule', 'LateSwapRule',
     'RestrictPositionsForOpposingTeam', 'RosterSpacingRule', 'FanduelBaseballRosterRule',
     'TotalTeamsRule', 'FanduelSingleGameMaxQBRule',
@@ -70,13 +70,26 @@ class UniqueLineupRule(OptimizerRule):
         super().__init__(optimizer, players_dict, context)
         self.used_combinations = []  # type: List[Any]
 
+    @property
+    def max_repeating_players(self):
+        optimizer = self.optimizer
+        if optimizer.max_repeating_players:
+            return optimizer.max_repeating_players
+        return (optimizer.total_players or len(self.used_combinations[0])) - 1
+
+    def apply(self, solver: Solver):
+        for i, lineup in enumerate(self.context.exclude_lineups, start=1):
+            variables = [self.players_dict[player] for player in lineup]
+            solver.add_constraint(variables, None, SolverSign.LTE, self.max_repeating_players,
+                                  name='exclude_lineups_%d' % i)
+
     def apply_for_iteration(self, solver, result):
         if not result:
             return
         self.used_combinations.append([self.players_dict[player] for player in result])
-        total_players = self.optimizer.total_players or len(self.used_combinations[0])
-        for variables in self.used_combinations:
-            solver.add_constraint(variables, None, SolverSign.LTE, total_players - 1)
+        for i, variables in enumerate(self.used_combinations, start=1):
+            solver.add_constraint(variables, None, SolverSign.LTE, self.max_repeating_players,
+                                  name='max_repeating_lineup_%d' % i)
 
 
 class TotalPlayersRule(OptimizerRule):
@@ -188,21 +201,6 @@ class RemoveInjuredRule(OptimizerRule):
     def apply(self, solver):
         injured_players_variables = [variable for player, variable in self.players_dict.items() if player.is_injured]
         solver.add_constraint(injured_players_variables, None, SolverSign.EQ, 0, name='exclude_injured')
-
-
-class MaxRepeatingPlayersRule(OptimizerRule):
-    def __init__(self, optimizer, players_dict, context):
-        super().__init__(optimizer, players_dict, context)
-        self.exclude_combinations = []  # type: List[Any]
-
-    def apply_for_iteration(self, solver, result):
-        max_repeating_players = self.optimizer.max_repeating_players
-        if max_repeating_players is None or not result:
-            return
-        self.exclude_combinations.append([self.players_dict[player] for player in result])
-        for i, players_combination in enumerate(self.exclude_combinations, start=1):
-            solver.add_constraint(players_combination, None, SolverSign.LTE, max_repeating_players,
-                                  name='max_repeating_lineup_%d' % i)
 
 
 class ProjectedOwnershipRule(OptimizerRule):

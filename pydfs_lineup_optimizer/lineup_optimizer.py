@@ -1,9 +1,9 @@
 from collections import OrderedDict
 from itertools import chain
 from math import ceil
-from typing import FrozenSet, Type, Generator, Tuple, Optional, List, Dict, Set
+from typing import FrozenSet, Type, Generator, Tuple, Optional, List, Dict, Set, Iterable
 from pydfs_lineup_optimizer.lineup import Lineup
-from pydfs_lineup_optimizer.solvers import Solver, PuLPSolver, SolverInfeasibleSolutionException
+from pydfs_lineup_optimizer.solvers import Solver, SolverInfeasibleSolutionException
 from pydfs_lineup_optimizer.exceptions import LineupOptimizerException, LineupOptimizerIncorrectTeamName, \
     LineupOptimizerIncorrectPositionName, GenerateLineupException
 from pydfs_lineup_optimizer.lineup_importer import CSVImporter
@@ -268,7 +268,6 @@ class LineupOptimizer:
         elif max_repeating_players < 1:
             raise LineupOptimizerException('Maximum repeating players should be 1 or greater')
         self.max_repeating_players = max_repeating_players
-        self.add_new_rule(MaxRepeatingPlayersRule)
 
     def set_projected_ownership(
             self,
@@ -359,6 +358,7 @@ class LineupOptimizer:
             randomness: bool = False,
             with_injured: bool = False,
             exposure_strategy: Type[BaseExposureStrategy] = TotalExposureStrategy,
+            exclude_lineups: Optional[Iterable[Lineup]] = None,
     ) -> Generator[Lineup, None, None]:
         players = [player for player in self.players if player.max_exposure is None or player.max_exposure > 0]
         context = OptimizationContext(
@@ -368,6 +368,7 @@ class LineupOptimizer:
             randomness=randomness,
             with_injured=with_injured,
             exposure_strategy=exposure_strategy,
+            exclude_lineups=exclude_lineups or [],
         )
         rules = self._rules.copy()
         rules.update(self.settings.extra_rules)
@@ -476,15 +477,15 @@ class LineupOptimizer:
                 raise GenerateLineupException(solver_exception.get_user_defined_constraints())
         self.last_context = context
 
-    def print_statistic(self) -> None:
+    def print_statistic(self, with_excluded: bool = True) -> None:
         if self.last_context is None:
             raise LineupOptimizerException('You should generate lineups before printing statistic')
-        Statistic(self).print_report()
+        Statistic(self, with_excluded).print_report()
 
-    def export(self, filename: str) -> None:
+    def export(self, filename: str, with_excluded: bool = True) -> None:
         if self.last_context is None:
             raise LineupOptimizerException('You should generate lineups before printing statistic')
-        self.settings.csv_exporter(self.last_context.lineups).export(filename)
+        self.settings.csv_exporter(self.last_context.get_lineups(with_excluded)).export(filename)
 
     def _build_lineup(
             self,

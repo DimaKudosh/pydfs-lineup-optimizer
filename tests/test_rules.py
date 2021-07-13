@@ -54,7 +54,7 @@ class OptimizerRulesTestCase(unittest.TestCase):
             player.max_deviation = 0
         optimized_lineup = next(self.lineup_optimizer.optimize(1))
         random_lineup = next(self.lineup_optimizer.optimize(1, randomness=True))
-        self.assertListEqual(optimized_lineup.players, random_lineup.players)
+        self.assertEqual(optimized_lineup.players, random_lineup.players)
 
     def test_player_fppg_range(self):
         test_player = Player(
