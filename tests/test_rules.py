@@ -489,20 +489,28 @@ class TotalTeamsTestCase(unittest.TestCase):
 
     def test_total_teams_less_than_minimum(self):
         with self.assertRaises(LineupOptimizerException):
-            self.optimizer.set_total_teams(2)
+            self.optimizer.set_total_teams(max_teams=2)
 
     def test_total_teams_greater_than_total_players(self):
         with self.assertRaises(LineupOptimizerException):
-            self.optimizer.set_total_teams(15)
+            self.optimizer.set_total_teams(min_teams=15)
+
+    def test_total_teams_min_teams_greater_than_max_teams(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_total_teams(min_teams=5, max_teams=4)
+
+    def test_total_teams_greater_than_total_available_teams(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.optimizer.set_total_teams(max_teams=len(self.optimizer.available_teams) + 1)
 
     def test_total_teams_less_than_possible_minimum(self):
         self.optimizer.settings.min_teams = None
         with self.assertRaises(LineupOptimizerException):
-            self.optimizer.set_total_teams(1)
+            self.optimizer.set_total_teams(max_teams=1)
 
     def test_set_total_teams(self):
         total_teams = 4
-        self.optimizer.set_total_teams(total_teams)
+        self.optimizer.set_total_teams(min_teams=total_teams, max_teams=total_teams)
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len(set(player.team for player in lineup)), total_teams)
 
@@ -510,7 +518,7 @@ class TotalTeamsTestCase(unittest.TestCase):
         self.optimizer.settings.min_teams = None
         self.optimizer.settings.max_from_one_team = None
         self.optimizer.settings.total_teams_exclude_positions = ['P', 'C', 'SS', '1B', '2B', '3B']
-        self.optimizer.set_total_teams(1)
+        self.optimizer.set_total_teams(min_teams=1, max_teams=1)
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len(set(player.team for player in lineup if 'OF' in player.positions)), 1)
 

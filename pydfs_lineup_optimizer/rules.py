@@ -508,10 +508,10 @@ class FanduelBaseballRosterRule(OptimizerRule):
 
 class TotalTeamsRule(OptimizerRule):
     def apply(self, solver):
-        total_teams = self.optimizer.total_teams
         settings = self.optimizer.settings
-        min_teams = settings.min_teams
-        if not min_teams and not total_teams:
+        min_teams = self.optimizer.min_teams or settings.min_teams
+        max_teams = self.optimizer.max_teams
+        if not min_teams and not max_teams:
             return
         total_players = self.optimizer.settings.get_total_players()
         players_by_teams = get_players_grouped_by_teams(self.players_dict.keys(), for_positions=[
@@ -525,10 +525,12 @@ class TotalTeamsRule(OptimizerRule):
             variables = [self.players_dict[player] for player in team_players]
             solver.add_constraint(variables, None, SolverSign.LTE, variable * total_players)
             solver.add_constraint(variables, None, SolverSign.GTE, variable)
-        if total_teams:
-            solver.add_constraint(teams_variables, None, SolverSign.EQ, total_teams, name='total_teams')
-        else:
+        if min_teams == max_teams:
+            solver.add_constraint(teams_variables, None, SolverSign.EQ, min_teams, name='exact_teams')
+        if min_teams:
             solver.add_constraint(teams_variables, None, SolverSign.GTE, min_teams, name='min_teams')
+        if max_teams:
+            solver.add_constraint(teams_variables, None, SolverSign.LTE, max_teams, name='max_teams')
 
 
 class FanduelSingleGameMaxQBRule(OptimizerRule):

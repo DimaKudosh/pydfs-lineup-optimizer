@@ -51,7 +51,8 @@ class LineupOptimizer:
         self.same_team_restrict_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
         self.opposing_team_force_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
         self.opposing_teams_max_allowed = 0
-        self.total_teams = None  # type: Optional[int]
+        self.min_teams = None  # type: Optional[int]
+        self.max_teams = None  # type: Optional[int]
         self.stacks = []  # type: List[BaseStack]
         self.min_starters = None  # type: Optional[int]
         self.last_context = None  # type: Optional[OptimizationContext]
@@ -299,17 +300,37 @@ class LineupOptimizer:
         self.spacing = spacing
         self.add_new_rule(RosterSpacingRule)
 
-    def set_total_teams(self, total_teams: int):
-        min_teams = self.settings.min_teams
-        max_from_one_team = self.settings.max_from_one_team
+    def set_total_teams(self, total_teams: Optional[int] = None, min_teams: Optional[int] = None,
+                        max_teams: Optional[int] = None):
+        if not any((total_teams, min_teams, max_teams)):
+            raise LineupOptimizerException('At least one parameter should be passed')
+        if total_teams:
+            min_teams = total_teams
+            max_teams = total_teams
+            show_deprecation_warning('total_teams parameter is replaced with min_teams/max_teams parameters and '
+                                     'will be removed in version 3.7')
+        available_teams = len(self.player_pool.available_teams)
+        if min_teams is not None and max_teams is not None and min_teams > max_teams:
+            raise LineupOptimizerException('min_teams can\'t be greater than max_teams')
+        if (min_teams is not None and min_teams > available_teams) or \
+                (max_teams is not None and max_teams > available_teams):
+            raise LineupOptimizerException('Only %d teams available' % available_teams)
         total_players = self.settings.get_total_players()
-        if not min_teams and max_from_one_team:
-            min_teams = ceil(total_players / max_from_one_team)
-        if min_teams and total_teams < min_teams:
-            raise LineupOptimizerException('Minimum number of teams is %d' % min_teams)
-        if total_teams > total_players:
+        settings_min_teams = self.settings.min_teams
+        max_from_one_team = self.settings.max_from_one_team
+        if not settings_min_teams and max_from_one_team:
+            settings_min_teams = ceil(total_players / max_from_one_team)
+        if settings_min_teams and ((
+            max_teams is not None and max_teams < settings_min_teams
+        ) or (
+            min_teams is not None and min_teams < settings_min_teams
+        )):
+            raise LineupOptimizerException('Minimum number of teams is %d' % settings_min_teams)
+        if (min_teams is not None and min_teams > total_players) or \
+                (max_teams is not None and max_teams > total_players):
             raise LineupOptimizerException('Maximum number of teams is %d' % total_players)
-        self.total_teams = total_teams
+        self.min_teams = min_teams
+        self.max_teams = max_teams
 
     def add_players_group(self, group: BaseGroup) -> None:
         stack = Stack(groups=[group])
