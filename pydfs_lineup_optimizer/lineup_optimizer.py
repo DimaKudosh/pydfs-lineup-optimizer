@@ -319,6 +319,9 @@ class LineupOptimizer:
         stack.validate(self)
         self.stacks.append(stack)
 
+    def reset_stacks(self) -> None:
+        self.stacks = []
+
     def set_min_starters(self, min_starters: int) -> None:
         if min_starters > self.settings.get_total_players():
             raise LineupOptimizerException('Num of starters can\'t be greater than max players')

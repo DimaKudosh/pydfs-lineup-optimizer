@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from math import floor
 from uuid import uuid4
 from typing import List, Optional, Tuple, Dict, Union, cast, TYPE_CHECKING
 from itertools import chain
@@ -201,7 +202,7 @@ class TeamStack(BaseStack):
             if team not in optimizer.available_teams:
                 raise LineupOptimizerIncorrectTeamName('%s is incorrect team name.' % team)
         for position in self.for_positions or []:
-            if position not in optimizer.available_positions:
+            if position not in optimizer.player_pool.available_positions:
                 raise LineupOptimizerIncorrectPositionName('%s is incorrect position name.' % position)
 
 
@@ -251,8 +252,45 @@ class PositionsStack(BaseStack):
             raise LineupOptimizerException('You can\'t set more than %s players from one team.' %
                                            max_from_one_team)
         for position in set(chain.from_iterable(self.positions)):
-            if position not in optimizer.available_positions:
+            if position not in optimizer.player_pool.available_positions:
                 raise LineupOptimizerIncorrectPositionName('%s is incorrect position name.' % position)
         for team in self.for_teams or []:
-            if team not in optimizer.available_teams:
+            if team not in optimizer.player_pool.available_teams:
                 raise LineupOptimizerIncorrectTeamName('%s is incorrect team name.' % team)
+
+
+class GameStack(BaseStack):
+    def __init__(
+            self,
+            size: int,
+            max_exposure: Optional[float] = None,
+            min_from_team: int = 1,
+    ):
+        self.size = size
+        self.max_exposure = max_exposure
+        self.min_from_team = min_from_team
+
+    def build_stacks(self, players, optimizer):
+        players_by_teams = get_players_grouped_by_teams(players)
+        all_groups: List[BaseGroup] = []
+        for game in optimizer.games:
+            groups = [PlayersGroup(
+                players=players_by_teams[game.home_team],
+                min_from_group=self.min_from_team,
+            ), PlayersGroup(
+                players=players_by_teams[game.away_team],
+                min_from_group=self.min_from_team,
+            ), PlayersGroup(
+                players=[*players_by_teams[game.home_team], *players_by_teams[game.away_team]],
+                min_from_group=self.size,
+            )]
+            nested_group = NestedPlayersGroup(
+                groups=groups,
+                max_exposure=self.max_exposure,
+            )
+            all_groups.append(nested_group)
+        return [OptimizerStack(groups=all_groups)]
+
+    def validate(self, optimizer) -> None:
+        if floor(self.size / 2) < self.min_from_team:
+            raise LineupOptimizerException('min_from_team is greater than stack size')
