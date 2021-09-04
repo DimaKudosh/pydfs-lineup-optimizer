@@ -455,6 +455,9 @@ class LineupOptimizer:
             constraint.apply(base_solver)
         previous_lineup = None
         for lineup in lineups:
+            if len(lineup.get_unswappable_players()) == self.total_players:
+                yield lineup
+                continue
             solver = base_solver.copy()  # type: Solver
             for constraint in constraints:
                 constraint.apply_for_iteration(solver, previous_lineup)
@@ -472,8 +475,6 @@ class LineupOptimizer:
                 previous_lineup = generated_lineup
                 context.add_lineup(generated_lineup)
                 yield generated_lineup
-                if len(self.player_pool.locked_players) == self.total_players:
-                    return
                 for constraint in constraints:
                     constraint.post_optimize(variables_names)
             except SolverInfeasibleSolutionException as solver_exception:
