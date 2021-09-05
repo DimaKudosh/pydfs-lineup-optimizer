@@ -46,7 +46,9 @@ class LineupOptimizer:
         self.opposing_teams_position_restriction = None  # type: Optional[Tuple[List[str], List[str]]]
         self.spacing_positions = None  # type: Optional[List[str]]
         self.spacing = None  # type: Optional[int]
+        self.default_team_exposure = None  # type: Optional[float]
         self.teams_exposures = None  # type: Optional[Dict[str, float]]
+        self.teams_exposure_strategy = None  # type: Optional[Type[BaseExposureStrategy]]
         self.team_stacks_for_positions = None  # type: Optional[List[str]]
         self.same_team_restrict_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
         self.opposing_team_force_positions = None  # type: Optional[Tuple[Tuple[str, str], ...]]
@@ -350,6 +352,24 @@ class LineupOptimizer:
             raise LineupOptimizerException('Num of starters can\'t be greater than max starters')
         self.min_starters = min_starters
         self.add_new_rule(MinStartersRule)
+
+    def set_teams_max_exposures(
+            self,
+            default_max_exposure: Optional[float] = None,
+            exposures_by_team: Optional[Dict[str, float]] = None,
+            exposure_strategy: Optional[Type[BaseExposureStrategy]] = TotalExposureStrategy,
+    ):
+        if exposures_by_team:
+            for team in exposures_by_team:
+                if team not in self.player_pool.available_teams:
+                    raise LineupOptimizerException('Unknown team: %s' % team)
+        self.default_team_exposure = default_max_exposure
+        self.teams_exposures = exposures_by_team
+        self.teams_exposure_strategy = exposure_strategy
+        if default_max_exposure or exposures_by_team:
+            self.add_new_rule(TeamsExposureRule)
+        else:
+            self.remove_rule(TeamsExposureRule)
 
     def optimize(
             self,

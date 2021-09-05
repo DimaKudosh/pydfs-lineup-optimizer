@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division
 import unittest
 from copy import deepcopy
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import datetime
 from math import ceil
 from parameterized import parameterized
@@ -828,3 +828,35 @@ class DraftKingsTiersTestCase(unittest.TestCase):
         lineup = next(self.optimizer.optimize(1))
         self.assertEqual(len(lineup.lineup), 3)
         self.assertEqual({p.lineup_position for p in lineup}, {'T1', 'T2', 'T3'})
+
+
+class TeamsMaxExposureTestCase(unittest.TestCase):
+    def setUp(self):
+        self.players = load_players()
+        self.lineup_optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASKETBALL)
+        self.player_pool = self.lineup_optimizer.player_pool
+        self.player_pool.load_players(self.players)
+
+    def test_max_exposure(self):
+        teams_players = [
+            Player('1', 'p1', 'p1', ['PG', 'SG'], 'TEAM1', 10, 2000),
+            Player('2', 'p2', 'p2', ['PF', 'SF'], 'TEAM1', 10, 2000),
+            Player('3', 'p3', 'p3', ['C'], 'TEAM2', 10, 2000),
+            Player('4', 'p4', 'p4', ['PG'], 'TEAM2', 10, 2000),
+            Player('5', 'p5', 'p5', ['PF'], 'TEAM3', 10, 2000),
+            Player('6', 'p6', 'p6', ['SF'], 'TEAM3', 10, 2000),
+        ]
+        self.player_pool.extend_players(teams_players)
+        self.lineup_optimizer.set_teams_max_exposures(0.5, {'TEAM1': 0.3, 'TEAM3': 0.7})
+        used_teams = defaultdict(int)
+        for lineup in self.lineup_optimizer.optimize(10):
+            teams = {player.team for player in lineup}
+            for team in teams:
+                used_teams[team] += 1
+        self.assertEqual(used_teams['TEAM1'], 3)
+        self.assertEqual(used_teams['TEAM2'], 5)
+        self.assertEqual(used_teams['TEAM3'], 7)
+
+    def test_max_exposure_incorrect_team_name(self):
+        with self.assertRaises(LineupOptimizerException):
+            self.lineup_optimizer.set_teams_max_exposures(exposures_by_team={'WRONG': 0.5})

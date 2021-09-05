@@ -2,8 +2,8 @@ from uuid import uuid4
 from math import ceil
 from collections import defaultdict, Counter
 from itertools import product, groupby, permutations, chain
-from random import getrandbits, uniform
 from typing import List, Dict, DefaultDict, Set, Tuple, Any, Optional, TYPE_CHECKING
+from weakref import proxy
 from pydfs_lineup_optimizer.solvers import Solver, SolverSign
 from pydfs_lineup_optimizer.utils import list_intersection, get_positions_for_optimizer, get_remaining_positions, \
     get_players_grouped_by_teams
@@ -26,13 +26,13 @@ __all__ = [
     'TotalTeamsRule', 'FanduelSingleGameMaxQBRule',
     'RestrictPositionsForSameTeamRule', 'ForcePositionsForOpposingTeamRule', 'GenericStacksRule',
     'MinStartersRule', 'MinExposureRule', 'MinGamesRule', 'DraftKingsBaseballRosterRule',
-    'DraftKingsTiersRule',
+    'DraftKingsTiersRule', 'TeamsExposureRule',
 ]
 
 
 class OptimizerRule:
     def __init__(self, optimizer: 'LineupOptimizer', players_dict: Dict[Player, Any], context: OptimizationContext):
-        self.optimizer = optimizer
+        self.optimizer = proxy(optimizer)
         self.context = context
         self.players_dict = players_dict
 
@@ -591,3 +591,32 @@ class DraftKingsTiersRule(OptimizerRule):
         for tier, players in groupby(sorted(self.players_dict.keys(), key=self.sort_player), key=self.sort_player):
             variables = [self.players_dict[player] for player in players]
             solver.add_constraint(variables, None, SolverSign.EQ, 1, name='dk_tier_%s' % tier)
+
+
+class TeamsExposureRule(OptimizerRule):
+    def __init__(self, optimizer: 'LineupOptimizer', players_dict: Dict[Player, Any], context: OptimizationContext):
+        super().__init__(optimizer, players_dict, context)
+        exposures = {}
+        for team in self.player_pool.available_teams:
+            team_exposure = (optimizer.teams_exposures or {}).get(team, optimizer.default_team_exposure)
+            if team_exposure is not None:
+                exposures[team] = team_exposure
+        exposure_strategy = optimizer.teams_exposure_strategy or context.exposure_strategy
+        self.max_exposure_strategy = exposure_strategy(exposures, self.context.total_lineups)
+        variables_by_team = defaultdict(list)
+        for player, variable in players_dict.items():
+            variables_by_team[player.team].append(variable)
+        self.variables_by_team = variables_by_team
+
+    def apply_for_iteration(self, solver, result):
+        if result is None:
+            return
+        used_teams = list({p.team for p in result})
+        self.max_exposure_strategy.set_used(used_teams)
+        for team in self.player_pool.available_teams:
+            if not self.max_exposure_strategy.is_reached_exposure(team):
+                continue
+            team_variables = self.variables_by_team.get(team)
+            if not team_variables:
+                continue
+            solver.add_constraint(team_variables, None, SolverSign.EQ, 0)
