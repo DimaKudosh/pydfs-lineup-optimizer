@@ -345,10 +345,11 @@ class GenericStacksRule(OptimizerRule):
                             [total_players_var], None, SolverSign.GTE,
                             depend_var * (sub_group.min_from_group or 1)
                         )
-                        solver.add_constraint(
-                            [total_players_var], None, SolverSign.LTE,
-                            depend_var * (sub_group.max_from_group or len(variables))
-                        )
+                        if group.strict_depend:
+                            solver.add_constraint(
+                                [total_players_var], None, SolverSign.LTE,
+                                depend_var * (sub_group.max_from_group or len(variables))
+                            )
             if combinations_variables:
                 solver.add_constraint(combinations_variables.values(), None, SolverSign.GTE, 1)
         for player, stacks_vars in players_in_stack.items():

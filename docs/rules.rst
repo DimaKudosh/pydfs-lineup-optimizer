@@ -17,6 +17,7 @@ Rules
 - Spacing for positions
 - Total teams
 - Minimum starters
+- Teams exposures
 - Stacking rules
 
 Number of players from same team
@@ -140,12 +141,14 @@ For example if you want to restrict optimizer to select players within specific 
 Total teams
 -----------
 
-It's also possible to set exact number of teams that will be presented in generated lineups,
-you can set it using `set_total_teams` method.
+You can control the total number of teams used in lineups using `set_total_teams` method.
 
 .. code-block:: python
 
-    optimizer.set_total_teams(4)
+    optimizer.set_total_teams(min_teams=4)  # At least 4 teams should be in the lineup
+    optimizer.set_total_teams(max_teams=6)  # Maximum 6 teams should be in the lineup
+    optimizer.set_total_teams(min_teams=5, max_teams=6)  # 5 or 6 teams should be in the lineup
+    optimizer.set_total_teams(min_teams=5, max_teams=5)  # Exact 5 teams should be in the lineup
 
 Minimum starters
 ----------------
@@ -158,6 +161,19 @@ add `Confirmed Starter` column to csv.
 
     optimizer.set_min_starters(4)
 
+Teams exposures
+---------------
+
+You can set max exposures for each team it means that players from teams can be used only in a limited number of lineups.
+The team counted as used in the lineup if at least one player from it is in the lineup.
+
+.. code-block:: python
+
+    optimizer.set_teams_max_exposures(0.5)  # Set 0.5 exposure for all teams
+    optimizer.set_teams_max_exposures(0.5, exposures_by_team={'NYY': 0.8})  # Set 0.5 exposure for all teams except NYY and 0.8 exposure for NYY
+    optimizer.set_teams_max_exposures(exposures_by_team={'NYY': 0.8})  # Set 0.5 exposure only for NYY
+    optimizer.set_teams_max_exposures(exposures_by_team={'NYY': 0.5, 'NYM': 0.5}, exposure_strategy=AfterEachExposureStrategy)  # Use another exposure strategy
+
 
 Stacking
 ========
@@ -168,7 +184,7 @@ Here is a list of available types of stacks:
 
 Team stack
 ----------
-You can set how many players from same team will be in lineup, for this you can use `TeamStack`.
+You can set how many players from the same team will be in the lineup, for this you can use `TeamStack`.
 Here are examples of using it:
 
 .. code-block:: python
@@ -182,7 +198,7 @@ Here are examples of using it:
 
 Positions stack
 ---------------
-You also can add stack with known list of positions for players used in stack.
+You also can add a stack with a known list of positions for players used in the stack.
 Here are examples of using it:
 
 .. code-block:: python
@@ -192,6 +208,15 @@ Here are examples of using it:
     optimizer.add_stack(PositionsStack(['QB', 'WR'], for_teams=['NO', 'MIA', 'KC']))  # stack QB and WR for one of provided teams
     optimizer.add_stack(PositionsStack(['QB', 'WR'], max_exposure=0.5))  # stack QB and WR with 0.5 exposure for all team stacks
     optimizer.add_stack(PositionsStack(['QB', 'WR'], max_exposure=0.5, max_exposure_per_team={'MIA': 0.6}))  # stack QB and WR  with 0.5 exposure for all team stacks and 0.6 exposure for MIA
+
+Game stack
+---------------
+You can set how many players from the same game will be in the lineup, for this you can use `GameStack`.
+
+.. code-block:: python
+
+    optimizer.add_stack(GameStack(3))  # stack 3 players from the same game
+    optimizer.add_stack(GameStack(5, min_from_team=2))  # stack 5 players from the same game, 3 from one team and 2 from another
 
 Custom stack
 ------------
@@ -223,11 +248,15 @@ You can use this method for ungrouping players as well. In this example maximum 
 
 Also you can apply these groups conditionally based on another player selection.
 In the example below one of Travis Kelce or Tyreek Hill will be added to the lineup only with Patrick Mahomes or none of them will be added to the lineup.
+You can allow generating lineups with the provided group when the dependent player is not in the lineup,
+for this you can set optional argument `strict_depend` to `False`.
 
 .. code-block:: python
 
     group = PlayersGroup(
-        [optimizer.get_player_by_name(name) for name in ('Tyreek Hill', 'Travis Kelce')],
-        depends_on=optimizer.get_player_by_name('Patrick Mahomes')
+        optimizer.player_pool.get_players('Tyreek Hill', 'Travis Kelce'),
+        max_from_group=1,
+        depends_on=optimizer.player_pool.get_player_by_name('Patrick Mahomes'),
+        strict_depend=False, # if you want to generate lineups with Hill/Kelce but without Mahomes
     )
     optimizer.add_players_group(group)

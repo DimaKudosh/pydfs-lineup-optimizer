@@ -665,16 +665,25 @@ class PlayersGroupsRuleTestCase(unittest.TestCase):
         self.assertEqual(len([player for player in self.high_fppg_group if player in lineups[1]]), 0)
 
     @parameterized.expand([
-        (True, 1, None, None, 3),
-        (True, 1, 1, None, 3),
-        (True, 1, None, 1, 2),
-        (True, -2000, None, None, 0),
-        (True, -2000, 1, None, 0),
-        (False, 1000, None, None, 3),
-        (False, 1000, None, 1, 2),
-        (False, 1000, 1, None, 2),
+        (False, True, 1, None, None, 2),
+        (False, True, 1, 1, None, 2),
+        (False, True, 1, None, 1, 1),
+        (False, True, -2000, None, None, 2),
+        (False, True, -2000, 1, None, 2),
+        (False, False, 1000, None, None, 3),
+        (False, False, 1000, None, 1, 2),
+        (False, False, 1000, 1, None, 2),
+        (False, False, -2000, 1, None, 0),
+        (True, True, 1, None, None, 3),
+        (True, True, 1, 1, None, 3),
+        (True, True, 1, None, 1, 2),
+        (True, True, -2000, None, None, 0),
+        (True, True, -2000, 1, None, 0),
+        (True, False, 1000, None, None, 3),
+        (True, False, 1000, None, 1, 2),
+        (True, False, 1000, 1, None, 2),
     ])
-    def test_group_player_with_conditional_player(self, is_high_fppg_group, fppg, min_from_group,
+    def test_group_player_with_conditional_player(self, strict_depend, is_high_fppg_group, fppg, min_from_group,
                                                   max_from_group, total):
         if is_high_fppg_group:
             group = self.high_fppg_group
@@ -684,7 +693,7 @@ class PlayersGroupsRuleTestCase(unittest.TestCase):
         self.player_pool.extend_players([dependant_player])
         self.optimizer.add_players_group(
             PlayersGroup(group, depends_on=dependant_player, min_from_group=min_from_group,
-                         max_from_group=max_from_group)
+                         max_from_group=max_from_group, strict_depend=strict_depend)
         )
         lineup = next(self.optimizer.optimize(1))
         expect_players = [*group, dependant_player]

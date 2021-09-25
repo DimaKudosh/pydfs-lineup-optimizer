@@ -33,12 +33,14 @@ class BaseGroup(metaclass=ABCMeta):
             depends_on: Optional[Player] = None,
             min_from_group: Optional[int] = None,
             max_from_group: Optional[int] = None,
+            strict_depend: bool = True,
             parent: Optional['BaseGroup'] = None,
     ):
         self.uuid = uuid4()
         self.max_exposure = max_exposure
         self.parent = parent
         self.depends_on = depends_on
+        self.strict_depend = strict_depend
         self.min_from_group = min_from_group
         self.max_from_group = max_from_group
 
@@ -55,6 +57,7 @@ class PlayersGroup(BaseGroup):
             max_from_group: Optional[int] = None,
             max_exposure: Optional[float] = None,
             depends_on: Optional[Player] = None,
+            strict_depend: bool = True,
             parent: Optional[BaseGroup] = None,
     ):
         if min_from_group is None and max_from_group is None:
@@ -65,6 +68,7 @@ class PlayersGroup(BaseGroup):
             min_from_group=min_from_group,
             max_from_group=max_from_group,
             depends_on=depends_on,
+            strict_depend=strict_depend,
         )
         self.players = list(set(players))
 

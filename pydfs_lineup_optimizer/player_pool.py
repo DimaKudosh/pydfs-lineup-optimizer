@@ -159,17 +159,22 @@ class PlayerPool:
         self._players_by_name[player.full_name].append(player)
         self._players_by_id[player.id] = player
 
-    def get_player_by_name(self, player_name: str, position: Optional[str] = None) -> Optional[Player]:
-        players = self._players_by_name.get(player_name, [])
+    def get_player_by_name(
+            self, player_name: str, position: Optional[str] = None,
+            allowed_players: Optional[Set[Player]] = None,
+    ) -> Optional[Player]:
+        players = set(self._players_by_name.get(player_name, set()))
         if position:
-            players = [player for player in players if position in player.positions]
+            players = {player for player in players if position in player.positions}
+        if allowed_players:
+            players = players.intersection(allowed_players)
         if players:
             if len(players) > 1:
-                raise LineupOptimizerException('More than 1 player is found')
-            return players[0]
+                raise LineupOptimizerException('More than 1 player is found for: %s' % player_name)
+            return list(players)[0]
         if self.search_threshold:
-            players = self.get_players(PlayerFilter(positions=[position])) if position else self.all_players
-            possibilities = [(player, ratio(player_name, player.full_name)) for player in players]
+            matched_players = self.get_players(PlayerFilter(positions=[position])) if position else self.all_players
+            possibilities = [(player, ratio(player_name, player.full_name)) for player in matched_players]
             filtered_possibilities = filter(lambda pos: pos[1] >= self.search_threshold, possibilities)
             if filtered_possibilities:
                 sorted_players = sorted(filtered_possibilities, key=lambda pos: -pos[1])
@@ -249,23 +254,26 @@ class PlayerPool:
                 filters.append(item)
             else:
                 players.append(item)
+        allowed_players = None
+        if filters:
+            allowed_players = {
+                player for player in self.all_players if
+                all(player_filter.filter(player, False) for player_filter in filters)
+            }
         if players:
             for player in players:
-                cleaned_player = self._clean_player(player)
+                cleaned_player = self._clean_player(player, allowed_players=allowed_players)
                 if cleaned_player:
                     result.append(cleaned_player)
-        else:
-            result = self.all_players
-        if filters:
-            result = [player for player in result if all(player_filter.filter(player, False) for player_filter in filters)]
         return result
 
     def add_filters(self, *filters: BaseFilter):
         self._player_filters.extend(filters)
 
-    def _clean_player(self, player: DirtyPlayer) -> Player:
+    def _clean_player(self, player: DirtyPlayer, allowed_players: Optional[Set[Player]] = None) -> Player:
         if not isinstance(player, Player):
-            cleaned_player = self.get_player_by_id(player) or self.get_player_by_name(player)
+            cleaned_player = self.get_player_by_id(player) or self.get_player_by_name(
+                player, allowed_players=allowed_players)
             if not cleaned_player:
                 raise LineupOptimizerException('%s is not found' % player)
             return cleaned_player
