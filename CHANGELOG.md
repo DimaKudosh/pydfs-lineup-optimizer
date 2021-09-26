@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.6.0]
+- Add conditional stack
+- Add exclude_lineups parameters to optimize method
+- Add MIP solver
+- Add GameStack
+- Add teams max exposure
+- Add DraftKings college football
+- Improve set_total_teams method
+- Refactor player pool
+- Fix export on windows
+- Fix ownership print
+- Fix error with duplicated lineups with unswappable players
+
 ## [v3.5.0]
 - Add progressive fantasy points strategy
 - Add FanDuel Single Game NHL & MLB
