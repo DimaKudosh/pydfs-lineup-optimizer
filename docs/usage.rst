@@ -275,6 +275,7 @@ It increases fantasy points for each player that wasn't used in the previous lin
 It works cumulatively so fantasy points will be greater if the player wasn't used in the lineup multiple times.
 After the player will be selected to lineup his points will be reset to the original value.
 You can change this value for a specific player by setting `progressive_scale` property of Player or by adding `Progressive Scale` column to import csv.
+
 .. code-block:: python
 
     optimizer.set_fantasy_points_strategy(ProgressiveFantasyPointsStrategy(0.01))  # Set progressive strategy that increase player points by 1%
@@ -298,10 +299,12 @@ All of these lineups will be excluded from optimization and newly generated line
     optimizer.print_statistic()
     optimizer.export('export.csv')
 
+
 Additional columns in csv
 -------------------------
 
 The optimizer can parse those additional columns that can be added to imported csv:
+
 - Max Exposure
 - Min Exposure
 - Roster Order
