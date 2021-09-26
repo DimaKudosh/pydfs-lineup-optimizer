@@ -72,7 +72,7 @@ and `max_projected_ownership` that are max/min percent of average ownership in g
 .. code-block:: python
 
     for player in optimizer.players:
-        player.projected_ownership = get_projected_ownership(player)  # User defined function for getting ownership percent
+        player.projected_ownership = 0.1
     optimizer.set_projected_ownership(max_projected_ownership=0.6)
 
 If you don't specify `projected_ownership` for some players this players will not used in calculating lineup average
@@ -225,8 +225,8 @@ create lineups with Rodgers/Adams or Brees/Thomas duos with 0.5 exposure:
 
 .. code-block:: python
 
-    rodgers_adams_group = PlayersGroup([optimizer.get_player_by_name(name) for name in ('Aaron Rodgers', 'Davante Adams')], max_exposure=0.5)
-    brees_thomas_group = PlayersGroup([optimizer.get_player_by_name(name) for name in ('Drew Brees', 'Michael Thomas')], max_exposure=0.5)
+    rodgers_adams_group = PlayersGroup(optimizer.player_pool.get_players('Aaron Rodgers', 'Davante Adams'), max_exposure=0.5)
+    brees_thomas_group = PlayersGroup(optimizer.player_pool.get_players('Drew Brees', 'Michael Thomas'), max_exposure=0.5)
     optimizer.add_stack(Stack([rodgers_adams_group, brees_thomas_group]))
 
 Group players
@@ -236,14 +236,14 @@ Here is an example:
 
 .. code-block:: python
 
-    group = PlayersGroup([optimizer.get_player_by_name(name) for name in ('LeBron James', 'Anthony Davis')])
+    group = PlayersGroup(optimizer.player_pool.get_players('LeBron James', 'Anthony Davis'))
     optimizer.add_players_group(group)
 
 You can use this method for ungrouping players as well. In this example maximum of one player will be in the lineup.
 
 .. code-block:: python
 
-    group = PlayersGroup([optimizer.get_player_by_name(name) for name in ('LeBron James', 'Anthony Davis')], max_from_group=1)
+    group = PlayersGroup(optimizer.player_pool.get_players('LeBron James', 'Anthony Davis'), max_from_group=1)
     optimizer.add_players_group(group)
 
 Also you can apply these groups conditionally based on another player selection.

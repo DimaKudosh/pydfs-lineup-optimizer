@@ -7,7 +7,7 @@ Performance and Optimization
 Solvers
 -------
 
-By default, the optimizer uses `pulp <https://coin-or.github.io/pulp/index.html>`_ library under the hood with a default solver that free but slow.
+By default, the optimizer uses `pulp <https://coin-or.github.io/pulp/index.html>`_ library under the hood with a default solver that is free but slow.
 You can change it to another solver that pulp supports.
 Here is an example of how to change the default solver for GLPK solver:
 
@@ -37,16 +37,19 @@ Decrease solving complexity
 ---------------------------
 
 Sometimes optimization process takes a lot of time to generate a single lineup.
-It usually happens in mlb and nfl because all teams play on the same day and each team has a lot of players and a total
+It usually happens in mlb and nfl because all teams play on the same day and each team has a lot of players and the total
 number of players used in optimization is >100. In this case, a good approach is to remove from optimization players with
-small fppg value and big salary.
+small fppg value and a big salary.
 
 .. code-block:: python
 
     optimizer = get_optimizer(Site.DRAFTKINGS, Sport.BASEBALL)
     optimizer.load_players_from_csv('dk_mlb.csv')
-    for player in optimizer.players:
-        if player.efficiency < 1:  # efficiency = fppg / salary
-            optimizer.remove_player(player)
+    optimizer.player_pool.add_filters(
+        PlayerFilter(from_value=5),  # use only players with points >= 5
+        PlayerFilter(from_value=2, filter_by='efficiency'),  # and efficiency(points/salary) >= 2
+        PlayerFilter(from_value=2000, filter_by='salary'),  # and salary >= 3000
+    )
+    optimizer.player_pool.exclude_teams(['Seattle Mariners'])
     for lineup in optimizer.optimize(100):
         print(lineup)
