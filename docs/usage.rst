@@ -298,3 +298,17 @@ All of these lineups will be excluded from optimization and newly generated line
     optimizer.print_statistic()
     optimizer.export('export.csv')
 
+Additional columns in csv
+-------------------------
+
+The optimizer can parse those additional columns that can be added to imported csv:
+- Max Exposure
+- Min Exposure
+- Roster Order
+- Projected Ownership
+- Min Deviation
+- Max Deviation
+- Projection Floor
+- Projection Ceil
+- Confirmed Starter
+- Progressive Scale
