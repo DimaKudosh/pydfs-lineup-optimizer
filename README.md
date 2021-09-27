@@ -1,4 +1,4 @@
-# PYDFS-LINEUP-OPTIMIZER [![Build Status](https://travis-ci.org/DimaKudosh/pydfs-lineup-optimizer.svg?branch=master)](https://travis-ci.org/DimaKudosh/pydfs-lineup-optimizer)[![Coverage Status](https://coveralls.io/repos/github/DimaKudosh/pydfs-lineup-optimizer/badge.svg?branch=master)](https://coveralls.io/github/DimaKudosh/pydfs-lineup-optimizer?branch=master)
+# PYDFS-LINEUP-OPTIMIZER [![Build Status](https://travis-ci.com/DimaKudosh/pydfs-lineup-optimizer.svg?branch=master)](https://travis-ci.org/DimaKudosh/pydfs-lineup-optimizer)[![Coverage Status](https://coveralls.io/repos/github/DimaKudosh/pydfs-lineup-optimizer/badge.svg?branch=master)](https://coveralls.io/github/DimaKudosh/pydfs-lineup-optimizer?branch=master)
 pydfs-lineup-optimizer is a tool for creating optimal lineups for daily fantasy sport. 
 
 ## Installation

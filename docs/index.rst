@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/DimaKudosh/pydfs-lineup-optimizer.svg?branch=master
-    :target: https://travis-ci.org/DimaKudosh/pydfs-lineup-optimizer
+.. image:: https://travis-ci.com/DimaKudosh/pydfs-lineup-optimizer.svg?branch=master
+    :target: https://travis-ci.com/DimaKudosh/pydfs-lineup-optimizer
 
 .. image:: https://coveralls.io/repos/github/DimaKudosh/pydfs-lineup-optimizer/badge.svg?branch=master
     :target: https://coveralls.io/github/DimaKudosh/pydfs-lineup-optimizer?branch=master

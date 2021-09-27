@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.6.1]
+- Fix filtering in get_players
+- Fix import error in old python versions
+
 ## [v3.6.0]
 - Add conditional stack
 - Add exclude_lineups parameters to optimize method
