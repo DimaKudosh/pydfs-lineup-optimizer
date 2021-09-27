@@ -6,6 +6,7 @@ Usage
 
 Base Usage
 ----------
+
 Creating optimal lineups with **pydfs-lineup-optimizer** is very simple.
 Firstly you should create an optimizer. You can do this using
 shortcut get_optimizer. You must provide a daily fantasy site for it and the kind of sport.
