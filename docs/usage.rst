@@ -100,6 +100,7 @@ You can do this using the following code:
     optimizer.player_pool.lock_player('ID00001')  # using player id
     tom_brady_captain = optimizer.player_pool.get_player_by_name('Tom Brady', position='CPT')
     optimizer.player_pool.lock_player(tom_brady_captain)  # using player
+    optimizer.player_pool.lock_player('Chris Godwin', 'FLEX')  # Lock Chris Godwin on FLEX position
     # Locked players can be unlocked as well
     optimizer.player_pool.unlock_player('Tom Brady')
 
