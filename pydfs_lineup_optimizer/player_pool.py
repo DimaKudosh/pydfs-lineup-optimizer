@@ -1,4 +1,4 @@
-from typing import FrozenSet, List, Optional, Set, Union, Iterable, Dict, Literal, DefaultDict
+from typing import FrozenSet, List, Optional, Set, Union, Iterable, Dict, DefaultDict
 from collections import defaultdict
 from itertools import chain
 from pydfs_lineup_optimizer.settings import BaseSettings
@@ -23,8 +23,9 @@ class PlayerFilter(BaseFilter):
             to_value: Optional[float] = None,
             positions: Optional[Iterable[str]] = None,
             teams: Optional[Iterable[str]] = None,
-            filter_by: Literal['fppg', 'efficiency', 'salary'] = 'fppg',
+            filter_by: str = 'fppg',
     ):
+        assert filter_by in ('fppg', 'efficiency', 'salary')
         self.from_value = from_value
         self.to_value = to_value
         self.positions = frozenset(positions or [])
@@ -247,7 +248,6 @@ class PlayerPool:
         del self._locked_players[player]
 
     def get_players(self, *players_and_groups: Union[DirtyPlayer, PlayerFilter]) -> List[Player]:
-        result = []
         players, filters = [], []
         for item in players_and_groups:
             if isinstance(item, BaseFilter):
@@ -261,11 +261,13 @@ class PlayerPool:
                 all(player_filter.filter(player, False) for player_filter in filters)
             }
         if players:
+            result = []
             for player in players:
                 cleaned_player = self._clean_player(player, allowed_players=allowed_players)
                 if cleaned_player:
                     result.append(cleaned_player)
-        return result
+            return result
+        return list(allowed_players) if allowed_players else self.all_players
 
     def add_filters(self, *filters: BaseFilter):
         self._player_filters.extend(filters)
