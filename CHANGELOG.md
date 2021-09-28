@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v3.6.1]
+- Fix filtering in get_players
+- Fix import error in old python versions
+
+## [v3.6.0]
+- Add conditional stack
+- Add exclude_lineups parameters to optimize method
+- Add MIP solver
+- Add GameStack
+- Add teams max exposure
+- Add DraftKings college football
+- Improve set_total_teams method
+- Refactor player pool
+- Fix export on windows
+- Fix ownership print
+- Fix error with duplicated lineups with unswappable players
+
+## [v3.5.0]
+- Add progressive fantasy points strategy
+- Add FanDuel Single Game NHL & MLB
+- Add late-swap for FanDuel
+- Fix FanDuel export
+- Fix player name parsing during import
+- Remove PuLP warnings
+
+## [v3.4.2]
+- Fix positions constraint for multi positions
+
+## [v3.4.1]
+- Fix FanDuel NHL settings
+- Fix DK late-swap export
+
 ## [v3.4.0]
 - Fix PULP version
 - Add DK NHL Captain Mode

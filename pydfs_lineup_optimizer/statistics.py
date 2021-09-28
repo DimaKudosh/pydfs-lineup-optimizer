@@ -9,10 +9,10 @@ if TYPE_CHECKING:
 
 
 class Statistic:
-    def __init__(self, optimizer: 'LineupOptimizer'):
+    def __init__(self, optimizer: 'LineupOptimizer', with_excluded: bool = True):
         self.optimizer = optimizer
         if self.optimizer.last_context is not None:
-            self.lineups = self.optimizer.last_context.lineups
+            self.lineups = self.optimizer.last_context.get_lineups(with_excluded)
         else:
             self.lineups = []
 
@@ -36,12 +36,12 @@ class Statistic:
             print('Top Teams')
             for team, appearance in top_teams.items():
                 print('  %s - %d' % (team, appearance))
-            print('Used %d/%d\n' % (len(top_teams), len(self.optimizer.available_teams)))
+            print('Used %d/%d\n' % (len(top_teams), len(self.optimizer.player_pool.available_teams)))
         print('Top Players')
         players_per_team = defaultdict(dict)  # type: DefaultDict[str, Dict[str, int]]
         top_players = self.get_top_players()
-        total_players = len({player.full_name for player in self.optimizer.players})
-        replicated_players = Counter([player.full_name for player in self.optimizer.players])
+        total_players = len({player.full_name for player in self.optimizer.player_pool.all_players})
+        replicated_players = Counter([player.full_name for player in self.optimizer.player_pool.all_players])
         for player_name, players in top_players.items():
             total = sum(players.values())
             players_per_team[list(players.keys())[0].team][player_name] = total

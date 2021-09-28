@@ -131,7 +131,7 @@ class DraftKingsSoccerSettings(DraftKingsSettings):
 @SitesRegistry.register_settings
 class DraftKingsCanadianFootballSettings(DraftKingsSettings):
     sport = Sport.CANADIAN_FOOTBALL
-    min_games = 2
+    min_teams = 2
     positions = [
         LineupPosition('QB', ('QB', )),
         LineupPosition('RB', ('RB', )),
@@ -140,6 +140,22 @@ class DraftKingsCanadianFootballSettings(DraftKingsSettings):
         LineupPosition('FLEX', ('RB', 'WR', )),
         LineupPosition('FLEX', ('RB', 'WR', )),
         LineupPosition('DST', ('DST', )),
+    ]
+
+
+@SitesRegistry.register_settings
+class DraftKingsCollegeFootballSettings(DraftKingsSettings):
+    sport = Sport.CANADIAN_FOOTBALL
+    min_games = 2
+    positions = [
+        LineupPosition('QB', ('QB', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('FLEX', ('RB', 'WR', )),
+        LineupPosition('SUPER FLEX', ('QB', 'RB', 'WR', )),
     ]
 
 

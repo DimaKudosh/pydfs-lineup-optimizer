@@ -25,14 +25,14 @@ class TestLineupExporter(unittest.TestCase):
             Player('7', 'First Name 7', 'Last Name 7', ['SF', 'PF'], 'Team7', 20, 20),
             Player('8', 'First Name 8', 'Last Name 8', ['PG', 'SG', 'SF'], 'Team8', 20, 20),
         ]
-        optimizer.load_players(cls.players)
+        optimizer.player_pool.load_players(cls.players)
         cls.lineups = list(optimizer.optimize(1))
 
     @patch(OPEN_METHOD, new_callable=mock_open)
     def test_csv_exporter(self, mocked_open):
         filename = 'test.csv'
         CSVLineupExporter(self.lineups).export(filename)
-        mocked_open.assert_called_once_with(filename, 'w')
+        mocked_open.assert_called_once_with(filename, 'w', newline='')
         lineup = self.lineups[0]
         header = ','.join(['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'UTIL', 'Budget', 'FPPG']) + '\r\n'
         body = [CSVLineupExporter.render_player(player) for player in lineup.lineup]
@@ -46,7 +46,7 @@ class TestLineupExporter(unittest.TestCase):
         filename = 'test.csv'
         player_render = lambda player: '%s %s' % (player.full_name, player.team)
         CSVLineupExporter(self.lineups).export(filename, player_render)
-        mocked_open.assert_called_once_with(filename, 'w')
+        mocked_open.assert_called_once_with(filename, 'w', newline='')
         lineup = self.lineups[0]
         header = ','.join(['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'UTIL', 'Budget', 'FPPG']) + '\r\n'
         body = [player_render(player) for player in lineup.lineup]

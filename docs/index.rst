@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/DimaKudosh/pydfs-lineup-optimizer.svg?branch=master
-    :target: https://travis-ci.org/DimaKudosh/pydfs-lineup-optimizer
+.. image:: https://travis-ci.com/DimaKudosh/pydfs-lineup-optimizer.svg?branch=master
+    :target: https://travis-ci.com/DimaKudosh/pydfs-lineup-optimizer
 
 .. image:: https://coveralls.io/repos/github/DimaKudosh/pydfs-lineup-optimizer/badge.svg?branch=master
     :target: https://coveralls.io/github/DimaKudosh/pydfs-lineup-optimizer?branch=master
@@ -9,7 +9,7 @@ pydfs-lineup-optimizer
 ======================
 
 **pydfs-lineup-optimizer** is a tool for creating optimal lineups for daily fantasy sport.
-Currently it supports following dfs sites:
+Currently it supports the following dfs sites:
 
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+------------------+
 | League | DraftKings | FanDuel | FantasyDraft | Yahoo | FanBall | DraftKings Captain Mode | FanDuel Single Game | DraftKings Tiers |
@@ -18,9 +18,9 @@ Currently it supports following dfs sites:
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+------------------+
 | NBA    | \+         | \+      | \+           | \+    | \-      | \+                      | \+                  | \+               |
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+------------------+
-| NHL    | \+         | \+      | \+           | \+    | \-      | \+                      | \-                  | \+               |
+| NHL    | \+         | \+      | \+           | \+    | \-      | \+                      | \+                  | \+               |
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+------------------+
-| MLB    | \+         | \+      | \+           | \+    | \-      | \+                      | \-                  | \+               |
+| MLB    | \+         | \+      | \+           | \+    | \-      | \+                      | \+                  | \+               |
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+------------------+
 | WNBA   | \+         | \+      | \-           | \-    | \-      | \+                      | \-                  | \-               |
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+------------------+
@@ -29,6 +29,8 @@ Currently it supports following dfs sites:
 | Soccer | \+         | \-      | \-           | \+    | \-      | \+                      | \-                  | \-               |
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+------------------+
 | CFL    | \+         | \-      | \-           | \-    | \-      | \-                      | \-                  | \-               |
++--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+------------------+
+| CFB    | \+         | \-      | \-           | \-    | \-      | \-                      | \-                  | \-               |
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+------------------+
 | LOL    | \-         | \+      | \-           | \-    | \-      | \+                      | \+                  | \-               |
 +--------+------------+---------+--------------+-------+---------+-------------------------+---------------------+------------------+
@@ -51,3 +53,4 @@ Contents
    usage
    rules
    performance-and-optimization
+   custom-settings

@@ -1,4 +1,6 @@
 import json
+from uuid import uuid4
+from copy import deepcopy
 from pydfs_lineup_optimizer.player import Player
 
 
@@ -10,21 +12,20 @@ class PlayersLoader:
         self.cache = None
 
     def __call__(self):
-        if self.cache:
-            return self.cache[:]
-        with open('tests/players.json', 'r') as file:
-            players_dict = json.loads(file.read())['players']
-        players = [Player(
-            p['id'],
-            p['first_name'],
-            p['last_name'],
-            p['positions'],
-            p['team'],
-            p['salary'],
-            p['fppg']
-        ) for i, p in enumerate(players_dict)]
-        self.cache = players
-        return players[:]
+        if not self.cache:
+            with open('tests/players.json', 'r') as file:
+                players_dict = json.loads(file.read())['players']
+            players = [Player(
+                p['id'],
+                p['first_name'],
+                p['last_name'],
+                p['positions'],
+                p['team'],
+                p['salary'],
+                p['fppg']
+            ) for i, p in enumerate(players_dict)]
+            self.cache = players
+        return [deepcopy(player) for player in self.cache]
 
 
 load_players = PlayersLoader()
@@ -41,7 +42,7 @@ def create_players(positions_list, **kwargs):
         player_params = {'team': str(i)}
         player_params.update(params)
         players.append(
-            Player(player_id=str(i), first_name=str(i), last_name=str(i), positions=positions.split('/'),
+            Player(player_id=str(uuid4()), first_name=str(i), last_name=str(i), positions=positions.split('/'),
                    **player_params)
         )
     return players

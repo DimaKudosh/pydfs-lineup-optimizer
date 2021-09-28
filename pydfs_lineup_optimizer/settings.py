@@ -11,7 +11,16 @@ if TYPE_CHECKING:  # pragma: no cover
 class LineupPosition:
     def __init__(self, name: str, positions: Sequence[str]):
         self.name = name
-        self.positions = positions
+        self.positions = tuple(sorted(positions))
+
+    def __hash__(self):
+        return hash((self.name, self.positions))
+
+    def __eq__(self, other):
+        return self.name == other.name and self.positions == other.positions
+
+    def __repr__(self):
+        return '%s (%s)' % (self.name, '/'.join(self.positions))
 
 
 class BaseSettings:

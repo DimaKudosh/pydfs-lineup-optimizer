@@ -11,7 +11,7 @@ class BaseLineupPrinter:
 
 
 class LineupPrinter(BaseLineupPrinter):
-    OUTPUT_FORMAT = '{index:>2}. {lineup_position:<5} {name:<30}{positions:<6}{team:<15}{game:<9}' \
+    OUTPUT_FORMAT = '{index:>2}. {lineup_position:<7} {name:<30}{positions:<6}{team:<15}{game:<9}' \
                     '{fppg:<15}{salary:<10}\n'
 
     def _print_game_info(self, player: 'LineupPlayer') -> str:
@@ -28,7 +28,7 @@ class LineupPrinter(BaseLineupPrinter):
             positions='/'.join(player.original_positions),
             team=player.team,
             game=self._print_game_info(player),
-            fppg=round(player.fppg, 3) if player.used_fppg is None else
+            fppg=round(player.fppg, 3) if player.used_fppg is None or player.used_fppg == player.fppg else
             '%s(%s)' % (round(player.fppg, 3), round(player.used_fppg, 3)),
             salary=str(player.salary) + '$',
         )
@@ -40,7 +40,7 @@ class LineupPrinter(BaseLineupPrinter):
             original_projection, '(%.2f)' % actual_projection if actual_projection != original_projection else '')
         if lineup.salary_costs:
             footer += 'Salary %.2f\n' % lineup.salary_costs
-        ownerships = [player.projected_ownership for player in lineup if player.projected_ownership]
+        ownerships = [player.projected_ownership for player in lineup if player.projected_ownership is not None]
         if ownerships:
             footer += 'Average Ownership %.1f%%\n' % (sum(ownerships) * 100 / len(ownerships))
         return footer

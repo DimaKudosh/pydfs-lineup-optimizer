@@ -1,5 +1,5 @@
 import csv
-from typing import Iterable, Callable, TYPE_CHECKING
+from typing import Iterable, Callable, Dict, List, Tuple, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
@@ -23,17 +23,26 @@ class LineupExporter:
 
 
 class CSVLineupExporter(LineupExporter):
+    EXTRA_COLUMNS = ('Budget', 'FPPG')  # type: Tuple[str, ...]
+    COLUMNS_MAPPING = {}  # type: Dict[str , str]
+
+    def _get_extra_columns(self, lineup: 'Lineup') -> List[str]:
+        return [
+            str(lineup.salary_costs),
+            str(lineup.fantasy_points_projection),
+        ]
+
     def export(self, filename, render_func=None):
-        with open(filename, 'w') as csvfile:
+        with open(filename, 'w', newline='') as csvfile:
             lineup_writer = csv.writer(csvfile, delimiter=',')
             for index, lineup in enumerate(self.lineups):
                 if index == 0:
-                    header = [player.lineup_position for player in lineup.lineup]
-                    header.extend(('Budget', 'FPPG'))
+                    header = [self.COLUMNS_MAPPING.get(player.lineup_position, player.lineup_position)
+                              for player in lineup.lineup]
+                    header.extend(self.EXTRA_COLUMNS)
                     lineup_writer.writerow(header)
                 row = [(render_func or self.render_player)(player) for player in lineup.lineup]
-                row.append(str(lineup.salary_costs))
-                row.append(str(lineup.fantasy_points_projection))
+                row.extend(self._get_extra_columns(lineup))
                 lineup_writer.writerow(row)
 
 
@@ -70,12 +79,29 @@ class FantasyDraftCSVLineupExporter(LineupExporter):
                 lines[i] = players_list + lines[i][total_players:]
             for line_order in range(i, len(lines) - 1):
                 lines[line_order] = [''] * total_players + lines[line_order][total_players:]
-        with open(filename, 'w') as csvfile:
+        with open(filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(lines)
 
 
 class YahooCSVLineupExporter(CSVLineupExporter):
+    @staticmethod
+    def render_player(player: 'LineupPlayer') -> str:
+        return str(player.id)
+
+
+class FanDuelCSVLineupExporter(CSVLineupExporter):
+    EXTRA_COLUMNS = ()
+    COLUMNS_MAPPING = {
+        'MVP': 'MVP - 2X Points',
+        'STAR': 'STAR - 1.5X Points',
+        'PRO': 'PRO - 1.2X Points',
+        'CAPTAIN': 'Captain - 1.5x Pts',
+    }
+
+    def _get_extra_columns(self, lineup):
+        return []
+
     @staticmethod
     def render_player(player: 'LineupPlayer') -> str:
         return str(player.id)

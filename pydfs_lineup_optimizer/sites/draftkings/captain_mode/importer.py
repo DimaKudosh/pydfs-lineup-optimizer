@@ -7,7 +7,7 @@ class DraftKingsCaptainModeCSVImporter(DraftKingsCSVImporter):  # pragma: nocove
     def _row_to_player(self, row):
         try:
             fppg_multiplier = 1.5 if row['Roster Position'] == 'CPT' else 1
-            name = row['Name'].split()
+            name = row['Name'].split(maxsplit=1)
             player = Player(
                 row['ID'],
                 name[0],

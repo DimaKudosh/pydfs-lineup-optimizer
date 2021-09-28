@@ -1,3 +1,4 @@
+import warnings
 from typing import Dict, Tuple, List, Iterable, Set, Any, DefaultDict, Optional, TYPE_CHECKING
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
@@ -37,41 +38,51 @@ def get_positions_for_optimizer(
     Convert positions list into dict for using in optimizer.
     """
     positions = {}
-    positions_counter = Counter([tuple(sorted(p.positions)) for p in positions_list])
-    for key in positions_counter.keys():
-        min_value = positions_counter[key] + len(list(filter(
+    positions_counter = Counter(p.positions for p in positions_list)
+    for key, total in positions_counter.items():
+        min_value = total + len(list(filter(
             lambda p: len(p.positions) < len(key) and list_intersection(key, p.positions), positions_list
         )))
         positions[key] = min_value
     if not multi_positions_combinations:
         return positions
+    # Create min partition for each position
+    min_positions = {}  # type: Dict[str, Tuple[str, ...]]
+    for positions_tuple in positions_counter.keys():
+        for position in positions_tuple:
+            if position not in min_positions or len(min_positions[position]) > len(positions_tuple):
+                min_positions[position] = positions_tuple
     #  Create list of required combinations for consistency of multi-positions
-    for i in range(2, len(multi_positions_combinations)):
-        total_combinations = len(multi_positions_combinations)
-        for positions_tuple in combinations(multi_positions_combinations, i):
-            flatten_positions = tuple(sorted(set(chain.from_iterable(positions_tuple))))
-            multi_positions_combinations.add(flatten_positions)
-        if total_combinations == len(multi_positions_combinations):
+    possible_combinations = set()
+    for multi_positions in multi_positions_combinations:
+        possible_combinations.add(tuple(chain.from_iterable(min_positions.get(pos, (pos, )) for pos in multi_positions)))
+    for i in range(2, len(possible_combinations) + 1):
+        total_combinations = len(possible_combinations)
+        for combo in combinations(possible_combinations, i):
+            flatten_positions = tuple(sorted(set(chain.from_iterable(combo))))
+            possible_combinations.add(flatten_positions)
+        if total_combinations == len(possible_combinations):
             break
-    multi_positions_combinations.update(positions.keys())
+    # Calculate min required players for each position
+    possible_combinations.update(positions.keys())
     for i in range(2, len(positions)):
-        for positions_tuple in combinations(positions_counter.keys(), i):
-            flatten_positions = tuple(sorted(set(chain.from_iterable(positions_tuple))))
-            if flatten_positions in positions or flatten_positions not in multi_positions_combinations:
+        for combo in combinations(positions_counter.keys(), i):
+            flatten_positions = tuple(sorted(set(chain.from_iterable(combo))))
+            if flatten_positions in positions or flatten_positions not in possible_combinations:
                 continue
-            min_value = sum(positions[pos] for pos in positions_tuple)
+            min_value = sum(positions[pos] for pos in combo)
             positions[flatten_positions] = min_value
     return positions
 
 
 def link_players_with_positions(
-        players: List['Player'],
+        players: Iterable['Player'],
         positions: List[LineupPosition]
 ) -> Dict['Player', LineupPosition]:
     """
     This method tries to set positions for given players, and raise error if can't.
     """
-    positions = positions[:]
+    positions = positions.copy()
     players_with_positions = {}  # type: Dict['Player', LineupPosition]
     players = sorted(players, key=get_player_priority)
     for position in positions:
@@ -101,15 +112,21 @@ def link_players_with_positions(
 
 def get_remaining_positions(
         positions: List[LineupPosition],
-        unswappable_players: List['LineupPlayer']
+        unswappable_players: Optional[List['LineupPlayer']] = None,
+        locked_positions: Optional[List['LineupPosition']] = None,
 ) -> List[LineupPosition]:
     """
-    Remove unswappable players positions from positions list
+    Remove locked and unswappable players positions from positions list
     """
     positions = positions[:]
-    for player in unswappable_players:
+    for player in unswappable_players or []:
         for position in positions:
             if position.name == player.lineup_position:
+                positions.remove(position)
+                break
+    for locked_position in locked_positions or []:
+        for position in positions:
+            if position.name == locked_position.name:
                 positions.remove(position)
                 break
     return positions
@@ -130,9 +147,10 @@ def get_players_grouped_by_teams(
     return players_by_teams
 
 
-def process_percents(percent: Optional[float]) -> Optional[float]:
-    return percent / 100 if percent and percent > 1 else percent
-
-
 def get_player_priority(player: 'Player') -> float:
     return float(player.game_info.starts_at.timestamp()) if player.game_info and player.game_info.starts_at else 0.0
+
+
+def show_deprecation_warning(text: str):
+    warnings.simplefilter('always', DeprecationWarning)
+    warnings.warn(text, DeprecationWarning)

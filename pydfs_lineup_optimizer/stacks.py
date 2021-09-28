@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from math import floor
 from uuid import uuid4
 from typing import List, Optional, Tuple, Dict, Union, cast, TYPE_CHECKING
 from itertools import chain
@@ -13,22 +14,38 @@ if TYPE_CHECKING:  # pragma: no cover
     from pydfs_lineup_optimizer.lineup_optimizer import LineupOptimizer
 
 
-class BaseGroup(metaclass=ABCMeta):
-    min_from_group = None  # type: Optional[int]
-    max_from_group = None  # type: Optional[int]
-    max_exposure = None  # type: Optional[float]
+class OptimizerGroup:
+    def __init__(
+            self,
+            players: List[Player],
+            min_from_group: Optional[int] = None,
+            max_from_group: Optional[int] = None,
+    ):
+        self.players = players
+        self.min_from_group = min_from_group
+        self.max_from_group = max_from_group
 
+
+class BaseGroup(metaclass=ABCMeta):
     def __init__(
             self,
             max_exposure: Optional[float] = None,
+            depends_on: Optional[Player] = None,
+            min_from_group: Optional[int] = None,
+            max_from_group: Optional[int] = None,
+            strict_depend: bool = True,
             parent: Optional['BaseGroup'] = None,
     ):
         self.uuid = uuid4()
         self.max_exposure = max_exposure
         self.parent = parent
+        self.depends_on = depends_on
+        self.strict_depend = strict_depend
+        self.min_from_group = min_from_group
+        self.max_from_group = max_from_group
 
     @abstractmethod
-    def get_all_players_groups(self) -> List[Tuple[List[Player], Optional[int], Optional[int]]]:
+    def get_all_players_groups(self) -> List[OptimizerGroup]:
         pass
 
 
@@ -39,19 +56,24 @@ class PlayersGroup(BaseGroup):
             min_from_group: Optional[int] = None,
             max_from_group: Optional[int] = None,
             max_exposure: Optional[float] = None,
+            depends_on: Optional[Player] = None,
+            strict_depend: bool = True,
             parent: Optional[BaseGroup] = None,
     ):
-        super().__init__(max_exposure, parent)
+        if min_from_group is None and max_from_group is None:
+            min_from_group = len(players)
+        super().__init__(
+            max_exposure=max_exposure,
+            parent=parent,
+            min_from_group=min_from_group,
+            max_from_group=max_from_group,
+            depends_on=depends_on,
+            strict_depend=strict_depend,
+        )
         self.players = list(set(players))
-        self.max_from_group = max_from_group
-        self.min_from_group = None  # type: Optional[int]
-        if min_from_group is not None:
-            self.min_from_group = min_from_group
-        elif max_from_group is None:
-            self.min_from_group = len(players)
 
-    def get_all_players_groups(self) -> List[Tuple[List[Player], Optional[int], Optional[int]]]:
-        return [(self.players, self.min_from_group, self.max_from_group)]
+    def get_all_players_groups(self) -> List[OptimizerGroup]:
+        return [OptimizerGroup(self.players, self.min_from_group, self.max_from_group)]
 
     def __str__(self):
         return 'Group: %s' % ','.join(player.full_name for player in self.players)
@@ -66,15 +88,17 @@ class NestedPlayersGroup(BaseGroup):
             max_exposure: Optional[float] = None,
             parent: Optional[BaseGroup] = None,
     ):
-        super().__init__(max_exposure, parent)
+        if min_from_group is None and max_from_group is None:
+            min_from_group = len(groups)
+        super().__init__(
+            max_exposure=max_exposure,
+            parent=parent,
+            min_from_group=min_from_group,
+            max_from_group=max_from_group,
+        )
         self.groups = groups
-        self.min_from_group = None  # type: Optional[int]
-        if min_from_group is not None:
-            self.min_from_group = min_from_group
-        elif max_from_group is None:
-            self.min_from_group = len(groups)
 
-    def get_all_players_groups(self):
+    def get_all_players_groups(self) -> List[OptimizerGroup]:
         return list(chain.from_iterable(group.get_all_players_groups() for group in self.groups))
 
 
@@ -182,7 +206,7 @@ class TeamStack(BaseStack):
             if team not in optimizer.available_teams:
                 raise LineupOptimizerIncorrectTeamName('%s is incorrect team name.' % team)
         for position in self.for_positions or []:
-            if position not in optimizer.available_positions:
+            if position not in optimizer.player_pool.available_positions:
                 raise LineupOptimizerIncorrectPositionName('%s is incorrect position name.' % position)
 
 
@@ -232,8 +256,45 @@ class PositionsStack(BaseStack):
             raise LineupOptimizerException('You can\'t set more than %s players from one team.' %
                                            max_from_one_team)
         for position in set(chain.from_iterable(self.positions)):
-            if position not in optimizer.available_positions:
+            if position not in optimizer.player_pool.available_positions:
                 raise LineupOptimizerIncorrectPositionName('%s is incorrect position name.' % position)
         for team in self.for_teams or []:
-            if team not in optimizer.available_teams:
+            if team not in optimizer.player_pool.available_teams:
                 raise LineupOptimizerIncorrectTeamName('%s is incorrect team name.' % team)
+
+
+class GameStack(BaseStack):
+    def __init__(
+            self,
+            size: int,
+            max_exposure: Optional[float] = None,
+            min_from_team: int = 1,
+    ):
+        self.size = size
+        self.max_exposure = max_exposure
+        self.min_from_team = min_from_team
+
+    def build_stacks(self, players, optimizer):
+        players_by_teams = get_players_grouped_by_teams(players)
+        all_groups: List[BaseGroup] = []
+        for game in optimizer.games:
+            groups = [PlayersGroup(
+                players=players_by_teams[game.home_team],
+                min_from_group=self.min_from_team,
+            ), PlayersGroup(
+                players=players_by_teams[game.away_team],
+                min_from_group=self.min_from_team,
+            ), PlayersGroup(
+                players=[*players_by_teams[game.home_team], *players_by_teams[game.away_team]],
+                min_from_group=self.size,
+            )]
+            nested_group = NestedPlayersGroup(
+                groups=groups,
+                max_exposure=self.max_exposure,
+            )
+            all_groups.append(nested_group)
+        return [OptimizerStack(groups=all_groups)]
+
+    def validate(self, optimizer) -> None:
+        if floor(self.size / 2) < self.min_from_team:
+            raise LineupOptimizerException('min_from_team is greater than stack size')
