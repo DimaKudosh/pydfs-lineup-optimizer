@@ -120,6 +120,22 @@ class FanDuelGolfSettings(FanDuelSettings):
 
 
 @SitesRegistry.register_settings
+class FanDuelSoccerSettings(FanDuelSettings):
+    sport = Sport.SOCCER
+    budget = 100
+    lineup_printer = IndividualSportLineupPrinter
+    positions = [
+        LineupPosition('FWD / MID', ('FWD / MID', )),
+        LineupPosition('FWD / MID', ('FWD / MID', )),
+        LineupPosition('FWD / MID', ('FWD / MID', )),
+        LineupPosition('FWD / MID', ('FWD / MID', )),
+        LineupPosition('DEF', ('DEF', )),
+        LineupPosition('DEF', ('DEF', )),
+        LineupPosition('GK', ('GK', )),
+    ]
+
+
+@SitesRegistry.register_settings
 class FanDuelLOLSettings(FanDuelSettings):
     sport = Sport.LEAGUE_OF_LEGENDS
     max_from_one_team = 4
