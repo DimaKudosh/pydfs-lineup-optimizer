@@ -38,8 +38,8 @@ class FanDuelSingleGameBasketballSettings(FanDuelSingleGameSettings):
         LineupPosition('MVP', ('MVP', )),
         LineupPosition('STAR', ('STAR', )),
         LineupPosition('PRO', ('PRO', )),
-        LineupPosition('UTIL', ('PG', 'SG', 'SF', 'PF', 'C')),
-        LineupPosition('UTIL', ('PG', 'SG', 'SF', 'PF', 'C')),
+        LineupPosition('UTIL', ('UTIL', 'PG', 'SG', 'SF', 'PF', 'C')),
+        LineupPosition('UTIL', ('UTIL', 'PG', 'SG', 'SF', 'PF', 'C')),
     ]
 
 
