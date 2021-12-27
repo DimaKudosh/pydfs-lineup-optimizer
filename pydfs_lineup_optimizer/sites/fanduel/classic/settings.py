@@ -46,7 +46,7 @@ class FanDuelFootballSettings(FanDuelSettings):
         LineupPosition('WR', ('WR', )),
         LineupPosition('TE', ('TE', )),
         LineupPosition('FLEX', ('RB', 'WR', 'TE')),
-        LineupPosition('DEF', ('D', )),
+        LineupPosition('D', ('D', )),
     ]
 
 
