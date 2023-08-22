@@ -145,7 +145,7 @@ class DraftKingsCanadianFootballSettings(DraftKingsSettings):
 
 @SitesRegistry.register_settings
 class DraftKingsCollegeFootballSettings(DraftKingsSettings):
-    sport = Sport.CANADIAN_FOOTBALL
+    sport = Sport.COLLEGE_FOOTBALL
     min_games = 2
     positions = [
         LineupPosition('QB', ('QB', )),
