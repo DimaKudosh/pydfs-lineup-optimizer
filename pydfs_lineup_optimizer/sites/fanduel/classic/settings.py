@@ -169,3 +169,17 @@ class FanDuelMMASettings(FanDuelSettings):
         LineupPosition('F', ('F', )),
     ]
 
+@SitesRegistry.register_settings
+class FanDuelCollegeFootballSettings(FanDuelSettings):
+    sport = Sport.COLLEGE_FOOTBALL
+    positions = [
+        LineupPosition('QB', ('QB', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('SUPER FLEX', ('QB', 'RB', 'WR')),
+    ]
+
+
