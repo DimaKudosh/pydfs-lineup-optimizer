@@ -172,7 +172,6 @@ class FanDuelMMASettings(FanDuelSettings):
 @SitesRegistry.register_settings
 class FanDuelCollegeFootballSettings(FanDuelSettings):
     sport = Sport.COLLEGE_FOOTBALL
-    csv_exporter = CSVLineupExporter
     positions = [
         LineupPosition('QB', ('QB', )),
         LineupPosition('RB', ('RB', )),

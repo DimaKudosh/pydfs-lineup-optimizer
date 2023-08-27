@@ -74,7 +74,7 @@ class YahooCSVLineupExporter(CSVLineupExporter):
 
 
 class FanDuelCSVLineupExporter(CSVLineupExporter):
-    EXTRA_COLUMNS = ()
+    EXTRA_COLUMNS = ('Budget', 'FPPG')
     COLUMNS_MAPPING = {
         'MVP': 'MVP - 2X Points',
         'STAR': 'STAR - 1.5X Points',
@@ -82,8 +82,14 @@ class FanDuelCSVLineupExporter(CSVLineupExporter):
         'CAPTAIN': 'Captain - 1.5x Pts',
     }
 
-    def _get_extra_columns(self, lineup):
-        return []
+#    def _get_extra_columns(self, lineup):
+#        return []
+
+    def _get_extra_columns(self, lineup: 'Lineup') -> List[str]:
+        return [
+            str(lineup.salary_costs),
+            str(lineup.fantasy_points_projection),
+        ]
 
     @staticmethod
     def render_player(player: 'LineupPlayer') -> str:
