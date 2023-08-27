@@ -6,7 +6,7 @@ from pydfs_lineup_optimizer.lineup_printer import IndividualSportLineupPrinter
 from pydfs_lineup_optimizer.rules import OptimizerRule, FanduelBaseballRosterRule
 from pydfs_lineup_optimizer.sites.fanduel.classic.importer import FanDuelCSVImporter, FanDuelLOLCSVImporter, \
     FanDuelMVPCSVImporter
-from pydfs_lineup_optimizer.lineup_exporter import FanDuelCSVLineupExporter
+from pydfs_lineup_optimizer.lineup_exporter import CSVLineupExporter, FanDuelCSVLineupExporter
 
 
 class FanDuelSettings(BaseSettings):
