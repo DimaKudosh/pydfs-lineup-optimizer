@@ -6,7 +6,7 @@ from pydfs_lineup_optimizer.lineup_printer import IndividualSportLineupPrinter
 from pydfs_lineup_optimizer.rules import OptimizerRule, FanduelBaseballRosterRule
 from pydfs_lineup_optimizer.sites.fanduel.classic.importer import FanDuelCSVImporter, FanDuelLOLCSVImporter, \
     FanDuelMVPCSVImporter
-from pydfs_lineup_optimizer.lineup_exporter import FanDuelCSVLineupExporter
+from pydfs_lineup_optimizer.lineup_exporter import CSVLineupExporter, FanDuelCSVLineupExporter
 
 
 class FanDuelSettings(BaseSettings):
@@ -31,6 +31,21 @@ class FanDuelBasketballSettings(FanDuelSettings):
         LineupPosition('PF', ('PF', )),
         LineupPosition('PF', ('PF', )),
         LineupPosition('C', ('C', )),
+    ]
+
+
+@SitesRegistry.register_settings
+class FanDuelCollegeBasketballSettings(FanDuelSettings):
+    sport = Sport.COLLEGE_BASKETBALL
+    positions = [
+        LineupPosition('G', ('G', )),
+        LineupPosition('G', ('G', )),
+        LineupPosition('G', ('G', )),
+        LineupPosition('G', ('G', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('UTIL', ('G', 'F'))
     ]
 
 
@@ -168,4 +183,18 @@ class FanDuelMMASettings(FanDuelSettings):
         LineupPosition('F', ('F', )),
         LineupPosition('F', ('F', )),
     ]
+
+@SitesRegistry.register_settings
+class FanDuelCollegeFootballSettings(FanDuelSettings):
+    sport = Sport.COLLEGE_FOOTBALL
+    positions = [
+        LineupPosition('QB', ('QB', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('RB', ('RB', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('WR', ('WR', )),
+        LineupPosition('SUPER FLEX', ('QB', 'RB', 'WR')),
+    ]
+
 

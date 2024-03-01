@@ -24,3 +24,4 @@ class Sport:
     NASCAR = 'NASCAR'
     TENNIS = 'TENNIS'
     CS = 'CS'
+    COLLEGE_BASKETBALL = 'COLLEGE_BASKETBALL'
