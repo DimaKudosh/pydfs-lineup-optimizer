@@ -30,6 +30,22 @@ class DraftKingsBasketballSettings(DraftKingsSettings):
 
 
 @SitesRegistry.register_settings
+class DraftKingsCollegeBasketballSettings(DraftKingsSettings):
+    sport = Sport.COLLEGE_BASKETBALL
+    min_games = 2
+    positions = [
+        LineupPosition('G', ('G', )),
+        LineupPosition('G', ('G', )),
+        LineupPosition('G', ('G', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('F', ('F', )),
+        LineupPosition('UTIL', ('G', 'F')),
+        LineupPosition('UTIL', ('G', 'F'))
+    ]
+
+
+@SitesRegistry.register_settings
 class DraftKingsWNBASettings(DraftKingsSettings):
     sport = Sport.WNBA
     min_games = 2
